@@ -79,7 +79,7 @@ export default function App() {
     ? customerTabs 
     : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
-  if (activeTab === "admin" || user?.role === "ADMIN") {
+  if (activeTab === "admin") {
     return (
       <>
         <AdminDashboard />

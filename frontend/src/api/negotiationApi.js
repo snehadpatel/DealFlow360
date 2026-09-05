@@ -1,123 +1,88 @@
 import apiClient from './client';
-import { getMockState } from './customerApi';
 
 export const getNegotiationHistory = async (quotationId) => {
   try {
-    const res = await apiClient.get(`/portal/negotiations/${quotationId}/history`);
-    return res;
+    const negotiations = await apiClient.get('/negotiations', { params: { quotation_id: quotationId } });
+    const list = Array.isArray(negotiations) ? negotiations : [];
+    if (list.length === 0) return [];
+
+    const neg = list[0];
+    // Get messages for this negotiation
+    try {
+      const messages = await apiClient.get(`/negotiations/${neg.id}/messages`);
+      const msgList = Array.isArray(messages) ? messages : [];
+      return msgList.map(m => ({
+        id: m.id,
+        date: m.created_at ? new Date(m.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
+        author: m.sender_role === 'CUSTOMER' ? 'Customer' : 'Sales Team',
+        details: m.message || '',
+        status: neg.status || 'OPEN',
+      }));
+    } catch {
+      return [];
+    }
   } catch {
-    const mock = getMockState();
-    const quote = mock.quotations.find((q) => q.id === quotationId);
-    return quote?.negotiation?.history || [];
+    return [];
   }
 };
 
 export const submitNegotiation = async (payload) => {
-  // payload: { quotation_id, requested_discount, message }
   try {
-    const res = await apiClient.post('/negotiations', payload);
-    return res;
-  } catch {
-    const mock = getMockState();
-    const quote = mock.quotations.find((q) => q.id === payload.quotation_id);
+    const res = await apiClient.post('/negotiations', {
+      quotation_id: payload.quotation_id,
+      customer_id: payload.customer_id,
+      rep_id: payload.rep_id,
+      requested_discount: payload.requested_discount,
+    });
 
-    if (!quote) {
-      throw new Error(`Quotation ${payload.quotation_id} not found.`);
-    }
-
-    const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-    // Update quote status and negotiation object
-    quote.status = 'NEGOTIATION';
-    const newHistoryItem = {
-      id: `h-${Date.now()}`,
-      date: todayStr,
-      author: `Customer requested ${payload.requested_discount}% discount`,
-      details: `Reason: ${payload.message}`,
-      status: 'PENDING',
-    };
-
-    if (!quote.negotiation) {
-      quote.negotiation = {
-        status: 'PENDING',
-        requestedDiscount: payload.requested_discount,
-        approvedDiscount: null,
+    // Also add a message
+    if (res && res.id && payload.message) {
+      await apiClient.post(`/negotiations/${res.id}/messages`, {
         message: payload.message,
-        counterOffer: null,
-        rejectionReason: null,
-        history: [newHistoryItem],
-      };
-    } else {
-      quote.negotiation.status = 'PENDING';
-      quote.negotiation.requestedDiscount = payload.requested_discount;
-      quote.negotiation.message = payload.message;
-      quote.negotiation.counterOffer = null;
-      quote.negotiation.history.push(newHistoryItem);
+        discount_proposed: payload.requested_discount,
+      }).catch(() => {});
     }
 
     return {
       success: true,
       quotation_id: payload.quotation_id,
-      status: 'PENDING',
-      message: 'Your negotiation request has been sent to the sales team for review.',
-      negotiation: quote.negotiation,
+      status: 'OPEN',
+      message: 'Your negotiation request has been sent to the sales team.',
     };
+  } catch (err) {
+    console.error('Failed to submit negotiation:', err);
+    throw err;
   }
 };
 
 export const acceptCounterOffer = async (quotationId) => {
   try {
-    const res = await apiClient.post(`/portal/negotiations/${quotationId}/accept-counter`);
-    return res;
-  } catch {
-    const mock = getMockState();
-    const quote = mock.quotations.find((q) => q.id === quotationId);
-
-    if (quote && quote.negotiation && quote.negotiation.counterOffer) {
-      const approvedDiscount = quote.negotiation.counterOffer.approvedDiscount;
-      quote.status = 'APPROVED';
-      quote.discountPercent = approvedDiscount;
-      quote.negotiation.status = 'APPROVED';
-      quote.negotiation.approvedDiscount = approvedDiscount;
-      
-      // recalculate totals
-      const discountFactor = 1 - approvedDiscount / 100;
-      quote.totalAmount = Math.round(quote.subtotal * discountFactor);
-      quote.totalDiscount = quote.subtotal - quote.totalAmount;
-
-      quote.negotiation.history.push({
-        id: `h-${Date.now()}`,
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        author: 'Customer accepted counter offer',
-        details: `Accepted revised discount of ${approvedDiscount}%`,
-        status: 'APPROVED',
-      });
+    // Find the negotiation for this quotation
+    const negotiations = await apiClient.get('/negotiations', { params: { quotation_id: quotationId } });
+    const list = Array.isArray(negotiations) ? negotiations : [];
+    if (list.length > 0) {
+      await apiClient.post(`/negotiations/${list[0].id}/accept`);
     }
-
-    return { success: true, quotationId, status: 'APPROVED' };
+    return { success: true, quotationId, status: 'ACCEPTED' };
+  } catch (err) {
+    console.error('Failed to accept counter offer:', err);
+    throw err;
   }
 };
 
 export const continueNegotiation = async (quotationId) => {
   try {
-    const res = await apiClient.post(`/portal/negotiations/${quotationId}/continue`);
-    return res;
-  } catch {
-    const mock = getMockState();
-    const quote = mock.quotations.find((q) => q.id === quotationId);
-
-    if (quote && quote.negotiation) {
-      quote.negotiation.counterOffer = null;
-      quote.negotiation.status = 'PENDING';
-      quote.negotiation.history.push({
-        id: `h-${Date.now()}`,
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        author: 'Customer requested further negotiation',
-        details: 'Submitted for further sales discussion',
-        status: 'PENDING',
+    const negotiations = await apiClient.get('/negotiations', { params: { quotation_id: quotationId } });
+    const list = Array.isArray(negotiations) ? negotiations : [];
+    if (list.length > 0) {
+      await apiClient.post(`/negotiations/${list[0].id}/messages`, {
+        message: 'Customer requested further negotiation',
+        discount_proposed: null,
       });
     }
-
-    return { success: true, quotationId, status: 'PENDING' };
+    return { success: true, quotationId, status: 'OPEN' };
+  } catch (err) {
+    console.error('Failed to continue negotiation:', err);
+    throw err;
   }
 };
