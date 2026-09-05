@@ -353,8 +353,9 @@ def enrich_approval(session: Session, appr: ApprovalRequest) -> dict:
         data["quote_margin"] = quotation.margin
         data["quote_margin_percent"] = quotation.margin_percent
         data["discount_percent"] = round((quotation.discount_total / quotation.subtotal * 100.0), 1) if quotation.subtotal > 0 else 0.0
-        data["risk_level"] = quotation.risk_level or "LOW"
+        data["risk_level"] = quotation.risk_level.value if hasattr(quotation.risk_level, "value") else str(quotation.risk_level or "LOW")
         data["blended_risk"] = quotation.blended_risk or 0.0
+        data["risk_score"] = quotation.blended_risk or 0.0
         
         customer = session.get(Customer, quotation.customer_id)
         if customer:
@@ -376,6 +377,11 @@ def list_pending(session: Session, user: User) -> list[dict]:
     return [enrich_approval(session, a) for a in requests]
 
 
+def get_approval_by_id(session: Session, approval_id: UUID) -> dict:
+    approval = _get_approval_or_404(session, approval_id)
+    return enrich_approval(session, approval)
+
+
 def list_for_quote(session: Session, quotation_id: UUID) -> list[dict]:
     requests = list(
         session.exec(
@@ -385,4 +391,5 @@ def list_for_quote(session: Session, quotation_id: UUID) -> list[dict]:
         )
     )
     return [enrich_approval(session, a) for a in requests]
+
 

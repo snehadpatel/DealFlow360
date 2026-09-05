@@ -42,7 +42,7 @@ export default function ApprovalChain({ chain }) {
               <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-3 rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md-hover group-hover:border-brand-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${textColor}`}>
-                    {step.status.replace('_', ' ')}
+                    {(step.status || 'PENDING').replace('_', ' ')}
                   </span>
                   {step.timestamp && (
                     <span className="text-[10px] text-textSecondary font-medium">{step.timestamp}</span>

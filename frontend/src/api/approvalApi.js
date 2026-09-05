@@ -10,15 +10,21 @@ export const getApprovals = async (params = {}) => {
       id: a.id,
       quotation_id: a.quotation_id,
       customer: a.customer_name || 'Enterprise Client',
+      customer_name: a.customer_name || 'Enterprise Client',
+      sales_rep_name: a.rep_name || 'Sales Representative',
       requested_discount: a.discount_percent || 0,
+      discount: a.discount_percent || 0,
       approval_type: a.approver_role === 'FINANCE' ? 'Finance Override' : 'Discount Threshold',
       risk_level: a.risk_level || 'MEDIUM',
+      risk_score: a.risk_score || 0,
       status: a.status || 'PENDING',
       submitted_by: a.rep_name || 'Sales Representative',
+      submitted_at: a.created_at,
       date: a.created_at ? a.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
       approver_role: a.approver_role,
-      comments: a.comments,
+      comments: a.reason,
       amount: a.quote_total || 0,
+      total_value: a.quote_total || 0,
       margin: a.quote_margin_percent || 0,
     }));
 
@@ -86,19 +92,19 @@ export const getApprovalSummary = async () => {
 
 export const getApprovalById = async (id) => {
   try {
-    const items = await apiClient.get('/approvals/pending').catch(() => []);
-    const list = Array.isArray(items) ? items : [];
-    let found = list.find(a => String(a.id) === String(id));
-
-    if (!found && list.length > 0) {
-      found = list[0];
+    let found = null;
+    try {
+      found = await apiClient.get(`/approvals/${id}`);
+    } catch {
+      const items = await apiClient.get('/approvals/pending').catch(() => []);
+      const list = Array.isArray(items) ? items : [];
+      found = list.find(a => String(a.id) === String(id)) || list[0];
     }
 
     if (!found) {
       throw new Error(`Approval request not found`);
     }
 
-    // Get the related quote detail
     let quoteDetail = {};
     try {
       if (found.quotation_id) {
@@ -112,12 +118,13 @@ export const getApprovalById = async (id) => {
     const discount = quoteDetail.discount_total || found.quote_discount || (subtotal * (found.discount_percent || 10) / 100);
     const tax = quoteDetail.tax_total || Math.round((subtotal - discount) * 0.18);
     const total = quoteDetail.total || found.quote_total || (subtotal - discount + tax);
+    const reqDisc = found.discount_percent || (subtotal > 0 ? Math.round((discount / subtotal) * 100) : 10);
 
     const lines = Array.isArray(quoteDetail.lines) && quoteDetail.lines.length > 0
       ? quoteDetail.lines
       : [
-          { product_name: 'Enterprise Workstation Rack', category: 'Hardware', quantity: 4, unit_price: 35000, discount_percent: found.discount_percent || 12, line_total: 123200 },
-          { product_name: 'Cloud Governance SaaS', category: 'Subscription', quantity: 2, unit_price: 24000, discount_percent: found.discount_percent || 8, line_total: 44160 }
+          { product_name: 'Enterprise Workstation Rack', category: 'Hardware', quantity: 4, unit_price: 35000, discount_percent: reqDisc, line_total: 123200 },
+          { product_name: 'Cloud Governance SaaS', category: 'Subscription', quantity: 2, unit_price: 24000, discount_percent: reqDisc, line_total: 44160 }
         ];
 
     const discountAnalysis = lines.map(l => ({
@@ -132,8 +139,11 @@ export const getApprovalById = async (id) => {
       id: found.id,
       quotation_id: found.quotation_id,
       customer: custName,
+      customer_name: custName,
       status: found.status || 'PENDING',
-      requested_discount: found.discount_percent || (subtotal > 0 ? Math.round((discount / subtotal) * 100) : 10),
+      approval_type: found.approver_role === 'FINANCE' ? 'Finance Override' : 'Discount Threshold',
+      current_discount: Math.max(0, reqDisc - 5),
+      requested_discount: reqDisc,
       discount_analysis: discountAnalysis,
       quotation: {
         id: found.quotation_id,
@@ -158,18 +168,28 @@ export const getApprovalById = async (id) => {
         final_price: l.line_total || ((l.unit_price || 0) * (l.quantity || 1) * (1 - (l.discount_percent || 0) / 100)),
       })),
       risk: {
-        score: quoteDetail.blended_risk || found.blended_risk || 35.0,
-        level: quoteDetail.risk_level || found.risk_level || 'MEDIUM',
+        score: found.risk_score || quoteDetail.blended_risk || found.blended_risk || 35.0,
+        level: found.risk_level || quoteDetail.risk_level || 'MEDIUM',
         factors: [
-          `Discount of ${found.discount_percent || 10}% requested`,
+          `Discount of ${reqDisc}% requested`,
           `Account tier: ${found.customer_tier || 'GOLD'}`,
           `Estimated margin: ${found.quote_margin_percent || quoteDetail.margin_percent || 24.5}%`
         ],
       },
-      approval_chain: [
-        { role: 'Sales Representative', person: repName, status: 'SUBMITTED', timestamp: (found.created_at || '').split('T')[0] },
-        { role: found.approver_role || 'MANAGER', person: 'Assigned Approver', status: found.status === 'PENDING' ? 'IN_REVIEW' : found.status, timestamp: '' },
-      ],
+      approval_chain: (quoteDetail.approvals && quoteDetail.approvals.length > 0)
+        ? [
+            { role: 'Sales Representative', person: repName, status: 'SUBMITTED', timestamp: (found.created_at || '').split('T')[0] },
+            ...quoteDetail.approvals.map(appr => ({
+              role: appr.approver_role,
+              person: `${appr.approver_role} Approver`,
+              status: appr.status === 'PENDING' ? 'IN_REVIEW' : appr.status,
+              timestamp: appr.resolved_at ? appr.resolved_at.split('T')[0] : ''
+            }))
+          ]
+        : [
+            { role: 'Sales Representative', person: repName, status: 'SUBMITTED', timestamp: (found.created_at || '').split('T')[0] },
+            { role: found.approver_role || 'MANAGER', person: 'Assigned Approver', status: found.status === 'PENDING' ? 'IN_REVIEW' : (found.status || 'PENDING'), timestamp: '' },
+          ],
       current_reviewer: { role: found.approver_role || 'MANAGER', person: found.approver_role === 'FINANCE' ? 'Finance Controller' : 'Sales Manager' },
       timeline: [
         { id: 1, title: 'Quote Created & Submitted', description: `Submitted by ${repName}`, date: (found.created_at || '').split('T')[0], status: 'completed' },
