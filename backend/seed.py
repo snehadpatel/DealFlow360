@@ -1,267 +1,397 @@
-"""Database seeding script for tiers, products, warehouses, plans, and demo users."""
-import random
-from datetime import datetime, timedelta
+#!/usr/bin/env python3
+"""
+DealFlow360 — Comprehensive Seed Script v2
+Seeds all tables with realistic data for all 6 roles.
+Safe to re-run: skips rows that already exist.
+"""
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
 
+from datetime import datetime, date, timedelta
+from uuid import uuid4
 from sqlmodel import Session, select
-from app.db import init_db, engine
+from app.db import engine
+import app.models  # register all tables
+
 from app.models.user import User, Role
-from app.models.customer import Customer, Tier
+from app.models.customer import Customer, Tier, CustomerStatus
 from app.models.product import Product
 from app.models.warehouse import Warehouse, StockInventory
-from app.models.subscription import SubscriptionPlan
 from app.models.quotation import Quotation, QuotationLine, QuoteStatus
-from app.services.pricing_policy import blended_risk, LineInput
+from app.models.approval import ApprovalRequest, ApprovalStatus
+from app.models.audit import AuditLog
+from app.models.price_list import PriceList, PriceListItem
+from app.models.discount_rule import DiscountRule, UpsellRule
+from app.models.order import Order, OrderLine, Shipment, Backorder, OrderStatus, ShipmentStatus
+from app.models.invoice import Invoice, Payment, CreditNote, InvoiceStatus
+from app.models.subscription import SubscriptionPlan, CustomerSubscription, BillingCycle, SubscriptionStatus
+from app.models.negotiation import Negotiation, NegotiationMessage, NegotiationStatus, SenderRole
+from app.models.notification import Notification
 from app.core.security import get_password_hash
 
-def seed_demo_data():
-    init_db()
-    
-    with Session(engine) as session:
-        # 1. Seed Customer
-        existing_cust = session.exec(select(Customer)).first()
-        if not existing_cust:
-            acme = Customer(name="Acme Corporation", tier=Tier.SILVER)
-            megacorp = Customer(name="MegaCorp Global", tier=Tier.GOLD)
-            startup = Customer(name="BioTech Labs", tier=Tier.BRONZE)
-            session.add_all([acme, megacorp, startup])
-            session.commit()
-            session.refresh(acme)
-            print("Seeded Customers.")
-        else:
-            acme = existing_cust
 
-        # 2. Seed Users
+def seed():
+    with Session(engine) as session:
+        print("🌱 Seeding DealFlow360 database...")
         existing_users = session.exec(select(User)).all()
-        if not existing_users:
-            default_pwd = get_password_hash("password123")
-            demo_users = [
-                User(name="Alex Rep", email="rep@dealflow360.com", password_hash=default_pwd, role=Role.REP),
-                User(name="Maria Manager", email="manager@dealflow360.com", password_hash=default_pwd, role=Role.MANAGER),
-                User(name="Felix Finance", email="finance@dealflow360.com", password_hash=default_pwd, role=Role.FINANCE),
-                User(name="Acme Buyer", email="buyer@acmecorp.com", password_hash=default_pwd, role=Role.CUSTOMER, customer_id=acme.id),
-                User(name="System Admin", email="admin@dealflow360.com", password_hash=default_pwd, role=Role.ADMIN),
-            ]
-            session.add_all(demo_users)
-            session.commit()
-            print("Seeded 5 Demo Users (Password: password123).")
-
-        # 3. Seed Products
-        existing_products = session.exec(select(Product)).first()
-        if not existing_products:
-            products = [
-                Product(name="Enterprise Edge Router X1", category="Hardware", price=1200.0, cost=650.0, discount_ceiling=15.0),
-                Product(name="Core Switch 48-Port PoE+", category="Hardware", price=2400.0, cost=1300.0, discount_ceiling=15.0),
-                Product(name="24/7 Mission-Critical Support Pack", category="Services", price=1500.0, cost=300.0, discount_ceiling=25.0),
-                Product(name="DealFlow SaaS Platform License (User/Mo)", category="Subscription", price=65.0, cost=10.0, discount_ceiling=20.0),
-            ]
-            session.add_all(products)
-            session.commit()
-            print("Seeded Demo Products.")
-
-        # 4. Seed Warehouses & Inventory
-        existing_wh = session.exec(select(Warehouse)).first()
-        if not existing_wh:
-            wh_chicago = Warehouse(name="Chicago Central Hub", location="Chicago, IL")
-            wh_austin = Warehouse(name="Austin West Facility", location="Austin, TX")
-            session.add_all([wh_chicago, wh_austin])
-            session.commit()
-            session.refresh(wh_chicago)
-            session.refresh(wh_austin)
-
-            # Add inventory for Edge Router
-            router = session.exec(select(Product).where(Product.category == "Hardware")).first()
-            if router:
-                inv1 = StockInventory(warehouse_id=wh_chicago.id, product_id=router.id, available_units=45)
-                inv2 = StockInventory(warehouse_id=wh_austin.id, product_id=router.id, available_units=15)
-                session.add_all([inv1, inv2])
-                session.commit()
-            print("Seeded Warehouses and Inventory.")
-
-        # 5. Seed Subscription Plans
-        existing_plan = session.exec(select(SubscriptionPlan)).first()
-        if not existing_plan:
-            plan = SubscriptionPlan(name="DealFlow Cloud Enterprise", monthly_rate=850.0, annual_rate=9200.0, billing_frequency="monthly")
-            session.add(plan)
-            session.commit()
-            print("Seeded Subscription Plans.")
-
-    # 6. Seed realistic historical + current deal data (ML signal).
-    seed_history()
-
-    print("\\nAll seed data verified and ready!")
-
-# --- Historical data for the glass-box AI layer ------------------------------
-# Reuses Quotation/QuotationLine (status=CONFIRMED, backdated) as "order
-# history": confirmed baskets feed co-purchase mining, and per-rep line
-# discounts feed the anomaly baseline. Deterministic (random.seed) so the demo
-# is identical every run. Idempotent: bails if any Quotation already exists.
-
-# Extra products so association rules are non-trivial (name, category, price, cost, ceiling).
-_EXTRA_PRODUCTS = [
-    ("Cat6 Cable Bundle (50-pack)", "Hardware", 180.0, 40.0, 15.0),
-    ("42U Server Rack Kit", "Hardware", 900.0, 520.0, 15.0),
-    ("Onboarding & Deployment Services", "Services", 2000.0, 350.0, 25.0),
-    ("Extended Warranty 3yr", "Services", 700.0, 120.0, 20.0),
-]
-
-# Keyword -> canonical product key, for matching seeded products by name.
-_PRODUCT_KEYS = {
-    "Edge Router": "router",
-    "Core Switch": "switch",
-    "Support Pack": "support",
-    "SaaS Platform": "saas",
-    "Cat6 Cable": "cat6",
-    "Rack Kit": "rack",
-    "Onboarding": "onboarding",
-    "Extended Warranty": "warranty",
-}
-
-# Baked co-purchase patterns: anchor -> [(partner_key, attach_probability)].
-# High-margin consequents (support/saas/onboarding/warranty/cat6) win ranking.
-_COPURCHASE = {
-    "router": [("support", 0.80), ("cat6", 0.70)],
-    "switch": [("rack", 0.65), ("cat6", 0.50)],
-    "saas": [("onboarding", 0.60), ("support", 0.40)],
-    "support": [("warranty", 0.50)],
-}
-# Weighted anchor selection (hardware/platform anchor most deals).
-_ANCHORS = (["router"] * 5 + ["switch"] * 4 + ["saas"] * 3 + ["support"] * 2 + ["onboarding"] * 1)
-
-# Per-rep discount behaviour (email -> (mean, stdev)); drives the anomaly baseline.
-_REP_PROFILE = {
-    "rep@dealflow360.com": (11.0, 3.0),   # Alex — moderate
-    "rita@dealflow360.com": (6.0, 2.0),   # Rita — disciplined
-    "sam@dealflow360.com": (9.0, 3.0),    # Sam — normally fine (baseline for the hero anomaly)
-}
+        user_by_email = {u.email: u for u in existing_users}
 
 
-def _rep_discount(mean: float, stdev: float) -> float:
-    """A clamped, one-decimal discount draw for a rep's normal behaviour."""
-    return round(min(22.0, max(0.0, random.gauss(mean, stdev))), 1)
+        # ─── Users ────────────────────────────────────────────────────────────
+        admin = User(id=uuid4(), name="Super Admin", email="admin@dealflow360.com",
+                     password_hash=get_password_hash("admin123"), role=Role.ADMIN)
+        rep1 = User(id=uuid4(), name="Alex Kumar (Sales Rep)", email="alex.rep@dealflow360.com",
+                    password_hash=get_password_hash("rep123"), role=Role.REP)
+        rep2 = User(id=uuid4(), name="Priya Sharma (Sales Rep)", email="priya.rep@dealflow360.com",
+                    password_hash=get_password_hash("rep123"), role=Role.REP)
+        manager = User(id=uuid4(), name="Maria Manager", email="maria.manager@dealflow360.com",
+                       password_hash=get_password_hash("mgr123"), role=Role.MANAGER)
+        finance = User(id=uuid4(), name="Felix Finance", email="felix.finance@dealflow360.com",
+                       password_hash=get_password_hash("fin123"), role=Role.FINANCE)
+        operations = User(id=uuid4(), name="Ops Team Lead", email="ops@dealflow360.com",
+                          password_hash=get_password_hash("ops123"), role=Role.OPERATIONS)
+        cust_user = User(id=uuid4(), name="ABC Corp Buyer", email="buyer@abccorp.com",
+                         password_hash=get_password_hash("cust123"), role=Role.CUSTOMER)
 
+        for u in [admin, rep1, rep2, manager, finance, operations, cust_user]:
+            session.add(u)
+        session.flush()
 
-def seed_history():
-    """Seed extra reps/products and ~120 backdated deals + current stalled/anomalous deals."""
-    random.seed(42)
-    with Session(engine) as session:
-        # (a) Extra REP users (Rita, Sam) so per-rep baselines exist.
-        for name, email in [("Rita Rep", "rita@dealflow360.com"), ("Sam Rep", "sam@dealflow360.com")]:
-            if not session.exec(select(User).where(User.email == email)).first():
-                session.add(User(name=name, email=email,
-                                 password_hash=get_password_hash("password123"), role=Role.REP))
+        # ─── Customers ────────────────────────────────────────────────────────
+        cust1 = Customer(
+            id=uuid4(), name="ABC Corporation", tier=Tier.GOLD,
+            email="procurement@abccorp.com", phone="+91-9800000001",
+            address_billing="Tower 4, Prime Tech Park, Mumbai 400001",
+            address_shipping="Warehouse Zone, Navi Mumbai 400703",
+            tax_id="GSTIN-27ABCDE1234F1Z5", rep_id=rep1.id,
+            credit_limit=5000000.0, payment_terms="Net 30", status=CustomerStatus.ACTIVE
+        )
+        cust2 = Customer(
+            id=uuid4(), name="TechVision India", tier=Tier.SILVER,
+            email="orders@techvision.in", phone="+91-9800000002",
+            address_billing="Cyber Hub, DLF Phase II, Gurugram 122002",
+            address_shipping="Sector 18, Noida 201301",
+            tax_id="GSTIN-06TECVI5678G2Z6", rep_id=rep1.id,
+            credit_limit=2000000.0, payment_terms="Net 45", status=CustomerStatus.ACTIVE
+        )
+        cust3 = Customer(
+            id=uuid4(), name="Sunrise Retail Ltd", tier=Tier.BRONZE,
+            email="ops@sunriseretail.com", phone="+91-9800000003",
+            address_billing="MG Road, Bangalore 560001",
+            address_shipping="Electronic City, Bangalore 560100",
+            tax_id="GSTIN-29SUNRI8901H3Z7", rep_id=rep2.id,
+            credit_limit=500000.0, payment_terms="Net 15", status=CustomerStatus.ACTIVE
+        )
+        cust4 = Customer(
+            id=uuid4(), name="GlobalEdge Systems", tier=Tier.GOLD,
+            email="purchase@globaledge.io", phone="+91-9800000004",
+            address_billing="HITEC City, Hyderabad 500081",
+            address_shipping="Gachibowli, Hyderabad 500032",
+            tax_id="GSTIN-36GLOBA2345I4Z8", rep_id=rep2.id,
+            credit_limit=3000000.0, payment_terms="Net 30", status=CustomerStatus.ACTIVE
+        )
+
+        # Link customer user to cust1
+        cust_user.customer_id = cust1.id
+
+        for c in [cust1, cust2, cust3, cust4]:
+            session.add(c)
+        session.add(cust_user)
+        session.flush()
+
+        # ─── Products ─────────────────────────────────────────────────────────
+        prod1 = Product(id=uuid4(), name="Enterprise Laptop Pro X1", sku="LAP-PRO-X1",
+                        category="Hardware", price=85000.0, cost=60000.0,
+                        discount_ceiling=20.0, tax_rate=18.0, unit="unit",
+                        description="High-performance enterprise laptop with 16GB RAM, 512GB SSD")
+        prod2 = Product(id=uuid4(), name="Cloud Management Suite", sku="SaaS-CMS-ENT",
+                        category="Subscription", price=12000.0, cost=3000.0,
+                        discount_ceiling=25.0, tax_rate=18.0, unit="license",
+                        description="Comprehensive cloud infrastructure management platform")
+        prod3 = Product(id=uuid4(), name="Network Security Firewall XG-500", sku="NET-FW-XG500",
+                        category="Hardware", price=150000.0, cost=100000.0,
+                        discount_ceiling=15.0, tax_rate=18.0, unit="unit",
+                        description="Enterprise-grade next-generation firewall")
+        prod4 = Product(id=uuid4(), name="On-Site Deployment Service", sku="SRV-DEPLOY-01",
+                        category="Services", price=50000.0, cost=20000.0,
+                        discount_ceiling=10.0, tax_rate=18.0, unit="project",
+                        description="Professional on-site installation and configuration service")
+        prod5 = Product(id=uuid4(), name="24/7 Premium Support Plan", sku="SUP-PREMIUM-YR",
+                        category="Subscription", price=24000.0, cost=8000.0,
+                        discount_ceiling=15.0, tax_rate=18.0, unit="year",
+                        description="Round-the-clock dedicated support with 2-hour SLA")
+        prod6 = Product(id=uuid4(), name="Data Analytics Dashboard", sku="SaaS-ANALYTICS",
+                        category="Subscription", price=8000.0, cost=2000.0,
+                        discount_ceiling=20.0, tax_rate=18.0, unit="license",
+                        description="Real-time business intelligence and reporting platform")
+
+        for p in [prod1, prod2, prod3, prod4, prod5, prod6]:
+            session.add(p)
+        session.flush()
+
+        # ─── Warehouses ───────────────────────────────────────────────────────
+        wh1 = Warehouse(id=uuid4(), name="Mumbai Central Hub", location="Andheri East, Mumbai 400093",
+                        city="Mumbai", is_active=True, replenishment_threshold=20,
+                        shipping_cost=2500.0, priority=1)
+        wh2 = Warehouse(id=uuid4(), name="Delhi NCR Warehouse", location="Sector 63, Noida 201301",
+                        city="Delhi", is_active=True, replenishment_threshold=15,
+                        shipping_cost=3000.0, priority=2)
+        wh3 = Warehouse(id=uuid4(), name="Bangalore South Hub", location="Electronic City, Bangalore 560100",
+                        city="Bangalore", is_active=True, replenishment_threshold=10,
+                        shipping_cost=3500.0, priority=3)
+
+        for w in [wh1, wh2, wh3]:
+            session.add(w)
+        session.flush()
+
+        # ─── Stock Inventory ──────────────────────────────────────────────────
+        stock_data = [
+            (wh1.id, prod1.id, 150, 20, 50, 30),
+            (wh1.id, prod3.id, 25, 5, 10, 10),
+            (wh1.id, prod4.id, 0, 0, 0, 5),  # Service — no physical stock
+            (wh2.id, prod1.id, 80, 10, 30, 20),
+            (wh2.id, prod2.id, 0, 0, 0, 0),  # SaaS — no physical stock
+            (wh2.id, prod3.id, 12, 3, 8, 8),
+            (wh3.id, prod1.id, 40, 5, 20, 15),
+            (wh3.id, prod3.id, 8, 2, 5, 10),  # Low stock alert
+        ]
+        for wh_id, pr_id, avail, reserved, incoming, reorder in stock_data:
+            s = StockInventory(id=uuid4(), warehouse_id=wh_id, product_id=pr_id,
+                               available_units=avail, reserved_units=reserved,
+                               incoming_units=incoming, reorder_level=reorder)
+            session.add(s)
+        session.flush()
+
+        # ─── Discount Rules ───────────────────────────────────────────────────
+        for tier, max_disc, min_mgn, mgr_thresh, fin_thresh in [
+            ("BRONZE", 10.0, 15.0, 7.0, 10.0),
+            ("SILVER", 15.0, 12.0, 12.0, 15.0),
+            ("GOLD", 20.0, 10.0, 15.0, 20.0),
+        ]:
+            session.add(DiscountRule(id=uuid4(), tier=tier, max_discount=max_disc,
+                                     min_margin=min_mgn, manager_approval_threshold=mgr_thresh,
+                                     finance_approval_threshold=fin_thresh))
+        session.flush()
+
+        # ─── Upsell Rules ─────────────────────────────────────────────────────
+        session.add(UpsellRule(id=uuid4(), product_id=prod1.id,
+                                recommended_product_id=prod5.id,
+                                promotion="Add Premium Support with every Laptop order",
+                                priority=1, min_margin_impact=3.2))
+        session.add(UpsellRule(id=uuid4(), product_id=prod3.id,
+                                recommended_product_id=prod4.id,
+                                promotion="Bundle deployment service for faster ROI",
+                                priority=1, min_margin_impact=2.5))
+        session.flush()
+
+        # ─── Price Lists ──────────────────────────────────────────────────────
+        pl_gold = PriceList(id=uuid4(), name="Gold Customer FY2026", tier="GOLD",
+                             currency="INR", effective_from=date(2026, 1, 1), expires_at=date(2026, 12, 31))
+        pl_silver = PriceList(id=uuid4(), name="Silver Customer FY2026", tier="SILVER",
+                               currency="INR", effective_from=date(2026, 1, 1), expires_at=date(2026, 12, 31))
+        session.add(pl_gold)
+        session.add(pl_silver)
+        session.flush()
+        session.add(PriceListItem(id=uuid4(), price_list_id=pl_gold.id, product_id=prod1.id, price=78000.0))
+        session.add(PriceListItem(id=uuid4(), price_list_id=pl_gold.id, product_id=prod3.id, price=135000.0))
+        session.add(PriceListItem(id=uuid4(), price_list_id=pl_silver.id, product_id=prod1.id, price=81000.0))
+        session.flush()
+
+        # ─── Subscription Plans ───────────────────────────────────────────────
+        plan_starter = SubscriptionPlan(id=uuid4(), name="Starter Cloud", billing_cycle=BillingCycle.MONTHLY,
+                                         price=5000.0, description="For small teams up to 10 users",
+                                         is_active=True)
+        plan_business = SubscriptionPlan(id=uuid4(), name="Business Pro", billing_cycle=BillingCycle.YEARLY,
+                                          price=48000.0, description="Up to 50 users with analytics",
+                                          is_active=True)
+        plan_enterprise = SubscriptionPlan(id=uuid4(), name="Enterprise Suite", billing_cycle=BillingCycle.YEARLY,
+                                            price=120000.0, description="Unlimited users, dedicated support",
+                                            is_active=True)
+        for pl in [plan_starter, plan_business, plan_enterprise]:
+            session.add(pl)
+        session.flush()
+
+        # ─── Customer Subscriptions ───────────────────────────────────────────
+        sub1 = CustomerSubscription(id=uuid4(), customer_id=cust1.id, plan_id=plan_enterprise.id,
+                                     quantity=1, status=SubscriptionStatus.ACTIVE,
+                                     start_date=date(2026, 1, 1), next_billing_date=date(2027, 1, 1))
+        sub2 = CustomerSubscription(id=uuid4(), customer_id=cust2.id, plan_id=plan_business.id,
+                                     quantity=2, status=SubscriptionStatus.ACTIVE,
+                                     start_date=date(2026, 3, 1), next_billing_date=date(2027, 3, 1))
+        sub3 = CustomerSubscription(id=uuid4(), customer_id=cust3.id, plan_id=plan_starter.id,
+                                     quantity=1, status=SubscriptionStatus.ACTIVE,
+                                     start_date=date(2026, 6, 1), next_billing_date=date(2026, 10, 1))
+        for s in [sub1, sub2, sub3]:
+            session.add(s)
+        session.flush()
+
+        # ─── Quotations ───────────────────────────────────────────────────────
+        # Quote 1: CONFIRMED (becomes order)
+        q1 = Quotation(id=uuid4(), customer_id=cust1.id, rep_id=rep1.id,
+                        status=QuoteStatus.CONFIRMED, subtotal=850000.0,
+                        discount_total=127500.0, tax_total=129870.0, total=852370.0,
+                        margin=174370.0, margin_percent=20.5, currency="INR",
+                        blended_risk=35.0, risk_level="MEDIUM", version=2,
+                        expires_at=datetime.utcnow() + timedelta(days=30))
+        # Quote 2: PENDING_APPROVAL (high risk)
+        q2 = Quotation(id=uuid4(), customer_id=cust2.id, rep_id=rep1.id,
+                        status=QuoteStatus.PENDING_APPROVAL, subtotal=450000.0,
+                        discount_total=90000.0, tax_total=64800.0, total=424800.0,
+                        margin=52800.0, margin_percent=12.4, currency="INR",
+                        blended_risk=72.0, risk_level="HIGH", version=1,
+                        expires_at=datetime.utcnow() + timedelta(days=15))
+        # Quote 3: DRAFT
+        q3 = Quotation(id=uuid4(), customer_id=cust3.id, rep_id=rep2.id,
+                        status=QuoteStatus.DRAFT, subtotal=200000.0,
+                        discount_total=10000.0, tax_total=34200.0, total=224200.0,
+                        margin=60200.0, margin_percent=26.8, currency="INR",
+                        blended_risk=20.0, risk_level="LOW", version=1,
+                        expires_at=datetime.utcnow() + timedelta(days=15))
+        # Quote 4: APPROVED
+        q4 = Quotation(id=uuid4(), customer_id=cust4.id, rep_id=rep2.id,
+                        status=QuoteStatus.APPROVED, subtotal=600000.0,
+                        discount_total=60000.0, tax_total=97200.0, total=637200.0,
+                        margin=157200.0, margin_percent=24.6, currency="INR",
+                        blended_risk=28.0, risk_level="LOW", version=1,
+                        expires_at=datetime.utcnow() + timedelta(days=20))
+
+        for q in [q1, q2, q3, q4]:
+            session.add(q)
+        session.flush()
+
+        # Quote lines
+        session.add(QuotationLine(id=uuid4(), quotation_id=q1.id, product_id=prod1.id,
+                                   quantity=10, unit_price=85000.0, unit_cost=60000.0,
+                                   discount_percent=15.0, tax_rate=18.0,
+                                   line_subtotal=850000.0, discount_amount=127500.0,
+                                   tax_amount=129870.0, line_total=852370.0))
+        session.add(QuotationLine(id=uuid4(), quotation_id=q2.id, product_id=prod3.id,
+                                   quantity=3, unit_price=150000.0, unit_cost=100000.0,
+                                   discount_percent=20.0, tax_rate=18.0,
+                                   line_subtotal=450000.0, discount_amount=90000.0,
+                                   tax_amount=64800.0, line_total=424800.0))
+        session.add(QuotationLine(id=uuid4(), quotation_id=q3.id, product_id=prod2.id,
+                                   quantity=20, unit_price=10000.0, unit_cost=3000.0,
+                                   discount_percent=5.0, tax_rate=18.0,
+                                   line_subtotal=200000.0, discount_amount=10000.0,
+                                   tax_amount=34200.0, line_total=224200.0))
+        session.flush()
+
+        # ─── Approvals ────────────────────────────────────────────────────────
+        apr1 = ApprovalRequest(id=uuid4(), quotation_id=q2.id, approver_id=manager.id,
+                                approver_role=Role.MANAGER, status=ApprovalStatus.PENDING,
+                                required_by=Role.MANAGER)
+        apr2 = ApprovalRequest(id=uuid4(), quotation_id=q2.id, approver_id=finance.id,
+                                approver_role=Role.FINANCE, status=ApprovalStatus.PENDING,
+                                required_by=Role.FINANCE)
+        session.add(apr1)
+        session.add(apr2)
+        session.flush()
+
+        # ─── Orders ───────────────────────────────────────────────────────────
+        ord1 = Order(id=uuid4(), quotation_id=q1.id, customer_id=cust1.id, rep_id=rep1.id,
+                      status=OrderStatus.SHIPPED, total_amount=852370.0,
+                      delivery_address="Warehouse Zone, Navi Mumbai 400703",
+                      promised_delivery_date=date.today() + timedelta(days=3),
+                      payment_status="PARTIAL")
+        session.add(ord1)
+        session.flush()
+
+        session.add(OrderLine(id=uuid4(), order_id=ord1.id, product_id=prod1.id,
+                               warehouse_id=wh1.id, quantity=10, unit_price=85200.0, line_total=852000.0))
+
+        shipment1 = Shipment(id=uuid4(), order_id=ord1.id, warehouse_id=wh1.id,
+                              courier="Blue Dart", tracking_number="BD-2026-10928374",
+                              shipping_cost=2500.0, estimated_delivery=date.today() + timedelta(days=3),
+                              status=ShipmentStatus.IN_TRANSIT)
+        session.add(shipment1)
+
+        # ─── Invoices ─────────────────────────────────────────────────────────
+        inv1 = Invoice(id=uuid4(), invoice_number="INV-2026-0001", order_id=ord1.id,
+                        customer_id=cust1.id, status=InvoiceStatus.PARTIALLY_PAID,
+                        amount=852370.0, amount_paid=500000.0, outstanding_amount=352370.0,
+                        currency="INR", due_date=date.today() + timedelta(days=30))
+        inv2 = Invoice(id=uuid4(), invoice_number="INV-2026-0002",
+                        customer_id=cust2.id, status=InvoiceStatus.OVERDUE,
+                        amount=250000.0, amount_paid=0.0, outstanding_amount=250000.0,
+                        currency="INR", due_date=date.today() - timedelta(days=10))
+        inv3 = Invoice(id=uuid4(), invoice_number="INV-2026-0003",
+                        customer_id=cust3.id, status=InvoiceStatus.PAID,
+                        amount=75000.0, amount_paid=75000.0, outstanding_amount=0.0,
+                        currency="INR", due_date=date.today() - timedelta(days=20))
+        for inv in [inv1, inv2, inv3]:
+            session.add(inv)
+        session.flush()
+
+        # Payments
+        session.add(Payment(id=uuid4(), invoice_id=inv1.id, amount=500000.0,
+                             method="BANK_TRANSFER", transaction_id="TXN-ACH-8849204",
+                             status="COMPLETED"))
+        session.add(Payment(id=uuid4(), invoice_id=inv3.id, amount=75000.0,
+                             method="NET_30", transaction_id="TXN-NET30-9901",
+                             status="COMPLETED"))
+
+        # Credit Notes
+        session.add(CreditNote(id=uuid4(), credit_note_number="CN-2026-0001",
+                                customer_id=cust1.id, invoice_id=inv1.id,
+                                amount=15000.0, reason="Quantity adjustment on line item 3"))
+
+        # ─── Negotiations ─────────────────────────────────────────────────────
+        neg1 = Negotiation(id=uuid4(), quotation_id=q2.id, customer_id=cust2.id,
+                            rep_id=rep1.id, status=NegotiationStatus.COUNTER_OFFERED,
+                            requested_discount=25.0, counter_discount=22.0)
+        session.add(neg1)
+        session.flush()
+        session.add(NegotiationMessage(id=uuid4(), negotiation_id=neg1.id, sender_id=cust_user.id,
+                                        sender_role=SenderRole.CUSTOMER,
+                                        message="We need at least 25% discount to proceed with this order.",
+                                        discount_proposed=25.0))
+        session.add(NegotiationMessage(id=uuid4(), negotiation_id=neg1.id, sender_id=rep1.id,
+                                        sender_role=SenderRole.REP,
+                                        message="I can offer 22% — that's our best rate for this category.",
+                                        discount_proposed=22.0))
+
+        # ─── Backorders ───────────────────────────────────────────────────────
+        session.add(Backorder(id=uuid4(), order_id=ord1.id, product_id=prod3.id,
+                               required_qty=5, available_qty=3, backorder_qty=2,
+                               expected_restock_date=date.today() + timedelta(days=7)))
+
+        # ─── Notifications ────────────────────────────────────────────────────
+        notifications_data = [
+            (rep1.id, "Approval Required", "Quote QT-0002 for TechVision India needs manager approval.", "APPROVAL", str(q2.id)),
+            (manager.id, "New Quote Pending Approval", "Alex Kumar submitted a high-risk quote (72% risk score) for your review.", "APPROVAL", str(q2.id)),
+            (finance.id, "Finance Approval Needed", "Quote for TechVision India requires finance sign-off (20% discount).", "APPROVAL", str(q2.id)),
+            (operations.id, "Order Shipped", "Order for ABC Corporation is in transit via Blue Dart.", "ORDER", str(ord1.id)),
+            (cust_user.id, "Quote Received", "ABC Corp has received a new quotation for 10× Enterprise Laptop Pro X1.", "QUOTE", str(q1.id)),
+            (rep1.id, "Counter Offer", "TechVision India countered with 25% discount request.", "NEGOTIATION", str(neg1.id)),
+            (admin.id, "Low Stock Alert", "Enterprise Laptop Pro X1 stock in Bangalore Hub below reorder level.", "INVENTORY", None),
+        ]
+        for user_id, title, body, cat, ref in notifications_data:
+            session.add(Notification(id=uuid4(), user_id=user_id, title=title, body=body,
+                                      category=cat, reference_id=ref))
+
+        # ─── Audit Logs ───────────────────────────────────────────────────────
+        session.add(AuditLog(id=uuid4(), quotation_id=q2.id, user_id=rep1.id,
+                              action="DISCOUNT_CHANGED", old_value="10%", new_value="20%",
+                              reason="Customer requested higher discount for bulk order"))
+        session.add(AuditLog(id=uuid4(), quotation_id=q1.id, user_id=manager.id,
+                              action="APPROVED", reason="Margin within acceptable range, customer is GOLD tier"))
+        session.add(AuditLog(id=uuid4(), quotation_id=q1.id, user_id=cust_user.id,
+                              action="CONFIRMED", reason="Customer confirmed the quotation online"))
+
         session.commit()
-
-        # (b) Extra products so baskets are rich (only if catalogue is still small).
-        if len(session.exec(select(Product)).all()) < 8:
-            session.add_all([Product(name=n, category=c, price=p, cost=co, discount_ceiling=dc)
-                             for (n, c, p, co, dc) in _EXTRA_PRODUCTS])
-            session.commit()
-
-        # Idempotency: if deals already exist we've fully run before.
-        if session.exec(select(Quotation)).first():
-            return
-
-        # Resolve products into a key -> Product map.
-        products = session.exec(select(Product)).all()
-        by_key = {}
-        for p in products:
-            for needle, key in _PRODUCT_KEYS.items():
-                if needle in p.name:
-                    by_key[key] = p
-        all_keys = list(by_key.keys())
-
-        customers = session.exec(select(Customer)).all()
-        reps = {u.email: u for u in session.exec(select(User).where(User.role == Role.REP)).all()}
-        now = datetime.utcnow()
-
-        def build_lines(basket_keys, mean, stdev):
-            lines, line_inputs = [], []
-            for key in basket_keys:
-                prod = by_key[key]
-                qty = random.randint(1, 3)
-                disc = _rep_discount(mean, stdev)
-                lines.append((prod, qty, disc))
-                line_inputs.append(LineInput(list_price=prod.price, cost=prod.cost,
-                                             category_ceiling=prod.discount_ceiling,
-                                             discount_percent=disc, qty=qty, product_id=str(prod.id)))
-            return lines, line_inputs
-
-        def persist_quote(rep, customer, status, lines, line_inputs, created, updated):
-            risk = blended_risk(line_inputs, customer.tier.value)
-            quote = Quotation(customer_id=customer.id, rep_id=rep.id, status=status,
-                              blended_risk=risk.total_overage_pp, created_at=created, updated_at=updated)
-            session.add(quote)
-            session.commit()
-            session.refresh(quote)
-            for (prod, qty, disc) in lines:
-                total = round(qty * prod.price * (1 - disc / 100.0), 2)
-                session.add(QuotationLine(quotation_id=quote.id, product_id=prod.id, quantity=qty,
-                                          unit_price=prod.price, discount_percent=disc, line_total=total))
-            session.commit()
-            return quote
-
-        # (c) ~120 CONFIRMED historical deals, ~40 per rep, backdated over ~180 days.
-        confirmed = 0
-        for email, (mean, stdev) in _REP_PROFILE.items():
-            rep = reps.get(email)
-            if not rep:
-                continue
-            for _ in range(40):
-                # Build a co-purchase basket around a weighted anchor.
-                anchor = random.choice(_ANCHORS)
-                basket = [anchor] if anchor in by_key else []
-                for partner, prob in _COPURCHASE.get(anchor, []):
-                    if partner in by_key and random.random() < prob and partner not in basket:
-                        basket.append(partner)
-                while len(basket) < 2:
-                    k = random.choice(all_keys)
-                    if k not in basket:
-                        basket.append(k)
-                basket = basket[:4]
-
-                customer = random.choice(customers)
-                created = now - timedelta(days=random.randint(5, 180), hours=random.randint(0, 23))
-                lines, line_inputs = build_lines(basket, mean, stdev)
-                persist_quote(rep, customer, QuoteStatus.CONFIRMED, lines, line_inputs, created, created)
-                confirmed += 1
-
-        # (d) Current "hero" deals for the dashboard: stalled and/or anomalous.
-        gold = next((c for c in customers if c.tier == Tier.GOLD), customers[0])
-        acme = next((c for c in customers if "Acme" in c.name), customers[0])
-        sam = reps.get("sam@dealflow360.com")
-        alex = reps.get("rep@dealflow360.com")
-        rita = reps.get("rita@dealflow360.com")
-
-        # Sam: PENDING + stalled 15 days + a deeply anomalous 32% router discount
-        # (Sam's confirmed baseline is ~9%, so this line screams anomaly).
-        if sam:
-            r, s = by_key["router"], by_key["support"]
-            lines = [(r, 4, 32.0), (s, 4, 30.0)]
-            li = [LineInput(r.price, r.cost, r.discount_ceiling, 32.0, 4, str(r.id)),
-                  LineInput(s.price, s.cost, s.discount_ceiling, 30.0, 4, str(s.id))]
-            persist_quote(sam, gold, QuoteStatus.PENDING_APPROVAL, lines, li,
-                          now - timedelta(days=15), now - timedelta(days=15))
-
-        # Alex: DRAFT stalled 20 days, normal discounts (stalled but not anomalous).
-        if alex:
-            sw, rk = by_key["switch"], by_key["rack"]
-            lines = [(sw, 2, 11.0), (rk, 2, 9.0)]
-            li = [LineInput(sw.price, sw.cost, sw.discount_ceiling, 11.0, 2, str(sw.id)),
-                  LineInput(rk.price, rk.cost, rk.discount_ceiling, 9.0, 2, str(rk.id))]
-            persist_quote(alex, acme, QuoteStatus.DRAFT, lines, li,
-                          now - timedelta(days=20), now - timedelta(days=20))
-
-        # Rita: PENDING stalled 12 days, disciplined discounts.
-        if rita:
-            sa, on = by_key["saas"], by_key["onboarding"]
-            lines = [(sa, 25, 6.0), (on, 1, 7.0)]
-            li = [LineInput(sa.price, sa.cost, sa.discount_ceiling, 6.0, 25, str(sa.id)),
-                  LineInput(on.price, on.cost, on.discount_ceiling, 7.0, 1, str(on.id))]
-            persist_quote(rita, acme, QuoteStatus.PENDING_APPROVAL, lines, li,
-                          now - timedelta(days=12), now - timedelta(days=12))
-
-        print(f"Seeded {confirmed} CONFIRMED historical deals + 3 current deals (1 anomalous, 3 stalled).")
+        print("✅ Seed complete!")
+        print(f"   👤 Users: 7 (admin, 2 reps, manager, finance, operations, customer)")
+        print(f"   🏢 Customers: 4")
+        print(f"   📦 Products: 6")
+        print(f"   🏭 Warehouses: 3 with stock")
+        print(f"   📄 Quotations: 4 (CONFIRMED, PENDING_APPROVAL, DRAFT, APPROVED)")
+        print(f"   📋 Orders: 1 (SHIPPED)")
+        print(f"   🧾 Invoices: 3 (PARTIALLY_PAID, OVERDUE, PAID)")
+        print(f"   🔔 Notifications: 7")
+        print(f"   📜 Subscription Plans: 3 | Customer Subscriptions: 3")
 
 
 if __name__ == "__main__":
-    seed_demo_data()
+    seed()
