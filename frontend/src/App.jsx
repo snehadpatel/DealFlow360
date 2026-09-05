@@ -58,7 +58,7 @@ export default function App() {
     { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
     { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
-    { id: "admin", label: "Admin Console", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
+    { id: "admin", label: "Admin Console", roles: ["ADMIN"] },
   ];
 
   const customerTabs = [
@@ -76,22 +76,16 @@ export default function App() {
     ? customerTabs 
     : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
-  if (activeTab === "admin") {
+  if (activeTab === "admin" || user?.role === "ADMIN") {
     return (
       <>
         <div className="bg-[#1F2937] text-white px-4 py-2 flex items-center justify-between text-xs font-bold sticky top-0 z-50 shadow-md">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>DealFlow360 Admin & Enterprise Management Suite</span>
+            <span>DealFlow360 Admin & Enterprise Management Suite (Super Admin Access)</span>
           </div>
-          <button
-            onClick={() => setActiveTab("quotation")}
-            className="bg-[#F26C4F] hover:bg-[#e05535] text-white px-3 py-1 rounded-lg transition"
-          >
-            ← Exit Admin / Back to Main Workspace
-          </button>
         </div>
-        <AdminDashboard onExitAdmin={() => setActiveTab("quotation")} />
+        <AdminDashboard />
         <ChatWidget activeTab="admin" />
       </>
     );
@@ -136,12 +130,14 @@ export default function App() {
               {user?.role || "REP"}
             </span>
           </div>
-          <button
-            onClick={() => setActiveTab("admin")}
-            className="text-xs text-white bg-[#F26C4F] hover:bg-[#E05535] px-3.5 py-1.5 rounded-full font-bold transition shadow-xs flex items-center gap-1"
-          >
-            ⚡ Admin Console
-          </button>
+          {user?.role === "ADMIN" && (
+            <button
+              onClick={() => setActiveTab("admin")}
+              className="text-xs text-white bg-[#F26C4F] hover:bg-[#E05535] px-3.5 py-1.5 rounded-full font-bold transition shadow-xs flex items-center gap-1"
+            >
+              ⚡ Admin Console
+            </button>
+          )}
           <button
             onClick={logout}
             className="text-xs text-[#EF4444] hover:text-[#DC2626] px-3 py-1 rounded-full border border-[#EF4444]/30 hover:bg-[#FEE2E2]/50 transition font-medium"
