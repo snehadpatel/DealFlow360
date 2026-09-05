@@ -13,6 +13,7 @@ import CustomerPortal from "./pages/CustomerPortal";
 import DealHealthDashboard from "./pages/DealHealthDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SalesWorkspace from "./pages/SalesWorkspace";
+import ChatWidget from "./components/chat/ChatWidget";
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -76,11 +77,16 @@ export default function App() {
     : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
   if (activeTab === "admin" || user?.role === "ADMIN") {
-    return <AdminDashboard />;
+    return (
+      <>
+        <AdminDashboard />
+        <ChatWidget />
+      </>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans relative">
       {/* Top Navbar styled according to Revalo Design System */}
       <header className="border-b border-[#E5E7EB] bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-xs">
         <div className="flex items-center space-x-3">
@@ -162,6 +168,9 @@ export default function App() {
         )}
         {activeTab === "dashboard" && <DealHealthDashboard />}
       </main>
+
+      {/* Floating AI Sales Assistant Chatbot */}
+      <ChatWidget />
     </div>
   );
 }

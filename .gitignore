@@ -43,6 +43,5 @@ client/dist/
 .DS_Store
 Thumbs.db
 .vscode/
-.idea/
-
 .claude/
+backend/app/ml/models/

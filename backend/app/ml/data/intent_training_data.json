@@ -1,0 +1,2710 @@
+[
+  {
+    "text": "I want to What's the approval policy for this tier quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Any unpaid invoices?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, What accessories go with this product quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to Show anomaly alerts dashboard?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Which subscriptions are expiring quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to What's included in the enterprise plan for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you What's the balance on invoice INV-1987?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Who can approve discounts above 20% right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, Show subscription summary right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Escalate this approval please",
+    "label": "approval_status"
+  },
+  {
+    "text": "Show top customers by revenue",
+    "label": "customer_info"
+  },
+  {
+    "text": "Give me a deal summary",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Any deals flagged for review",
+    "label": "deal_status"
+  },
+  {
+    "text": "What is DealFlow360?",
+    "label": "general"
+  },
+  {
+    "text": "Can you Show me outlier discounts please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show the risk assessment report",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, I need to see invoice INV-3201",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please What accessories go with this product right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you How is deal QT-2026-0099 progressing quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please What is DealFlow360 please",
+    "label": "general"
+  },
+  {
+    "text": "Could you Help me for me",
+    "label": "general"
+  },
+  {
+    "text": "Can you What's the margin on QT-2025-0455 for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please What tier is TechVision Ltd quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Any promotional bundles available?",
+    "label": "upsell"
+  },
+  {
+    "text": "Break down the one-time charges",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Who processed the last payment please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Any stalled deals that need attention",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Are there upsell opportunities right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Please What is the recurring charge amount",
+    "label": "check_billing"
+  },
+  {
+    "text": "Who is the next approver?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you How do I cancel a subscription for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Show the billing timeline for BIL-1987 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to How much is outstanding on BIL-1122?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Show outstanding balance please",
+    "label": "check_billing"
+  },
+  {
+    "text": "What is the total pipeline value?",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Show customer segmentation?",
+    "label": "customer_info"
+  },
+  {
+    "text": "See you later",
+    "label": "general"
+  },
+  {
+    "text": "Could you List subscriptions by status right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I'd like to Hey quickly",
+    "label": "general"
+  },
+  {
+    "text": "Please List all rejected approvals please",
+    "label": "approval_status"
+  },
+  {
+    "text": "What is the status of billing BIL-2045?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Show customer activity log right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "Which subscriptions are expiring please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you What region is Nexus Systems in?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please Run anomaly detection on this quote?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Detect fraud patterns in discounts?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Thanks",
+    "label": "general"
+  },
+  {
+    "text": "Could you List all subscription plans quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Show accounts receivable for TechVision Ltd quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please How much is outstanding on BIL-4456?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Alert me about unusual activity right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, What's the payment method for BIL-2045 right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "Any deals flagged for review?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you What needs my approval",
+    "label": "approval_status"
+  },
+  {
+    "text": "List subscriptions by status",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please What needs my approval please",
+    "label": "approval_status"
+  },
+  {
+    "text": "What's new?",
+    "label": "general"
+  },
+  {
+    "text": "Show me recent deal activity",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you What is the status of billing BIL-1987 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "What maintenance plan goes with this hardware right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you What accessories go with this product for me",
+    "label": "upsell"
+  },
+  {
+    "text": "Show me billing record BIL-1987",
+    "label": "check_billing"
+  },
+  {
+    "text": "What's the margin on QT-2026-0312?",
+    "label": "deal_status"
+  },
+  {
+    "text": "How many active deals with Acme Corp?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Give me upsell recommendations",
+    "label": "upsell"
+  },
+  {
+    "text": "Is quotation QT-2026-0184 approved",
+    "label": "deal_status"
+  },
+  {
+    "text": "What's the contact info for Acme Corp right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, Suggest add-ons for the current quote please",
+    "label": "upsell"
+  },
+  {
+    "text": "Please What's included in the enterprise plan",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Are there any pricing anomalies?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you List all rejected approvals quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Has the customer accepted the quote?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Why was this quote returned?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to When was the last update on QT-2026-0184",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Escalate this approval",
+    "label": "approval_status"
+  },
+  {
+    "text": "When is the next billing cycle?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Guide me through the app quickly",
+    "label": "general"
+  },
+  {
+    "text": "What's the best bundle for this customer?",
+    "label": "upsell"
+  },
+  {
+    "text": "Show customer purchase history",
+    "label": "customer_info"
+  },
+  {
+    "text": "What maintenance plan goes with this hardware?",
+    "label": "upsell"
+  },
+  {
+    "text": "Please Show me cross-sell analytics?",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Compare subscription tiers for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Show approval history for QT-2026-0501 quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Compare subscription tiers right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Suggest a higher-tier alternative for me",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Show customer details for CUST-0056 quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "How many deals are in pipeline?",
+    "label": "deal_status"
+  },
+  {
+    "text": "What features do you support?",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to Bye?",
+    "label": "general"
+  },
+  {
+    "text": "How much is outstanding on BIL-1987?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Run a pricing audit",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Check payment status for BIL-1122 for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, What's the renewal rate?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you What's the contact info for Global Dynamics?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Who approved this discount right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you How long has this been waiting for approval for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to How much has Global Dynamics spent with us right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the renewal rate?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I'd like to Hi there for me",
+    "label": "general"
+  },
+  {
+    "text": "Please How does this work?",
+    "label": "general"
+  },
+  {
+    "text": "Show me the SLA for approvals?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to What billing records are overdue for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Are any reps giving excessive discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Check if finance has signed off",
+    "label": "approval_status"
+  },
+  {
+    "text": "What are the top-selling bundles?",
+    "label": "upsell"
+  },
+  {
+    "text": "Please How many approvals are in the queue for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Show me bundle suggestions please",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to How many deals are in pipeline for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "List all partially paid bills",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Can I bypass the approval step right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Give me a deal summary right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Show deals closing this month for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Has the customer accepted the quote please",
+    "label": "deal_status"
+  },
+  {
+    "text": "What is the recurring charge amount?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Has the client paid BIL-3201 yet?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Show me the main menu for me",
+    "label": "general"
+  },
+  {
+    "text": "Good morning for me",
+    "label": "general"
+  },
+  {
+    "text": "What accessories go with this product?",
+    "label": "upsell"
+  },
+  {
+    "text": "Suggest premium upgrades",
+    "label": "upsell"
+  },
+  {
+    "text": "Please What's included in the enterprise plan please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Run anomaly detection on this quote",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What's the risk score for this deal?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to What products has TechVision Ltd ordered?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you What triggers an anomaly flag for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to What features do you support quickly",
+    "label": "general"
+  },
+  {
+    "text": "List all customers",
+    "label": "customer_info"
+  },
+  {
+    "text": "Which subscriptions are expiring?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you What's the balance on invoice INV-3201 for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "How do I cancel a subscription?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Download invoice PDF for BIL-1987",
+    "label": "check_billing"
+  },
+  {
+    "text": "Suggest add-ons for the current quote?",
+    "label": "upsell"
+  },
+  {
+    "text": "What's the discount z-score?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'm new here",
+    "label": "general"
+  },
+  {
+    "text": "Can you What's the average subscription value for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you What should I add to this cart please",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Show the risk assessment report right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Show customer details for CUST-0012 for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to What complementary services can I offer please",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Which products have the best attach rate",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Who is the account manager for ABC Industries right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, Which subscriptions are expiring quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Hello right now",
+    "label": "general"
+  },
+  {
+    "text": "When was the last order from ABC Industries?",
+    "label": "customer_info"
+  },
+  {
+    "text": "List all flagged transactions",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to What billing records are overdue",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you Show top customers by revenue?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to How long has this been waiting for approval right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "What's the customer's tax ID?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to What's the churn rate",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Which deals are outside normal ranges?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you List deals by stage for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to Show overdue approvals please",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Show me billing record BIL-2045 for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Run a pricing audit please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Can you explain this screen please",
+    "label": "general"
+  },
+  {
+    "text": "Can you Help me quickly",
+    "label": "general"
+  },
+  {
+    "text": "I want to How do I cancel a subscription right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Suggest premium upgrades?",
+    "label": "upsell"
+  },
+  {
+    "text": "Pull up the billing details",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Show me bundle suggestions?",
+    "label": "upsell"
+  },
+  {
+    "text": "Is quotation QT-2026-0501 approved?",
+    "label": "deal_status"
+  },
+  {
+    "text": "How does this work?",
+    "label": "general"
+  },
+  {
+    "text": "What do customers usually buy together?",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to Good afternoon please",
+    "label": "general"
+  },
+  {
+    "text": "What's the average approval time?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey",
+    "label": "general"
+  },
+  {
+    "text": "I want to What stage is QT-2026-0099 at?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you What products has ABC Industries ordered quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please Any suspicious discount activity right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "How many subscriptions were added this month?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Show subscription timeline for SUB-0045?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, What products can I cross-sell with this order right now",
+    "label": "upsell"
+  },
+  {
+    "text": "What's the conversion rate quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Any unpaid invoices quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, What should I add to this cart quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Are any reps giving excessive discounts right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to How many subscriptions were added this month right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Send a reminder to the approver",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Thank you please",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to Give me upsell recommendations?",
+    "label": "upsell"
+  },
+  {
+    "text": "What complementary services can I offer?",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to List approvals by priority quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Has the manager approved QT-2026-0501",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you What is the total amount for billing BIL-3201?",
+    "label": "check_billing"
+  },
+  {
+    "text": "What's the payment method for BIL-4456 quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, What's the customer satisfaction score please",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the status of quote QT-2026-0184?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Which products have the best attach rate?",
+    "label": "upsell"
+  },
+  {
+    "text": "Show me outlier discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you What triggers an anomaly flag?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Which deals are close to expiring?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please What subscription plan is the most popular for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please What region is Acme Corp in please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Flag deals with margin erosion",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Guide me through the app",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to What's the severity of this anomaly please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Show deal health for QT-2026-0312 right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "What region is TechVision Ltd in?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Show the billing schedule for SUB-0078",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What's the average deal size?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please What's the customer's tax ID",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Show Acme Corp's open tickets?",
+    "label": "customer_info"
+  },
+  {
+    "text": "What needs my approval?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Who can approve discounts above 20% please",
+    "label": "approval_status"
+  },
+  {
+    "text": "What's included in the enterprise plan?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "List all partially paid bills quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Suggest a higher-tier alternative",
+    "label": "upsell"
+  },
+  {
+    "text": "What products has ABC Industries ordered?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to What subscriptions does ABC Industries have please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you What complementary services can I offer please",
+    "label": "upsell"
+  },
+  {
+    "text": "Show subscription timeline for SUB-0112",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Show me bundle suggestions",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Guide me through the app please",
+    "label": "general"
+  },
+  {
+    "text": "Can I pause subscription SUB-0234?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to How do I use the platform?",
+    "label": "general"
+  },
+  {
+    "text": "Please What subscriptions does TechVision Ltd have",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Are there compliance violations quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "When does SUB-0112 renew?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Thank you right now",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Has the customer accepted the quote for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show discount anomaly report",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me the customer profile",
+    "label": "customer_info"
+  },
+  {
+    "text": "Show the approval audit trail right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Take me to the dashboard for me",
+    "label": "general"
+  },
+  {
+    "text": "I want to How long has this deal been stalled",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Are there any past-due subscriptions?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Show active subscriptions",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Any suspicious discount activity quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "How many approvals are in the queue?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Who are you right now",
+    "label": "general"
+  },
+  {
+    "text": "Give me a status update on my deals",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Take me to the dashboard for me",
+    "label": "general"
+  },
+  {
+    "text": "Please Are any reps giving excessive discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, Is quotation QT-2026-0184 approved",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you When is the next billing cycle",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Show me recent deal activity?",
+    "label": "deal_status"
+  },
+  {
+    "text": "What's the customer's billing address?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Detect abnormal pricing patterns",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you Was my last submission approved",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to How many approvals are in the queue please",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, I'm new here for me",
+    "label": "general"
+  },
+  {
+    "text": "Any unpaid invoices?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Run a pricing audit for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you Show me outlier discounts for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show deal health for QT-2026-0184 please",
+    "label": "deal_status"
+  },
+  {
+    "text": "List all subscription plans",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you Upgrade subscription plan for TechVision Ltd please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you What's the approval workflow?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, I need help quickly",
+    "label": "general"
+  },
+  {
+    "text": "Show customer activity log",
+    "label": "customer_info"
+  },
+  {
+    "text": "Check payment status for BIL-2045 for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "How much has Global Dynamics spent with us?",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the monthly recurring revenue?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Alert me about unusual activity",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please How much has Nexus Systems spent with us",
+    "label": "customer_info"
+  },
+  {
+    "text": "What is the total pipeline value right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Which deals are close to expiring quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Are any reps giving excessive discounts?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I need help",
+    "label": "general"
+  },
+  {
+    "text": "Thanks please",
+    "label": "general"
+  },
+  {
+    "text": "Please What are the top-selling bundles",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Show me the main menu please",
+    "label": "general"
+  },
+  {
+    "text": "Could you List deals by stage quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Any deals flagged for review for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you Suggest a higher-tier alternative please",
+    "label": "upsell"
+  },
+  {
+    "text": "Show me the product recommendation engine results",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you When is the next billing cycle for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you How is deal QT-2025-0455 progressing please",
+    "label": "deal_status"
+  },
+  {
+    "text": "What are your capabilities for me",
+    "label": "general"
+  },
+  {
+    "text": "Take me to the dashboard",
+    "label": "general"
+  },
+  {
+    "text": "How is deal QT-2026-0501 progressing?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Show me the customer 360 view for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Show deals closing this month",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Break down the one-time charges quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to When is payment due for BIL-2045",
+    "label": "check_billing"
+  },
+  {
+    "text": "Has the customer accepted the quote?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Show me the customer profile quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Show me the anomaly narrative",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Help me right now",
+    "label": "general"
+  },
+  {
+    "text": "I want to I need help",
+    "label": "general"
+  },
+  {
+    "text": "Show accounts receivable for Global Dynamics",
+    "label": "customer_info"
+  },
+  {
+    "text": "Are there compliance violations?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Show me the customer 360 view quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Can I pause subscription SUB-0234 for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What's the average subscription value quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, What's the status of quote QT-2025-0455 quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Suggest add-ons for the current quote",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Is this deal at risk quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show me the anomaly narrative for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "How do I use the platform?",
+    "label": "general"
+  },
+  {
+    "text": "Can you Is this discount percentage normal quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you What's new quickly",
+    "label": "general"
+  },
+  {
+    "text": "Who are you?",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to List all flagged transactions right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please What's the churn rate?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "When was the last update on QT-2026-0184?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you Show me the payment history?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hello",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Download invoice PDF for BIL-1122 quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "What should I add to this cart?",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you How does this work please",
+    "label": "general"
+  },
+  {
+    "text": "I want to What's the status of quote QT-2026-0099?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you Show overdue approvals?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to What's the balance on invoice INV-1987",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Show top customers by revenue for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you What's the risk score for this deal?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What are your capabilities?",
+    "label": "general"
+  },
+  {
+    "text": "Can you Recommend add-ons for enterprise router right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Show me cross-sell analytics please",
+    "label": "upsell"
+  },
+  {
+    "text": "Has the manager approved QT-2026-0501?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can I bypass the approval step?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please When does SUB-0301 renew",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Was my last submission approved right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Give me a billing summary",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to What complementary services can I offer",
+    "label": "upsell"
+  },
+  {
+    "text": "What's the balance on invoice INV-1122?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Show product affinity analysis quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "Please Show customer segmentation right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to What can increase the deal value please",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you I need to see invoice INV-2045 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "What's the approval policy for this tier?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to See you later quickly",
+    "label": "general"
+  },
+  {
+    "text": "List customer contacts?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Take me to the dashboard please",
+    "label": "general"
+  },
+  {
+    "text": "Please Show subscription summary quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please What region is Global Dynamics in?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Show customer purchase history?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, How is deal QT-2026-0312 progressing right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, What's the risk score for this deal",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to List all subscription plans right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you Show discount anomaly report for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to List all partially paid bills",
+    "label": "check_billing"
+  },
+  {
+    "text": "What products can I cross-sell with this order?",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you What's the customer's tax ID?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you List approvals by priority",
+    "label": "approval_status"
+  },
+  {
+    "text": "Customer onboarding status",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to What's the approval chain for this quote please",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Which deals are close to expiring",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to Give me a deal summary for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Run a pricing audit right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, Show outstanding balance please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Show subscription revenue trends",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What can increase the deal value?",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to List customer contacts",
+    "label": "customer_info"
+  },
+  {
+    "text": "What is the total amount for billing BIL-2045?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you What's the average deal size?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show customer segmentation",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, What's the monthly recurring revenue for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you Customer onboarding status right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Are there any past-due subscriptions right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Check if finance has signed off for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Any suspicious discount activity?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, How long has this deal been stalled",
+    "label": "deal_status"
+  },
+  {
+    "text": "What billing records are overdue?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Show me the SLA for approvals",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Are there upsell opportunities please",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to What can you do quickly",
+    "label": "general"
+  },
+  {
+    "text": "I want to Can I pause subscription SUB-0112?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Show the risk assessment report for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me the customer 360 view",
+    "label": "customer_info"
+  },
+  {
+    "text": "Who approved this discount?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Show ABC Industries's open tickets for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the average subscription value?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Show active subscriptions right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Show customer segmentation please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please Show discount anomaly report?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you What products has TechVision Ltd ordered for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you List customers by tier quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Give me a billing summary please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, Hey for me",
+    "label": "general"
+  },
+  {
+    "text": "Bye",
+    "label": "general"
+  },
+  {
+    "text": "Could you What's new",
+    "label": "general"
+  },
+  {
+    "text": "Could you Are there compliance violations?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you What's the approval chain for this quote quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Why was this quote returned for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Check if finance has signed off",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Are there any past-due subscriptions for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Show the billing schedule for SUB-0045 quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Any deals flagged for review right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show approval history for QT-2026-0312",
+    "label": "approval_status"
+  },
+  {
+    "text": "Show customer details for CUST-0091",
+    "label": "customer_info"
+  },
+  {
+    "text": "Any frequently bought together items?",
+    "label": "upsell"
+  },
+  {
+    "text": "Who processed the last payment please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Are there upsell opportunities?",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to List all customers?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Recommend add-ons for enterprise router for me",
+    "label": "upsell"
+  },
+  {
+    "text": "Please Any frequently bought together items please",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Show me the SLA for approvals quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you What is DealFlow360 please",
+    "label": "general"
+  },
+  {
+    "text": "Detect fraud patterns in discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What's the approval workflow please",
+    "label": "approval_status"
+  },
+  {
+    "text": "Show Nexus Systems's open tickets quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Compare subscription tiers",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hi there right now",
+    "label": "general"
+  },
+  {
+    "text": "I want to Break down the one-time charges?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I need to see invoice INV-1122",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to What features do you support quickly",
+    "label": "general"
+  },
+  {
+    "text": "Please Alert me about unusual activity for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show the billing schedule for SUB-0078",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Break down the one-time charges",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Which deals are outside normal ranges?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me billing record BIL-1122",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Who is the next approver quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Can I bypass the approval step right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Good morning please",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Has the manager approved QT-2026-0312",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to What's the contact info for Nexus Systems quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you What is the total pipeline value?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you How do I use the platform quickly",
+    "label": "general"
+  },
+  {
+    "text": "Could you What is DealFlow360",
+    "label": "general"
+  },
+  {
+    "text": "Can you Which deals need attention for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you What's the risk score for this deal for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What's the approval chain for this quote?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, What are your capabilities quickly",
+    "label": "general"
+  },
+  {
+    "text": "Is BIL-3201 paid?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you How many active subscribers do we have right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "How much has TechVision Ltd spent with us for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Detect abnormal pricing patterns for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Upgrade subscription plan for TechVision Ltd",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Show subscription timeline for SUB-0112 quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Any pending approvals right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "What's the severity of this anomaly?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Who is the account manager for TechVision Ltd",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you How can I increase the order value please",
+    "label": "upsell"
+  },
+  {
+    "text": "What triggers an anomaly flag?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me the deal health dashboard for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to When does SUB-0301 renew quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Give me a status update on my deals please",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to What tier is Nexus Systems quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the contact info for Acme Corp?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to What should I add to this cart for me",
+    "label": "upsell"
+  },
+  {
+    "text": "What's the average approval time quickly",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you explain this screen?",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to Show me the payment history quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Escalate this approval",
+    "label": "approval_status"
+  },
+  {
+    "text": "Show me the deal health dashboard",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please What maintenance plan goes with this hardware please",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you How many active deals with TechVision Ltd for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please Who processed the last payment",
+    "label": "check_billing"
+  },
+  {
+    "text": "What's the margin on QT-2025-0455 quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you What subscriptions does Nexus Systems have please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What's the churn rate?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to When was the last order from Nexus Systems please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Recommend complementary products",
+    "label": "upsell"
+  },
+  {
+    "text": "List deals by stage",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you Show subscription revenue trends?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What's the conversion rate?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Show me the customer 360 view quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Tell me about Acme Corp",
+    "label": "customer_info"
+  },
+  {
+    "text": "List all rejected approvals",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, What's the best bundle for this customer?",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Detect fraud patterns in discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Bye quickly",
+    "label": "general"
+  },
+  {
+    "text": "Can you List all rejected approvals please",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, Recommend complementary products please",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Customer onboarding status",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please List all customers right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Is this discount percentage normal for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to I'm new here please",
+    "label": "general"
+  },
+  {
+    "text": "Can you Send a reminder to the approver?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you What subscription plan is the most popular quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to List subscriptions by status right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Has the client paid BIL-2045 yet please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please How many active subscribers do we have for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you How much has been collected so far",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to What triggers an anomaly flag",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Any frequently bought together items",
+    "label": "upsell"
+  },
+  {
+    "text": "Which quotes have unusual pricing?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Which quotes have unusual pricing quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Send invoice to the customer please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, How many active deals with Nexus Systems right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Send invoice to the customer right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Download invoice PDF for BIL-4456 quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Can you explain this screen quickly",
+    "label": "general"
+  },
+  {
+    "text": "What are your capabilities quickly",
+    "label": "general"
+  },
+  {
+    "text": "Could you Good afternoon quickly",
+    "label": "general"
+  },
+  {
+    "text": "Can you Analyze the basket for cross-sell potential?",
+    "label": "upsell"
+  },
+  {
+    "text": "What's the approval workflow?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Run anomaly detection on this quote quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Who processed the last payment?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Any frequently bought together items quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "Please List all active quotations for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Is this discount percentage normal?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show the approval audit trail",
+    "label": "approval_status"
+  },
+  {
+    "text": "How can I increase the order value?",
+    "label": "upsell"
+  },
+  {
+    "text": "Please List deals by stage?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Send invoice to the customer right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "Good afternoon",
+    "label": "general"
+  },
+  {
+    "text": "How do I use the platform for me",
+    "label": "general"
+  },
+  {
+    "text": "I want to What can increase the deal value right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Any promotional bundles available?",
+    "label": "upsell"
+  },
+  {
+    "text": "Hey, What needs my approval for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Suggest add-ons for the current quote please",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Which products have the best attach rate?",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Show customer activity log for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Show me the customer profile right now",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to Show me the main menu please",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to How can I increase the order value for me",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Who is the account manager for Global Dynamics quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you How long has this been waiting for approval right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to What's the discount z-score",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "List customers by tier",
+    "label": "customer_info"
+  },
+  {
+    "text": "What's the severity of this anomaly quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Show approval history for QT-2026-0099?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Flag unusual discounts",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Thank you?",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to What's the customer's billing address please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please What billing records are overdue for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Show me outlier discounts for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me the main menu",
+    "label": "general"
+  },
+  {
+    "text": "When is payment due for BIL-1987?",
+    "label": "check_billing"
+  },
+  {
+    "text": "How long has this been waiting for approval?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Help me",
+    "label": "general"
+  },
+  {
+    "text": "Can you List subscriptions by status for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to See you later for me",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to Are there any pricing anomalies for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me subscription analytics",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please When was the last order from Acme Corp",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you How much has been collected so far for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Show accounts receivable for Global Dynamics for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Please How many subscriptions were added this month for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What's the payment method for BIL-1987?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Show the billing timeline for BIL-3201",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hi there",
+    "label": "general"
+  },
+  {
+    "text": "Tell me about Global Dynamics for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, Bye?",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Escalate this approval for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Alert me about unusual activity for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Who approved this discount for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please List customers by tier quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to Has the client paid BIL-1987 yet quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "How many approvals are in the queue",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Show subscription revenue trends quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Show top customers by revenue for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, Download invoice PDF for BIL-1987 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Thank you",
+    "label": "general"
+  },
+  {
+    "text": "Can you What tier is ABC Industries for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, What's the average approval time please",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Is this deal at risk quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to What's the customer's billing address quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey, What's the discount z-score?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I'd like to Send a reminder to the approver?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to Show the approval audit trail for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to How much has been collected so far quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Show me the deal health dashboard please",
+    "label": "deal_status"
+  },
+  {
+    "text": "Who is the account manager for Global Dynamics?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Who is the next approver for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Hey, List all active quotations for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show me the payment history",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Show subscription summary for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to List customer contacts for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Check payment status for BIL-3201",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you Are there any pricing anomalies please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Analyze the basket for cross-sell potential please",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Flag deals with margin erosion?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you Is BIL-1122 paid please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, Tell me a joke quickly",
+    "label": "general"
+  },
+  {
+    "text": "Can you Show outstanding balance for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "Is this deal at risk quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you What do customers usually buy together right now",
+    "label": "upsell"
+  },
+  {
+    "text": "What subscriptions does Acme Corp have?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please What can you do quickly",
+    "label": "general"
+  },
+  {
+    "text": "Show deals closing this month?",
+    "label": "deal_status"
+  },
+  {
+    "text": "What's the conversion rate right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "How many active subscribers do we have?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, What is the status of billing BIL-2045?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Show me recent deal activity",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Flag unusual discounts right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Show me the product recommendation engine results right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Show product affinity analysis",
+    "label": "upsell"
+  },
+  {
+    "text": "Recommend add-ons for enterprise router",
+    "label": "upsell"
+  },
+  {
+    "text": "Hey, Show accounts receivable for Nexus Systems for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you What is the recurring charge amount quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you Which products have the best attach rate?",
+    "label": "upsell"
+  },
+  {
+    "text": "List all active quotations",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to Show active subscriptions",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Is this discount percentage normal for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to When is payment due for BIL-2045 for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Any unpaid invoices please",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to What's the best bundle for this customer?",
+    "label": "upsell"
+  },
+  {
+    "text": "Show deal health for QT-2026-0312?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Who are you?",
+    "label": "general"
+  },
+  {
+    "text": "I'd like to When was the last update on QT-2026-0184 right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Give me upsell recommendations please",
+    "label": "upsell"
+  },
+  {
+    "text": "Hey, Show me subscription analytics for me",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you Which deals are outside normal ranges?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you List all partially paid bills quickly",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Flag deals with margin erosion",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "List customer contacts",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to Any stalled deals that need attention?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What can you do?",
+    "label": "general"
+  },
+  {
+    "text": "Show anomaly alerts dashboard",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Analyze the basket for cross-sell potential",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Who can approve discounts above 20% right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Who can approve discounts above 20%?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Show product affinity analysis?",
+    "label": "upsell"
+  },
+  {
+    "text": "What can you do please",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Pull up the billing details for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "What subscription plan is the most popular?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Any pending approvals?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Tell me about Acme Corp",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you What stage is QT-2026-0312 at for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show my approval queue",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you What's the average deal size quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "Good morning",
+    "label": "general"
+  },
+  {
+    "text": "Could you Has the manager approved QT-2025-0455 for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Show TechVision Ltd's open tickets",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Which quotes have unusual pricing please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to What's the average approval time?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I'd like to List all flagged transactions",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, What is the total pipeline value?",
+    "label": "deal_status"
+  },
+  {
+    "text": "What's the customer satisfaction score?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I'd like to Show me the product recommendation engine results right now",
+    "label": "upsell"
+  },
+  {
+    "text": "What stage is QT-2026-0099 at?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, What's the win probability?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you Show customer details for CUST-0034",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you What's the average subscription value?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Give me a billing summary",
+    "label": "check_billing"
+  },
+  {
+    "text": "Send invoice to the customer",
+    "label": "check_billing"
+  },
+  {
+    "text": "How long has this deal been stalled?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, What's the win probability right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to Any pending approvals for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Show subscription revenue trends right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I'd like to What's the approval workflow for me",
+    "label": "approval_status"
+  },
+  {
+    "text": "How much has been collected so far?",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to What are the top-selling bundles for me",
+    "label": "upsell"
+  },
+  {
+    "text": "I'd like to Thanks",
+    "label": "general"
+  },
+  {
+    "text": "Could you Flag unusual discounts right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you Customer onboarding status quickly",
+    "label": "customer_info"
+  },
+  {
+    "text": "Show outstanding balance",
+    "label": "check_billing"
+  },
+  {
+    "text": "Was my last submission approved?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Show me the product recommendation engine results quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "Is this deal at risk?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Which quotes have unusual pricing right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Are there compliance violations right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey quickly",
+    "label": "general"
+  },
+  {
+    "text": "Can you What's the monthly recurring revenue please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Any stalled deals that need attention quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show overdue approvals",
+    "label": "approval_status"
+  },
+  {
+    "text": "When was the last update on QT-2026-0501 quickly",
+    "label": "deal_status"
+  },
+  {
+    "text": "I'd like to When was the last order from Global Dynamics for me",
+    "label": "customer_info"
+  },
+  {
+    "text": "Show subscription summary",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Is BIL-2045 paid for me",
+    "label": "check_billing"
+  },
+  {
+    "text": "I'd like to Show me the anomaly narrative for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Tell me a joke please",
+    "label": "general"
+  },
+  {
+    "text": "Please Guide me through the app please",
+    "label": "general"
+  },
+  {
+    "text": "Could you How many active deals with ABC Industries?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Which deals are outside normal ranges for me",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, Any promotional bundles available",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to How long has this deal been stalled right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to Show the billing timeline for BIL-2045 right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "List approvals by priority",
+    "label": "approval_status"
+  },
+  {
+    "text": "What's the win probability?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Detect abnormal pricing patterns right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Tell me a joke",
+    "label": "general"
+  },
+  {
+    "text": "Please Can I bypass the approval step please",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Can I pause subscription SUB-0078 quickly",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What products can I cross-sell with this order right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you What's the renewal rate please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What tier is Acme Corp?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Show customer activity log",
+    "label": "customer_info"
+  },
+  {
+    "text": "Any stalled deals that need attention?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to What's the customer satisfaction score?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Which deals need attention for me",
+    "label": "deal_status"
+  },
+  {
+    "text": "Show me cross-sell analytics",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you What do customers usually buy together quickly",
+    "label": "upsell"
+  },
+  {
+    "text": "Can you Show my approval queue please",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Flag unusual discounts quickly",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Are there any past-due subscriptions?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Show deal health for QT-2025-0455",
+    "label": "deal_status"
+  },
+  {
+    "text": "Which deals need attention?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Show anomaly alerts dashboard?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Hello please",
+    "label": "general"
+  },
+  {
+    "text": "Please Pull up the billing details please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Why was this quote returned?",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Upgrade subscription plan for Acme Corp",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Give me a billing summary right now",
+    "label": "check_billing"
+  }
+]

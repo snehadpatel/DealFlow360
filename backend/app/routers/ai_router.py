@@ -195,3 +195,28 @@ def deal_health_endpoint(payload: DealHealthRequest, session: Session = Depends(
                   for f in health.features],
         llm_used=False,
     )
+
+
+# --- Chatbot with Custom Trained Models ---------------------------------------
+
+@router.post("/chat")
+def chat_endpoint(payload: dict):
+    from app.ml.inference import get_pipeline
+    pipeline = get_pipeline()
+    msg = payload.get("message", "")
+    res = pipeline.chat(msg)
+    res["session_id"] = payload.get("session_id", "default")
+    return res
+
+
+@router.get("/chat/suggestions")
+def chat_suggestions(screen: Optional[str] = None):
+    from app.ml.intents import INTENT_SUGGESTIONS, Intent
+    if screen == "billing":
+        return {"suggestions": INTENT_SUGGESTIONS[Intent.CHECK_BILLING]}
+    elif screen == "subscriptions":
+        return {"suggestions": INTENT_SUGGESTIONS[Intent.SUBSCRIPTION_QUERY]}
+    elif screen == "quotes":
+        return {"suggestions": INTENT_SUGGESTIONS[Intent.DEAL_STATUS]}
+    return {"suggestions": INTENT_SUGGESTIONS[Intent.GENERAL]}
+

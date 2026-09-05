@@ -1,0 +1,352 @@
+[
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Summary: 12 active billing records, Total Outstanding: $245,780, 2 overdue, 5 partially paid, 5 fully paid\n[USER] Could you Give me a billing summary quickly\n[RESPONSE]",
+    "response": "Here's your billing overview:\n\u2022 **12** active records\n\u2022 **$245,780** total outstanding\n\u2022 **2** overdue (needs attention)\n\u2022 **5** partially paid\n\u2022 **5** fully paid\n\nWould you like details on the overdue bills?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] Cart: Enterprise Core Router XG-900 (qty 10). Recommendations: 1) Rack Mounting Kit (85% attach rate), 2) Extended Warranty (72% attach rate), 3) Cloud Management Suite (68% attach rate). Analysis: 156 transactions, 42 rules mined.\n[USER] Can you What products can I cross-sell with this order please\n[RESPONSE]",
+    "response": "Based on analysis of **156 past transactions**, here are the top cross-sell opportunities for your Enterprise Router order:\n\n1. \ud83d\udd27 **Rack Mounting Kit** \u2014 85% of similar orders include this\n2. \ud83d\udee1\ufe0f **Extended Warranty** \u2014 72% attach rate\n3. \u2601\ufe0f **Cloud Management Suite** \u2014 68% attach rate\n\nAdding all three could increase deal value by ~$15,000. Want me to add any to the quote?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-2045, Status: PARTIALLY_PAID, Total: $142,500, Paid: $60,000, Outstanding: $82,500, Customer: ABC Industries Ltd.\n[USER] What is the status of billing BIL-2045?\n[RESPONSE]",
+    "response": "Billing record BIL-2045 for ABC Industries Ltd. is currently **partially paid**. The total amount is $142,500, with $60,000 already received. The outstanding balance of $82,500 is due under the Net 30 terms. Would you like me to send a payment reminder or download the invoice?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Active Subscriptions: 45, MRR: $127,500, Churn Rate: 2.3%, Top Plan: Enterprise Cloud (28 subscribers)\n[USER] Can you Show active subscriptions please\n[RESPONSE]",
+    "response": "You have **45 active subscriptions** generating **$127,500 MRR**:\n\u2022 Top plan: Enterprise Cloud (28 subscribers)\n\u2022 Churn rate: 2.3% (healthy)\n\nWould you like to see subscriptions by status or expiring soon?",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Summary: 12 active billing records, Total Outstanding: $245,780, 2 overdue, 5 partially paid, 5 fully paid\n[USER] Give me a billing summary right now\n[RESPONSE]",
+    "response": "Here's your billing overview:\n\u2022 **12** active records\n\u2022 **$245,780** total outstanding\n\u2022 **2** overdue (needs attention)\n\u2022 **5** partially paid\n\u2022 **5** fully paid\n\nWould you like details on the overdue bills?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] What can you do quickly\n[RESPONSE]",
+    "response": "I'm your AI-powered sales operations assistant! Here's what I can do:\n\n1. **Check billing** \u2014 status, outstanding balances, invoice details\n2. **Track deals** \u2014 pipeline, health scores, at-risk flags\n3. **Suggest upsells** \u2014 cross-sell products based on purchase patterns\n4. **Manage subscriptions** \u2014 renewals, billing cycles, churn\n5. **Detect anomalies** \u2014 flag unusual discounts or stalled deals\n6. **Track approvals** \u2014 pending queue, approval chains\n\nJust ask me anything!",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-4456, Status: PENDING, Total: $33,200, Customer: Nexus Systems, Invoice Generated: Yes, Sent: No\n[USER] Can you Check payment status for BIL-4456 right now\n[RESPONSE]",
+    "response": "Billing BIL-4456 for Nexus Systems is **pending** \u2014 the invoice for $33,200 has been generated but not yet sent to the customer. Would you like me to dispatch the invoice now?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Summary: 12 active billing records, Total Outstanding: $245,780, 2 overdue, 5 partially paid, 5 fully paid\n[USER] Give me a billing summary\n[RESPONSE]",
+    "response": "Here's your billing overview:\n\u2022 **12** active records\n\u2022 **$245,780** total outstanding\n\u2022 **2** overdue (needs attention)\n\u2022 **5** partially paid\n\u2022 **5** fully paid\n\nWould you like details on the overdue bills?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Thanks quickly\n[RESPONSE]",
+    "response": "You're welcome! \ud83d\ude0a Let me know if you need anything else.",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-1987, Status: PAID, Total: $45,000, Paid: $45,000, Outstanding: $0, Customer: TechVision Ltd.\n[USER] Is BIL-1987 paid quickly\n[RESPONSE]",
+    "response": "Yes! Billing record BIL-1987 for TechVision Ltd. has been **fully paid**. The total amount of $45,000 was received in full. No outstanding balance remains.",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] No cart items. General recommendation: Top bundles this quarter \u2014 Network Security Suite + Firewall, SaaS Platform + Support SLA\n[USER] I'd like to Show me bundle suggestions quickly\n[RESPONSE]",
+    "response": "Here are the **top-performing bundles** this quarter:\n\n1. \ud83d\udd12 **Network Security Suite + Firewall** \u2014 89% customer satisfaction\n2. \u2601\ufe0f **SaaS Platform + Premium Support SLA** \u2014 34% higher retention\n\nWould you like to apply one of these to a specific quotation?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Subscription: SUB-0045, Plan: Enterprise Cloud Suite, Cycle: Monthly, Next Billing: Oct 5 2026, Amount: $1,250/month, Customer: ABC Industries\n[USER] When is the next billing cycle?\n[RESPONSE]",
+    "response": "Subscription **SUB-0045** (Enterprise Cloud Suite) for ABC Industries bills **monthly at $1,250**. The next billing date is **October 5, 2026**.",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] customer_info\n[CONTEXT] Customer: ABC Industries Ltd., ID: CUST-0012, Tier: GOLD, Total Spend: $485,000, Active Deals: 3, Subscriptions: 2, Contact: accounts.payable@abcindustries.com, Phone: +1 (408) 555-0192\n[USER] Could you Tell me about ABC Industries please\n[RESPONSE]",
+    "response": "**ABC Industries Ltd.** (CUST-0012)\n\u2022 Tier: \ud83e\udd47 GOLD\n\u2022 Total spend: $485,000\n\u2022 Active deals: 3\n\u2022 Subscriptions: 2\n\u2022 Contact: accounts.payable@abcindustries.com\n\u2022 Phone: +1 (408) 555-0192\n\nNeed to see their purchase history or open deals?",
+    "intent": "customer_info"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Pipeline: 24 active deals, Total Value: $2.1M, 8 in negotiation, 6 awaiting approval, 4 at risk, 6 confirmed\n[USER] How many deals are in pipeline?\n[RESPONSE]",
+    "response": "Your current pipeline has **24 active deals** worth **$2.1M**:\n\u2022 8 in negotiation\n\u2022 6 awaiting approval\n\u2022 4 at risk \u26a0\ufe0f\n\u2022 6 confirmed \u2705\n\nShall I show you the at-risk deals?",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] No cart items. General recommendation: Top bundles this quarter \u2014 Network Security Suite + Firewall, SaaS Platform + Support SLA\n[USER] Hey, Show me bundle suggestions please\n[RESPONSE]",
+    "response": "Here are the **top-performing bundles** this quarter:\n\n1. \ud83d\udd12 **Network Security Suite + Firewall** \u2014 89% customer satisfaction\n2. \u2601\ufe0f **SaaS Platform + Premium Support SLA** \u2014 34% higher retention\n\nWould you like to apply one of these to a specific quotation?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] approval_status\n[CONTEXT] Pending Approvals: 3. 1) QT-2026-0184 (High discount, waiting Manager), 2) QT-2026-0099 (Large order, waiting Finance), 3) QT-2026-0312 (Custom pricing, waiting Director)\n[USER] Please Any pending approvals right now\n[RESPONSE]",
+    "response": "You have **3 pending approvals**:\n\n1. **QT-2026-0184** \u2014 High discount, awaiting Manager \u23f3\n2. **QT-2026-0099** \u2014 Large order ($200K+), awaiting Finance \u23f3\n3. **QT-2026-0312** \u2014 Custom pricing, awaiting Director \u23f3\n\nWant me to send reminders to the approvers?",
+    "intent": "approval_status"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] Anomaly detected: Quote QT-2026-0184, Line: Enterprise Router, Discount: 28%, Rep Average: 12%, Z-Score: 3.2, Severity: HIGH\n[USER] Please Are there any pricing anomalies please\n[RESPONSE]",
+    "response": "\ud83d\udea8 **HIGH severity anomaly detected** on QT-2026-0184:\n\nThe Enterprise Router line has a **28% discount** \u2014 the rep's average is only 12%. The z-score of 3.2 indicates this is statistically unusual.\n\nThis may need manager review before approval. Want me to flag it?",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] Anomaly detected: Quote QT-2026-0184, Line: Enterprise Router, Discount: 28%, Rep Average: 12%, Z-Score: 3.2, Severity: HIGH\n[USER] Hey, Are there any pricing anomalies for me\n[RESPONSE]",
+    "response": "\ud83d\udea8 **HIGH severity anomaly detected** on QT-2026-0184:\n\nThe Enterprise Router line has a **28% discount** \u2014 the rep's average is only 12%. The z-score of 3.2 indicates this is statistically unusual.\n\nThis may need manager review before approval. Want me to flag it?",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0312, Status: STALLED, Days Since Update: 14, Customer: Acme Corp, Total: $89,000\n[USER] Is this deal at risk please\n[RESPONSE]",
+    "response": "\u26a0\ufe0f Deal QT-2026-0312 with Acme Corp appears **stalled** \u2014 it hasn't been updated in 14 days. Total value: $89,000. I recommend reaching out to the customer or escalating internally.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Hello\n[RESPONSE]",
+    "response": "Hi! \ud83d\udc4b I'm your **DealFlow360 AI Assistant**. I can help you with:\n\n\u2022 \ud83d\udccb Deal & quotation status\n\u2022 \ud83d\udcb0 Billing & invoice queries\n\u2022 \ud83c\udfaf Upsell recommendations\n\u2022 \ud83d\udcca Subscription management\n\u2022 \u26a0\ufe0f Anomaly alerts\n\u2022 \u2705 Approval workflows\n\nWhat would you like to know?",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] No anomalies detected. All quotes within normal discount ranges.\n[USER] Could you Any suspicious discount activity for me\n[RESPONSE]",
+    "response": "\u2705 **No anomalies detected.** All active quotes have discounts within normal ranges for their respective reps and product categories.",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0184, Status: SUBMITTED, Customer: ABC Industries, Total: $142,500, Margin: 32%, Stage: Awaiting Approval, Days in Stage: 3\n[USER] I'd like to What's the status of quote QT-2026-0184 quickly\n[RESPONSE]",
+    "response": "Quote **QT-2026-0184** for ABC Industries ($142,500) is currently **awaiting approval**. It's been in this stage for 3 days. The deal margin is healthy at 32%. The next step is manager sign-off.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-3201, Status: OVERDUE, Total: $78,900, Paid: $0, Outstanding: $78,900, Customer: Global Dynamics, Days Overdue: 15\n[USER] Any overdue invoices?\n[RESPONSE]",
+    "response": "\u26a0\ufe0f There is **1 overdue billing record**: BIL-3201 for Global Dynamics. The full amount of $78,900 is outstanding and is 15 days past due. I recommend sending an urgent payment reminder. Would you like me to escalate this?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-4456, Status: PENDING, Total: $33,200, Customer: Nexus Systems, Invoice Generated: Yes, Sent: No\n[USER] Check payment status for BIL-4456\n[RESPONSE]",
+    "response": "Billing BIL-4456 for Nexus Systems is **pending** \u2014 the invoice for $33,200 has been generated but not yet sent to the customer. Would you like me to dispatch the invoice now?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Pipeline: 24 active deals, Total Value: $2.1M, 8 in negotiation, 6 awaiting approval, 4 at risk, 6 confirmed\n[USER] Could you How many deals are in pipeline?\n[RESPONSE]",
+    "response": "Your current pipeline has **24 active deals** worth **$2.1M**:\n\u2022 8 in negotiation\n\u2022 6 awaiting approval\n\u2022 4 at risk \u26a0\ufe0f\n\u2022 6 confirmed \u2705\n\nShall I show you the at-risk deals?",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0312, Status: STALLED, Days Since Update: 14, Customer: Acme Corp, Total: $89,000\n[USER] Hey, Is this deal at risk\n[RESPONSE]",
+    "response": "\u26a0\ufe0f Deal QT-2026-0312 with Acme Corp appears **stalled** \u2014 it hasn't been updated in 14 days. Total value: $89,000. I recommend reaching out to the customer or escalating internally.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] No cart items. General recommendation: Top bundles this quarter \u2014 Network Security Suite + Firewall, SaaS Platform + Support SLA\n[USER] Show me bundle suggestions\n[RESPONSE]",
+    "response": "Here are the **top-performing bundles** this quarter:\n\n1. \ud83d\udd12 **Network Security Suite + Firewall** \u2014 89% customer satisfaction\n2. \u2601\ufe0f **SaaS Platform + Premium Support SLA** \u2014 34% higher retention\n\nWould you like to apply one of these to a specific quotation?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Subscription: SUB-0045, Plan: Enterprise Cloud Suite, Cycle: Monthly, Next Billing: Oct 5 2026, Amount: $1,250/month, Customer: ABC Industries\n[USER] Please When is the next billing cycle for me\n[RESPONSE]",
+    "response": "Subscription **SUB-0045** (Enterprise Cloud Suite) for ABC Industries bills **monthly at $1,250**. The next billing date is **October 5, 2026**.",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Can you Thanks quickly\n[RESPONSE]",
+    "response": "You're welcome! \ud83d\ude0a Let me know if you need anything else.",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Active Subscriptions: 45, MRR: $127,500, Churn Rate: 2.3%, Top Plan: Enterprise Cloud (28 subscribers)\n[USER] I'd like to Show active subscriptions\n[RESPONSE]",
+    "response": "You have **45 active subscriptions** generating **$127,500 MRR**:\n\u2022 Top plan: Enterprise Cloud (28 subscribers)\n\u2022 Churn rate: 2.3% (healthy)\n\nWould you like to see subscriptions by status or expiring soon?",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] Cart: Enterprise Core Router XG-900 (qty 10). Recommendations: 1) Rack Mounting Kit (85% attach rate), 2) Extended Warranty (72% attach rate), 3) Cloud Management Suite (68% attach rate). Analysis: 156 transactions, 42 rules mined.\n[USER] What products can I cross-sell with this order?\n[RESPONSE]",
+    "response": "Based on analysis of **156 past transactions**, here are the top cross-sell opportunities for your Enterprise Router order:\n\n1. \ud83d\udd27 **Rack Mounting Kit** \u2014 85% of similar orders include this\n2. \ud83d\udee1\ufe0f **Extended Warranty** \u2014 72% attach rate\n3. \u2601\ufe0f **Cloud Management Suite** \u2014 68% attach rate\n\nAdding all three could increase deal value by ~$15,000. Want me to add any to the quote?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] customer_info\n[CONTEXT] Customer: ABC Industries Ltd., ID: CUST-0012, Tier: GOLD, Total Spend: $485,000, Active Deals: 3, Subscriptions: 2, Contact: accounts.payable@abcindustries.com, Phone: +1 (408) 555-0192\n[USER] Tell me about ABC Industries\n[RESPONSE]",
+    "response": "**ABC Industries Ltd.** (CUST-0012)\n\u2022 Tier: \ud83e\udd47 GOLD\n\u2022 Total spend: $485,000\n\u2022 Active deals: 3\n\u2022 Subscriptions: 2\n\u2022 Contact: accounts.payable@abcindustries.com\n\u2022 Phone: +1 (408) 555-0192\n\nNeed to see their purchase history or open deals?",
+    "intent": "customer_info"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] Cart: Enterprise Core Router XG-900 (qty 10). Recommendations: 1) Rack Mounting Kit (85% attach rate), 2) Extended Warranty (72% attach rate), 3) Cloud Management Suite (68% attach rate). Analysis: 156 transactions, 42 rules mined.\n[USER] I want to What products can I cross-sell with this order for me\n[RESPONSE]",
+    "response": "Based on analysis of **156 past transactions**, here are the top cross-sell opportunities for your Enterprise Router order:\n\n1. \ud83d\udd27 **Rack Mounting Kit** \u2014 85% of similar orders include this\n2. \ud83d\udee1\ufe0f **Extended Warranty** \u2014 72% attach rate\n3. \u2601\ufe0f **Cloud Management Suite** \u2014 68% attach rate\n\nAdding all three could increase deal value by ~$15,000. Want me to add any to the quote?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Summary: 12 active billing records, Total Outstanding: $245,780, 2 overdue, 5 partially paid, 5 fully paid\n[USER] Hey, Give me a billing summary quickly\n[RESPONSE]",
+    "response": "Here's your billing overview:\n\u2022 **12** active records\n\u2022 **$245,780** total outstanding\n\u2022 **2** overdue (needs attention)\n\u2022 **5** partially paid\n\u2022 **5** fully paid\n\nWould you like details on the overdue bills?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-2045, Status: PARTIALLY_PAID, Total: $142,500, Paid: $60,000, Outstanding: $82,500, Customer: ABC Industries Ltd.\n[USER] I want to What is the status of billing BIL-2045 right now\n[RESPONSE]",
+    "response": "Billing record BIL-2045 for ABC Industries Ltd. is currently **partially paid**. The total amount is $142,500, with $60,000 already received. The outstanding balance of $82,500 is due under the Net 30 terms. Would you like me to send a payment reminder or download the invoice?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-3201, Status: OVERDUE, Total: $78,900, Paid: $0, Outstanding: $78,900, Customer: Global Dynamics, Days Overdue: 15\n[USER] Can you Any overdue invoices please\n[RESPONSE]",
+    "response": "\u26a0\ufe0f There is **1 overdue billing record**: BIL-3201 for Global Dynamics. The full amount of $78,900 is outstanding and is 15 days past due. I recommend sending an urgent payment reminder. Would you like me to escalate this?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Please Hello right now\n[RESPONSE]",
+    "response": "Hi! \ud83d\udc4b I'm your **DealFlow360 AI Assistant**. I can help you with:\n\n\u2022 \ud83d\udccb Deal & quotation status\n\u2022 \ud83d\udcb0 Billing & invoice queries\n\u2022 \ud83c\udfaf Upsell recommendations\n\u2022 \ud83d\udcca Subscription management\n\u2022 \u26a0\ufe0f Anomaly alerts\n\u2022 \u2705 Approval workflows\n\nWhat would you like to know?",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-4456, Status: PENDING, Total: $33,200, Customer: Nexus Systems, Invoice Generated: Yes, Sent: No\n[USER] Can you Check payment status for BIL-4456 quickly\n[RESPONSE]",
+    "response": "Billing BIL-4456 for Nexus Systems is **pending** \u2014 the invoice for $33,200 has been generated but not yet sent to the customer. Would you like me to dispatch the invoice now?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Thanks\n[RESPONSE]",
+    "response": "You're welcome! \ud83d\ude0a Let me know if you need anything else.",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0312, Status: STALLED, Days Since Update: 14, Customer: Acme Corp, Total: $89,000\n[USER] Is this deal at risk?\n[RESPONSE]",
+    "response": "\u26a0\ufe0f Deal QT-2026-0312 with Acme Corp appears **stalled** \u2014 it hasn't been updated in 14 days. Total value: $89,000. I recommend reaching out to the customer or escalating internally.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] I'd like to Thanks\n[RESPONSE]",
+    "response": "You're welcome! \ud83d\ude0a Let me know if you need anything else.",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] upsell\n[CONTEXT] No cart items. General recommendation: Top bundles this quarter \u2014 Network Security Suite + Firewall, SaaS Platform + Support SLA\n[USER] Can you Show me bundle suggestions\n[RESPONSE]",
+    "response": "Here are the **top-performing bundles** this quarter:\n\n1. \ud83d\udd12 **Network Security Suite + Firewall** \u2014 89% customer satisfaction\n2. \u2601\ufe0f **SaaS Platform + Premium Support SLA** \u2014 34% higher retention\n\nWould you like to apply one of these to a specific quotation?",
+    "intent": "upsell"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Hey, Hello quickly\n[RESPONSE]",
+    "response": "Hi! \ud83d\udc4b I'm your **DealFlow360 AI Assistant**. I can help you with:\n\n\u2022 \ud83d\udccb Deal & quotation status\n\u2022 \ud83d\udcb0 Billing & invoice queries\n\u2022 \ud83c\udfaf Upsell recommendations\n\u2022 \ud83d\udcca Subscription management\n\u2022 \u26a0\ufe0f Anomaly alerts\n\u2022 \u2705 Approval workflows\n\nWhat would you like to know?",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] approval_status\n[CONTEXT] Pending Approvals: 3. 1) QT-2026-0184 (High discount, waiting Manager), 2) QT-2026-0099 (Large order, waiting Finance), 3) QT-2026-0312 (Custom pricing, waiting Director)\n[USER] I'd like to Any pending approvals?\n[RESPONSE]",
+    "response": "You have **3 pending approvals**:\n\n1. **QT-2026-0184** \u2014 High discount, awaiting Manager \u23f3\n2. **QT-2026-0099** \u2014 Large order ($200K+), awaiting Finance \u23f3\n3. **QT-2026-0312** \u2014 Custom pricing, awaiting Director \u23f3\n\nWant me to send reminders to the approvers?",
+    "intent": "approval_status"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Could you Hello for me\n[RESPONSE]",
+    "response": "Hi! \ud83d\udc4b I'm your **DealFlow360 AI Assistant**. I can help you with:\n\n\u2022 \ud83d\udccb Deal & quotation status\n\u2022 \ud83d\udcb0 Billing & invoice queries\n\u2022 \ud83c\udfaf Upsell recommendations\n\u2022 \ud83d\udcca Subscription management\n\u2022 \u26a0\ufe0f Anomaly alerts\n\u2022 \u2705 Approval workflows\n\nWhat would you like to know?",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] No anomalies detected. All quotes within normal discount ranges.\n[USER] I'd like to Any suspicious discount activity right now\n[RESPONSE]",
+    "response": "\u2705 **No anomalies detected.** All active quotes have discounts within normal ranges for their respective reps and product categories.",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] No anomalies detected. All quotes within normal discount ranges.\n[USER] Any suspicious discount activity?\n[RESPONSE]",
+    "response": "\u2705 **No anomalies detected.** All active quotes have discounts within normal ranges for their respective reps and product categories.",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] customer_info\n[CONTEXT] Customer: ABC Industries Ltd., ID: CUST-0012, Tier: GOLD, Total Spend: $485,000, Active Deals: 3, Subscriptions: 2, Contact: accounts.payable@abcindustries.com, Phone: +1 (408) 555-0192\n[USER] Can you Tell me about ABC Industries\n[RESPONSE]",
+    "response": "**ABC Industries Ltd.** (CUST-0012)\n\u2022 Tier: \ud83e\udd47 GOLD\n\u2022 Total spend: $485,000\n\u2022 Active deals: 3\n\u2022 Subscriptions: 2\n\u2022 Contact: accounts.payable@abcindustries.com\n\u2022 Phone: +1 (408) 555-0192\n\nNeed to see their purchase history or open deals?",
+    "intent": "customer_info"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0312, Status: STALLED, Days Since Update: 14, Customer: Acme Corp, Total: $89,000\n[USER] I'd like to Is this deal at risk?\n[RESPONSE]",
+    "response": "\u26a0\ufe0f Deal QT-2026-0312 with Acme Corp appears **stalled** \u2014 it hasn't been updated in 14 days. Total value: $89,000. I recommend reaching out to the customer or escalating internally.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] Anomaly detected: Quote QT-2026-0184, Line: Enterprise Router, Discount: 28%, Rep Average: 12%, Z-Score: 3.2, Severity: HIGH\n[USER] Are there any pricing anomalies?\n[RESPONSE]",
+    "response": "\ud83d\udea8 **HIGH severity anomaly detected** on QT-2026-0184:\n\nThe Enterprise Router line has a **28% discount** \u2014 the rep's average is only 12%. The z-score of 3.2 indicates this is statistically unusual.\n\nThis may need manager review before approval. Want me to flag it?",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-3201, Status: OVERDUE, Total: $78,900, Paid: $0, Outstanding: $78,900, Customer: Global Dynamics, Days Overdue: 15\n[USER] Can you Any overdue invoices\n[RESPONSE]",
+    "response": "\u26a0\ufe0f There is **1 overdue billing record**: BIL-3201 for Global Dynamics. The full amount of $78,900 is outstanding and is 15 days past due. I recommend sending an urgent payment reminder. Would you like me to escalate this?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Active Subscriptions: 45, MRR: $127,500, Churn Rate: 2.3%, Top Plan: Enterprise Cloud (28 subscribers)\n[USER] I'd like to Show active subscriptions quickly\n[RESPONSE]",
+    "response": "You have **45 active subscriptions** generating **$127,500 MRR**:\n\u2022 Top plan: Enterprise Cloud (28 subscribers)\n\u2022 Churn rate: 2.3% (healthy)\n\nWould you like to see subscriptions by status or expiring soon?",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] What can you do?\n[RESPONSE]",
+    "response": "I'm your AI-powered sales operations assistant! Here's what I can do:\n\n1. **Check billing** \u2014 status, outstanding balances, invoice details\n2. **Track deals** \u2014 pipeline, health scores, at-risk flags\n3. **Suggest upsells** \u2014 cross-sell products based on purchase patterns\n4. **Manage subscriptions** \u2014 renewals, billing cycles, churn\n5. **Detect anomalies** \u2014 flag unusual discounts or stalled deals\n6. **Track approvals** \u2014 pending queue, approval chains\n\nJust ask me anything!",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Active Subscriptions: 45, MRR: $127,500, Churn Rate: 2.3%, Top Plan: Enterprise Cloud (28 subscribers)\n[USER] Show active subscriptions\n[RESPONSE]",
+    "response": "You have **45 active subscriptions** generating **$127,500 MRR**:\n\u2022 Top plan: Enterprise Cloud (28 subscribers)\n\u2022 Churn rate: 2.3% (healthy)\n\nWould you like to see subscriptions by status or expiring soon?",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Pipeline: 24 active deals, Total Value: $2.1M, 8 in negotiation, 6 awaiting approval, 4 at risk, 6 confirmed\n[USER] How many deals are in pipeline quickly\n[RESPONSE]",
+    "response": "Your current pipeline has **24 active deals** worth **$2.1M**:\n\u2022 8 in negotiation\n\u2022 6 awaiting approval\n\u2022 4 at risk \u26a0\ufe0f\n\u2022 6 confirmed \u2705\n\nShall I show you the at-risk deals?",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] Can you What can you do for me\n[RESPONSE]",
+    "response": "I'm your AI-powered sales operations assistant! Here's what I can do:\n\n1. **Check billing** \u2014 status, outstanding balances, invoice details\n2. **Track deals** \u2014 pipeline, health scores, at-risk flags\n3. **Suggest upsells** \u2014 cross-sell products based on purchase patterns\n4. **Manage subscriptions** \u2014 renewals, billing cycles, churn\n5. **Detect anomalies** \u2014 flag unusual discounts or stalled deals\n6. **Track approvals** \u2014 pending queue, approval chains\n\nJust ask me anything!",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Pipeline: 24 active deals, Total Value: $2.1M, 8 in negotiation, 6 awaiting approval, 4 at risk, 6 confirmed\n[USER] I'd like to How many deals are in pipeline?\n[RESPONSE]",
+    "response": "Your current pipeline has **24 active deals** worth **$2.1M**:\n\u2022 8 in negotiation\n\u2022 6 awaiting approval\n\u2022 4 at risk \u26a0\ufe0f\n\u2022 6 confirmed \u2705\n\nShall I show you the at-risk deals?",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] subscription_query\n[CONTEXT] Subscription: SUB-0045, Plan: Enterprise Cloud Suite, Cycle: Monthly, Next Billing: Oct 5 2026, Amount: $1,250/month, Customer: ABC Industries\n[USER] I'd like to When is the next billing cycle please\n[RESPONSE]",
+    "response": "Subscription **SUB-0045** (Enterprise Cloud Suite) for ABC Industries bills **monthly at $1,250**. The next billing date is **October 5, 2026**.",
+    "intent": "subscription_query"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] No anomalies detected. All quotes within normal discount ranges.\n[USER] Can you Any suspicious discount activity\n[RESPONSE]",
+    "response": "\u2705 **No anomalies detected.** All active quotes have discounts within normal ranges for their respective reps and product categories.",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-4456, Status: PENDING, Total: $33,200, Customer: Nexus Systems, Invoice Generated: Yes, Sent: No\n[USER] Hey, Check payment status for BIL-4456\n[RESPONSE]",
+    "response": "Billing BIL-4456 for Nexus Systems is **pending** \u2014 the invoice for $33,200 has been generated but not yet sent to the customer. Would you like me to dispatch the invoice now?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-1987, Status: PAID, Total: $45,000, Paid: $45,000, Outstanding: $0, Customer: TechVision Ltd.\n[USER] Please Is BIL-1987 paid for me\n[RESPONSE]",
+    "response": "Yes! Billing record BIL-1987 for TechVision Ltd. has been **fully paid**. The total amount of $45,000 was received in full. No outstanding balance remains.",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-3201, Status: OVERDUE, Total: $78,900, Paid: $0, Outstanding: $78,900, Customer: Global Dynamics, Days Overdue: 15\n[USER] Could you Any overdue invoices\n[RESPONSE]",
+    "response": "\u26a0\ufe0f There is **1 overdue billing record**: BIL-3201 for Global Dynamics. The full amount of $78,900 is outstanding and is 15 days past due. I recommend sending an urgent payment reminder. Would you like me to escalate this?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-2045, Status: PARTIALLY_PAID, Total: $142,500, Paid: $60,000, Outstanding: $82,500, Customer: ABC Industries Ltd.\n[USER] I want to What is the status of billing BIL-2045 right now\n[RESPONSE]",
+    "response": "Billing record BIL-2045 for ABC Industries Ltd. is currently **partially paid**. The total amount is $142,500, with $60,000 already received. The outstanding balance of $82,500 is due under the Net 30 terms. Would you like me to send a payment reminder or download the invoice?",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] customer_info\n[CONTEXT] Customer: ABC Industries Ltd., ID: CUST-0012, Tier: GOLD, Total Spend: $485,000, Active Deals: 3, Subscriptions: 2, Contact: accounts.payable@abcindustries.com, Phone: +1 (408) 555-0192\n[USER] Tell me about ABC Industries please\n[RESPONSE]",
+    "response": "**ABC Industries Ltd.** (CUST-0012)\n\u2022 Tier: \ud83e\udd47 GOLD\n\u2022 Total spend: $485,000\n\u2022 Active deals: 3\n\u2022 Subscriptions: 2\n\u2022 Contact: accounts.payable@abcindustries.com\n\u2022 Phone: +1 (408) 555-0192\n\nNeed to see their purchase history or open deals?",
+    "intent": "customer_info"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0184, Status: SUBMITTED, Customer: ABC Industries, Total: $142,500, Margin: 32%, Stage: Awaiting Approval, Days in Stage: 3\n[USER] What's the status of quote QT-2026-0184?\n[RESPONSE]",
+    "response": "Quote **QT-2026-0184** for ABC Industries ($142,500) is currently **awaiting approval**. It's been in this stage for 3 days. The deal margin is healthy at 32%. The next step is manager sign-off.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] check_billing\n[CONTEXT] Billing ID: BIL-1987, Status: PAID, Total: $45,000, Paid: $45,000, Outstanding: $0, Customer: TechVision Ltd.\n[USER] Is BIL-1987 paid?\n[RESPONSE]",
+    "response": "Yes! Billing record BIL-1987 for TechVision Ltd. has been **fully paid**. The total amount of $45,000 was received in full. No outstanding balance remains.",
+    "intent": "check_billing"
+  },
+  {
+    "prompt": "[INTENT] deal_status\n[CONTEXT] Quote: QT-2026-0184, Status: SUBMITTED, Customer: ABC Industries, Total: $142,500, Margin: 32%, Stage: Awaiting Approval, Days in Stage: 3\n[USER] Please What's the status of quote QT-2026-0184 quickly\n[RESPONSE]",
+    "response": "Quote **QT-2026-0184** for ABC Industries ($142,500) is currently **awaiting approval**. It's been in this stage for 3 days. The deal margin is healthy at 32%. The next step is manager sign-off.",
+    "intent": "deal_status"
+  },
+  {
+    "prompt": "[INTENT] general\n[CONTEXT] \n[USER] I'd like to What can you do please\n[RESPONSE]",
+    "response": "I'm your AI-powered sales operations assistant! Here's what I can do:\n\n1. **Check billing** \u2014 status, outstanding balances, invoice details\n2. **Track deals** \u2014 pipeline, health scores, at-risk flags\n3. **Suggest upsells** \u2014 cross-sell products based on purchase patterns\n4. **Manage subscriptions** \u2014 renewals, billing cycles, churn\n5. **Detect anomalies** \u2014 flag unusual discounts or stalled deals\n6. **Track approvals** \u2014 pending queue, approval chains\n\nJust ask me anything!",
+    "intent": "general"
+  },
+  {
+    "prompt": "[INTENT] anomaly_alert\n[CONTEXT] Anomaly detected: Quote QT-2026-0184, Line: Enterprise Router, Discount: 28%, Rep Average: 12%, Z-Score: 3.2, Severity: HIGH\n[USER] Could you Are there any pricing anomalies for me\n[RESPONSE]",
+    "response": "\ud83d\udea8 **HIGH severity anomaly detected** on QT-2026-0184:\n\nThe Enterprise Router line has a **28% discount** \u2014 the rep's average is only 12%. The z-score of 3.2 indicates this is statistically unusual.\n\nThis may need manager review before approval. Want me to flag it?",
+    "intent": "anomaly_alert"
+  },
+  {
+    "prompt": "[INTENT] approval_status\n[CONTEXT] Pending Approvals: 3. 1) QT-2026-0184 (High discount, waiting Manager), 2) QT-2026-0099 (Large order, waiting Finance), 3) QT-2026-0312 (Custom pricing, waiting Director)\n[USER] Any pending approvals?\n[RESPONSE]",
+    "response": "You have **3 pending approvals**:\n\n1. **QT-2026-0184** \u2014 High discount, awaiting Manager \u23f3\n2. **QT-2026-0099** \u2014 Large order ($200K+), awaiting Finance \u23f3\n3. **QT-2026-0312** \u2014 Custom pricing, awaiting Director \u23f3\n\nWant me to send reminders to the approvers?",
+    "intent": "approval_status"
+  }
+]
