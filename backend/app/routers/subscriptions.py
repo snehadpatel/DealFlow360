@@ -82,6 +82,31 @@ def update_subscription(
 def cancel_subscription(
     sub_id: UUID,
     session: Session = Depends(get_session),
-    _: User = Depends(require_roles([Role.ADMIN, Role.FINANCE]))
+    user: User = Depends(get_current_user)
 ):
+    sub = subscription_service.get_subscription_or_404(session, sub_id)
+    if user.role == Role.CUSTOMER and sub.customer_id != user.customer_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
     return subscription_service.cancel_subscription(session, sub_id)
+
+@router.post("/{sub_id}/pause", response_model=CustomerSubscriptionResponse)
+def pause_subscription(
+    sub_id: UUID,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user)
+):
+    sub = subscription_service.get_subscription_or_404(session, sub_id)
+    if user.role == Role.CUSTOMER and sub.customer_id != user.customer_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    return subscription_service.pause_subscription(session, sub_id)
+
+@router.post("/{sub_id}/resume", response_model=CustomerSubscriptionResponse)
+def resume_subscription(
+    sub_id: UUID,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user)
+):
+    sub = subscription_service.get_subscription_or_404(session, sub_id)
+    if user.role == Role.CUSTOMER and sub.customer_id != user.customer_id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    return subscription_service.resume_subscription(session, sub_id)

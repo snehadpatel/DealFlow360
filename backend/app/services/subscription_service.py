@@ -112,6 +112,22 @@ def cancel_subscription(session: Session, sub_id: UUID) -> dict:
     session.refresh(sub)
     return _enrich_sub(session, sub)
 
+def pause_subscription(session: Session, sub_id: UUID) -> dict:
+    sub = get_subscription_or_404(session, sub_id)
+    sub.status = SubscriptionStatus.PAUSED
+    session.add(sub)
+    session.commit()
+    session.refresh(sub)
+    return _enrich_sub(session, sub)
+
+def resume_subscription(session: Session, sub_id: UUID) -> dict:
+    sub = get_subscription_or_404(session, sub_id)
+    sub.status = SubscriptionStatus.ACTIVE
+    session.add(sub)
+    session.commit()
+    session.refresh(sub)
+    return _enrich_sub(session, sub)
+
 def update_subscription(session: Session, sub_id: UUID, **kwargs) -> dict:
     sub = get_subscription_or_404(session, sub_id)
     for key, val in kwargs.items():

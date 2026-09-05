@@ -8,15 +8,33 @@ from sqlmodel import Session, select
 
 from app.models.negotiation import Negotiation, NegotiationMessage, NegotiationStatus, SenderRole
 from app.models.user import User, Role
+from app.models.quotation import Quotation
 
 
-def create_negotiation(session: Session, quotation_id: UUID, customer_id: UUID,
-                        rep_id: UUID, requested_discount: Optional[float] = None) -> Negotiation:
+def create_negotiation(session: Session, quotation_id: UUID, customer_id: Optional[UUID] = None,
+                        rep_id: Optional[UUID] = None, requested_discount: Optional[float] = None) -> Negotiation:
+    quotation = session.get(Quotation, quotation_id)
+    cid = customer_id or (quotation.customer_id if quotation else None)
+    rid = rep_id or (quotation.rep_id if quotation else None)
+    
+    # Check if a negotiation already exists for this quote
+    existing = session.exec(select(Negotiation).where(Negotiation.quotation_id == quotation_id)).first()
+    if existing:
+        if requested_discount is not None:
+            existing.requested_discount = requested_discount
+        existing.status = NegotiationStatus.OPEN
+        existing.updated_at = datetime.utcnow()
+        session.add(existing)
+        session.commit()
+        session.refresh(existing)
+        return existing
+
     neg = Negotiation(
         quotation_id=quotation_id,
-        customer_id=customer_id,
-        rep_id=rep_id,
+        customer_id=cid,
+        rep_id=rid,
         requested_discount=requested_discount,
+        status=NegotiationStatus.OPEN,
     )
     session.add(neg)
     session.commit()

@@ -2,11 +2,12 @@
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.db import get_session
 from app.core.security import get_current_user, require_roles
 from app.models.user import Role, User
+from app.models.negotiation import Negotiation, NegotiationMessage
 from app.schemas.negotiation_schemas import (
     NegotiationCreate, NegotiationResponse,
     NegotiationMessageCreate, NegotiationMessageResponse,
@@ -14,7 +15,33 @@ from app.schemas.negotiation_schemas import (
 )
 from app.services import negotiation_service
 
+from app.models.quotation import Quotation
+from app.models.customer import Customer
+
 router = APIRouter(prefix="/negotiations", tags=["negotiations"])
+
+
+def _enrich_neg(session: Session, n: Negotiation) -> NegotiationResponse:
+    resp = NegotiationResponse.model_validate(n)
+    cust = session.get(Customer, n.customer_id)
+    if cust:
+        resp.customer_name = cust.name
+    rep = session.get(User, n.rep_id)
+    if rep:
+        resp.rep_name = rep.name or rep.email
+    quote = session.get(Quotation, n.quotation_id)
+    if quote:
+        resp.quotation_total = quote.total
+
+    msgs = session.exec(
+        select(NegotiationMessage)
+        .where(NegotiationMessage.negotiation_id == n.id)
+        .order_by(NegotiationMessage.created_at.desc())
+    ).all()
+    resp.messages_count = len(msgs)
+    if msgs:
+        resp.last_message = msgs[0].message
+    return resp
 
 
 @router.get("", response_model=List[NegotiationResponse])
@@ -25,7 +52,8 @@ def list_negotiations(
 ):
     rep_id = user.id if user.role == Role.REP else None
     customer_id = user.customer_id if user.role == Role.CUSTOMER else None
-    return negotiation_service.list_negotiations(session, quotation_id=quotation_id, rep_id=rep_id, customer_id=customer_id)
+    raw_negs = negotiation_service.list_negotiations(session, quotation_id=quotation_id, rep_id=rep_id, customer_id=customer_id)
+    return [_enrich_neg(session, n) for n in raw_negs]
 
 
 @router.post("", response_model=NegotiationResponse, status_code=201)
@@ -34,14 +62,16 @@ def create_negotiation(
     session: Session = Depends(get_session),
     _: User = Depends(get_current_user)
 ):
-    return negotiation_service.create_negotiation(
+    neg = negotiation_service.create_negotiation(
         session, payload.quotation_id, payload.customer_id, payload.rep_id, payload.requested_discount
     )
+    return _enrich_neg(session, neg)
 
 
 @router.get("/{neg_id}", response_model=NegotiationResponse)
 def get_negotiation(neg_id: UUID, session: Session = Depends(get_session), _: User = Depends(get_current_user)):
-    return negotiation_service.get_negotiation_or_404(session, neg_id)
+    neg = negotiation_service.get_negotiation_or_404(session, neg_id)
+    return _enrich_neg(session, neg)
 
 
 @router.get("/{neg_id}/messages", response_model=List[NegotiationMessageResponse])

@@ -43,8 +43,12 @@ def update_customer(
     customer_id: UUID,
     payload: CustomerUpdate,
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.ADMIN, Role.MANAGER, Role.REP]))
+    user: User = Depends(get_current_user)
 ):
+    if user.role == Role.CUSTOMER and user.customer_id != customer_id:
+        raise HTTPException(status_code=403, detail="You can only update your own customer profile.")
+    elif user.role not in (Role.ADMIN, Role.MANAGER, Role.REP, Role.CUSTOMER):
+        raise HTTPException(status_code=403, detail="Permission denied.")
     return admin_service.update_customer(session, customer_id, **payload.model_dump(exclude_none=True))
 
 

@@ -35,7 +35,7 @@ class InvoiceResponse(BaseModel):
     class Config: from_attributes = True
 
 class PaymentCreate(BaseModel):
-    invoice_id: UUID
+    invoice_id: Optional[UUID] = None
     amount: float
     method: str = "BANK_TRANSFER"
     transaction_id: Optional[str] = None
