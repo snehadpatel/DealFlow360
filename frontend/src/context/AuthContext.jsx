@@ -102,6 +102,7 @@ export const AuthProvider = ({ children }) => {
       MANAGER: { name: "Maria Manager (Approver)", email: "maria.manager@dealflow360.com", role: "MANAGER" },
       FINANCE: { name: "Felix Finance (Ops)", email: "felix.finance@dealflow360.com", role: "FINANCE" },
       CUSTOMER: { name: "Acme Corp (Buyer Portal)", email: "buyer@acmecorp.com", role: "CUSTOMER" },
+      ADMIN: { name: "Super Admin", email: "admin@dealflow360.com", role: "ADMIN" },
     };
     const selected = personas[role] || personas.REP;
     saveAuth(selected, `demo-token-${role.toLowerCase()}`);
