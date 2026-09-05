@@ -114,7 +114,13 @@ class ChatPipeline:
     # Intent classification
     # ------------------------------------------------------------------
     def classify_intent(self, text: str) -> tuple[str, float]:
-        """Return (intent_label, confidence)."""
+        """Return (intent_label, confidence) using fine-tuned model + domain heuristics."""
+        text_lower = text.lower().strip()
+
+        # Domain heuristic overrides for explicit phrases
+        if any(p in text_lower for p in ["best quote", "best quotation", "top quote", "top deal", "highest margin", "which quote", "which quotation"]):
+            return Intent.DEAL_STATUS.value, 0.98
+
         if self._intent_model is not None:
             inputs = self._intent_tokenizer(
                 text, truncation=True, max_length=64,
@@ -124,7 +130,16 @@ class ChatPipeline:
                 logits = self._intent_model(**inputs).logits
             probs = torch.softmax(logits, dim=-1)
             confidence, pred_id = torch.max(probs, dim=-1)
-            return ID_TO_LABEL[pred_id.item()], round(confidence.item(), 4)
+            predicted_label = ID_TO_LABEL[pred_id.item()]
+            conf = round(confidence.item(), 4)
+
+            # If neural model is borderline (<0.75), apply domain keyword verification
+            if conf < 0.75:
+                keyword_intent, kw_conf = self._keyword_classify(text)
+                if keyword_intent != Intent.GENERAL.value:
+                    return keyword_intent, max(conf, kw_conf)
+
+            return predicted_label, conf
 
         # Keyword fallback when model is not loaded
         return self._keyword_classify(text)
@@ -133,18 +148,18 @@ class ChatPipeline:
         """Simple keyword-based intent detection as fallback."""
         text_lower = text.lower()
         keyword_map = {
-            Intent.CHECK_BILLING: ["billing", "invoice", "payment", "paid", "outstanding", "balance", "bil-"],
-            Intent.DEAL_STATUS: ["deal", "quote", "quotation", "pipeline", "margin", "qt-", "stage"],
+            Intent.APPROVAL_STATUS: ["approval queue", "pending approval", "approve quote", "approver", "manager approval", "finance approval"],
+            Intent.CHECK_BILLING: ["billing", "invoice", "payment", "paid", "outstanding", "balance", "bil-", "inv-"],
+            Intent.DEAL_STATUS: ["deal", "quote", "quotation", "pipeline", "margin", "qt-", "best quotation", "top deal"],
             Intent.UPSELL: ["upsell", "cross-sell", "recommend", "bundle", "add-on", "attach"],
             Intent.SUBSCRIPTION_QUERY: ["subscription", "recurring", "mrr", "churn", "renew", "sub-", "plan"],
-            Intent.ANOMALY_ALERT: ["anomaly", "anomalies", "unusual", "suspicious", "risk", "z-score", "flag"],
-            Intent.APPROVAL_STATUS: ["approval", "approve", "pending", "reject", "escalat"],
-            Intent.CUSTOMER_INFO: ["customer", "client", "cust-", "contact", "account"],
+            Intent.ANOMALY_ALERT: ["anomaly", "anomalies", "unusual", "suspicious", "risk score", "z-score", "flagged"],
+            Intent.CUSTOMER_INFO: ["customer", "client", "cust-", "contact", "tier", "credit limit"],
         }
         for intent, keywords in keyword_map.items():
             if any(kw in text_lower for kw in keywords):
-                return intent, 0.75
-        return Intent.GENERAL, 0.60
+                return intent.value, 0.85
+        return Intent.GENERAL.value, 0.60
 
     # ------------------------------------------------------------------
     # Entity extraction
@@ -231,12 +246,35 @@ class ChatPipeline:
                 elif intent == Intent.DEAL_STATUS:
                     quotes = session.exec(select(Quotation)).all()
                     cust_map = {c.id: c.name for c in session.exec(select(Customer)).all()}
-                    lines = [f"💼 **Pipeline & Quotation Status ({len(quotes)} Deals):**"]
+                    
+                    if not quotes:
+                        return "💼 **Quotations & Deals:** No active quotations found in the pipeline."
+
+                    # Determine best deals
+                    best_revenue = max(quotes, key=lambda q: q.total or 0)
+                    best_margin = max(quotes, key=lambda q: q.margin_percent or 0)
+                    total_pipeline = sum(q.total or 0 for q in quotes)
+                    c_rev = cust_map.get(best_revenue.customer_id, "Customer")
+                    c_mgn = cust_map.get(best_margin.customer_id, "Customer")
+
+                    lines = []
+                    lines.append(f"💼 **Pipeline Overview ({len(quotes)} Deals | Total: ₹{total_pipeline:,.0f}):**")
+                    lines.append(
+                        f"🏆 **Highest Value Deal:** Quote #{str(best_revenue.id)[:8]} ({c_rev}) — "
+                        f"**₹{best_revenue.total:,.0f}** (Margin: **{best_revenue.margin_percent:.1f}%**, Status: `{best_revenue.status.value}`)"
+                    )
+                    if best_margin.id != best_revenue.id:
+                        lines.append(
+                            f"⭐ **Highest Margin Deal:** Quote #{str(best_margin.id)[:8]} ({c_mgn}) — "
+                            f"**{best_margin.margin_percent:.1f}% Margin** (Total: ₹{best_margin.total:,.0f}, Status: `{best_margin.status.value}`)"
+                        )
+                    
+                    lines.append("\n📋 **All Quotations Breakdown:**")
                     for q in quotes:
                         cname = cust_map.get(q.customer_id, "Customer")
                         risk_tag = f"⚠️ Risk: {q.blended_risk:.0f}%" if q.blended_risk and q.blended_risk > 50 else f"✅ Risk: {q.blended_risk:.0f}%"
                         lines.append(
-                            f"• **Quote #{str(q.id)[:8]}** ({cname}): Total ₹{q.total:,.0f} | "
+                            f"• **Quote #{str(q.id)[:8]}** ({cname}): ₹{q.total:,.0f} | "
                             f"Margin: **{q.margin_percent:.1f}%** | Status: `{q.status.value}` | {risk_tag}"
                         )
                     return "\n".join(lines)
