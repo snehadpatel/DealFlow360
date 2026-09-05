@@ -159,10 +159,139 @@ class ChatPipeline:
         return entities
 
     # ------------------------------------------------------------------
-    # Context retrieval
+    # Context retrieval from live database
     # ------------------------------------------------------------------
     def get_context(self, intent: str, entities: dict) -> str:
-        """Build a context string from known data. In production this queries the DB."""
+        """Build a factual context string from the live database."""
+        try:
+            from sqlmodel import Session, select
+            from app.db import engine
+            from app.models.customer import Customer
+            from app.models.quotation import Quotation
+            from app.models.invoice import Invoice
+            from app.models.subscription import CustomerSubscription, SubscriptionPlan
+            from app.models.approval import ApprovalRequest, ApprovalStatus
+            from app.models.discount_rule import UpsellRule
+            from app.models.product import Product
+
+            with Session(engine) as session:
+                if intent == Intent.SUBSCRIPTION_QUERY:
+                    subs = session.exec(select(CustomerSubscription)).all()
+                    plans = session.exec(select(SubscriptionPlan)).all()
+                    plan_map = {p.id: p for p in plans}
+                    cust_map = {c.id: c.name for c in session.exec(select(Customer)).all()}
+                    
+                    lines = []
+                    lines.append(f"📊 **Active Subscriptions ({len(subs)} Total):**")
+                    for s in subs:
+                        plan = plan_map.get(s.plan_id)
+                        cname = cust_map.get(s.customer_id, "Enterprise Account")
+                        plan_name = plan.name if plan else "Cloud Plan"
+                        price = f"₹{plan.price:,.0f}" if plan else "Standard"
+                        cycle = plan.billing_cycle.value if plan else "Annual"
+                        lines.append(
+                            f"• **{cname}**: {plan_name} ({price}/{cycle}) — Status: `{s.status.value}`, "
+                            f"Next Billing: **{s.next_billing_date}** (Qty: {s.quantity})"
+                        )
+                    if plans:
+                        lines.append("\n💡 **Available Plans in Catalog:**")
+                        for p in plans:
+                            lines.append(f"• **{p.name}** ({p.billing_cycle.value}): ₹{p.price:,.0f} — {p.description}")
+                    return "\n".join(lines)
+
+                elif intent == Intent.CHECK_BILLING:
+                    inv_id = entities.get("invoice_id") or entities.get("billing_id")
+                    invoices = session.exec(select(Invoice)).all()
+                    cust_map = {c.id: c.name for c in session.exec(select(Customer)).all()}
+                    
+                    if inv_id:
+                        matched = [i for i in invoices if inv_id.lower() in (i.invoice_number or "").lower()]
+                        if matched:
+                            inv = matched[0]
+                            cname = cust_map.get(inv.customer_id, "Customer")
+                            return (
+                                f"🧾 **Invoice {inv.invoice_number} Details:**\n"
+                                f"• **Customer:** {cname}\n"
+                                f"• **Status:** `{inv.status.value}`\n"
+                                f"• **Total Amount:** ₹{inv.amount:,.2f}\n"
+                                f"• **Amount Paid:** ₹{inv.amount_paid:,.2f}\n"
+                                f"• **Outstanding Balance:** **₹{inv.outstanding_amount:,.2f}**\n"
+                                f"• **Due Date:** {inv.due_date}"
+                            )
+
+                    lines = [f"🧾 **Recent Invoices Summary ({len(invoices)} Total):**"]
+                    for inv in invoices[:5]:
+                        cname = cust_map.get(inv.customer_id, "Customer")
+                        lines.append(
+                            f"• **{inv.invoice_number}** ({cname}): ₹{inv.amount:,.0f} | "
+                            f"Outstanding: **₹{inv.outstanding_amount:,.0f}** | Status: `{inv.status.value}` (Due: {inv.due_date})"
+                        )
+                    return "\n".join(lines)
+
+                elif intent == Intent.DEAL_STATUS:
+                    quotes = session.exec(select(Quotation)).all()
+                    cust_map = {c.id: c.name for c in session.exec(select(Customer)).all()}
+                    lines = [f"💼 **Pipeline & Quotation Status ({len(quotes)} Deals):**"]
+                    for q in quotes:
+                        cname = cust_map.get(q.customer_id, "Customer")
+                        risk_tag = f"⚠️ Risk: {q.blended_risk:.0f}%" if q.blended_risk and q.blended_risk > 50 else f"✅ Risk: {q.blended_risk:.0f}%"
+                        lines.append(
+                            f"• **Quote #{str(q.id)[:8]}** ({cname}): Total ₹{q.total:,.0f} | "
+                            f"Margin: **{q.margin_percent:.1f}%** | Status: `{q.status.value}` | {risk_tag}"
+                        )
+                    return "\n".join(lines)
+
+                elif intent == Intent.APPROVAL_STATUS:
+                    approvals = session.exec(select(ApprovalRequest).where(ApprovalRequest.status == ApprovalStatus.PENDING)).all()
+                    lines = [f"🛡️ **Pending Approval Queue ({len(approvals)} Action Items):**"]
+                    if not approvals:
+                        lines.append("• No pending approvals at this time. All quotes are clear!")
+                    for a in approvals:
+                        lines.append(
+                            f"• **Level {a.approval_level} ({a.approver_role})**: Quote #{str(a.quotation_id)[:8]} — "
+                            f"Status: `{a.status.value}` (Quote Version: v{a.quote_version})"
+                        )
+                    return "\n".join(lines)
+
+                elif intent == Intent.ANOMALY_ALERT:
+                    quotes = session.exec(select(Quotation)).all()
+                    cust_map = {c.id: c.name for c in session.exec(select(Customer)).all()}
+                    high_risk = [q for q in quotes if q.blended_risk and q.blended_risk >= 50.0]
+                    lines = [f"🚨 **Risk & Anomaly Governance Alerts ({len(high_risk)} Flagged Deals):**"]
+                    if not high_risk:
+                        lines.append("• No high-risk pricing anomalies detected. Margin ceilings within safe thresholds.")
+                    for q in high_risk:
+                        cname = cust_map.get(q.customer_id, "Customer")
+                        lines.append(
+                            f"• **Quote #{str(q.id)[:8]}** ({cname}): Blended Risk **{q.blended_risk:.1f}%** ({q.risk_level}) — "
+                            f"Discount: ₹{q.discount_total:,.0f} | Margin: {q.margin_percent:.1f}% | Status: `{q.status.value}`"
+                        )
+                    return "\n".join(lines)
+
+                elif intent == Intent.CUSTOMER_INFO:
+                    customers = session.exec(select(Customer)).all()
+                    lines = [f"🏢 **Customer Directory ({len(customers)} Accounts):**"]
+                    for c in customers:
+                        lines.append(
+                            f"• **{c.name}** ({c.tier.value} Tier): Credit Limit **₹{c.credit_limit:,.0f}** | "
+                            f"Terms: `{c.payment_terms}` | Email: {c.email}"
+                        )
+                    return "\n".join(lines)
+
+                elif intent == Intent.UPSELL:
+                    rules = session.exec(select(UpsellRule)).all()
+                    prod_map = {p.id: p.name for p in session.exec(select(Product)).all()}
+                    lines = ["🎯 **Active Upsell & Cross-Sell Rules:**"]
+                    for r in rules:
+                        base = prod_map.get(r.product_id, "Base Product")
+                        rec = prod_map.get(r.recommended_product_id, "Recommended Item")
+                        lines.append(f"• **When ordering {base}** ➔ Recommend **{rec}** ({r.promotion}, +{r.min_margin_impact}% margin impact)")
+                    return "\n".join(lines)
+
+        except Exception as e:
+            logger.warning("Database context lookup error: %s", e)
+
+        # Fallback static context
         if intent == Intent.CHECK_BILLING and "billing_id" in entities:
             bil = _BILLING_CONTEXT.get(entities["billing_id"])
             if bil:
@@ -178,27 +307,33 @@ class ChatPipeline:
     # Response generation
     # ------------------------------------------------------------------
     def generate_response(self, intent: str, context: str, user_message: str) -> str:
-        """Generate a natural language response."""
+        """Generate a natural language response grounded in context."""
+        if context:
+            return context
+
         if self._gen_model is not None:
-            prompt = f"[INTENT] {intent}\n[CONTEXT] {context}\n[USER] {user_message}\n[RESPONSE]"
-            inputs = self._gen_tokenizer(prompt, return_tensors="pt", truncation=True, max_length=180).to(self.device)
-            with torch.no_grad():
-                output = self._gen_model.generate(
-                    **inputs,
-                    max_new_tokens=120,
-                    do_sample=True,
-                    temperature=0.7,
-                    top_p=0.9,
-                    pad_token_id=self._gen_tokenizer.pad_token_id,
-                    repetition_penalty=1.2,
-                )
-            generated = self._gen_tokenizer.decode(output[0], skip_special_tokens=False)
-            if "[RESPONSE]" in generated:
-                response = generated.split("[RESPONSE]")[-1].strip()
-                response = response.split("<|endoftext|>")[0].strip()
-                response = response.split("<|pad|>")[0].strip()
-                if len(response) > 20:
-                    return response
+            try:
+                prompt = f"[INTENT] {intent}\n[CONTEXT] {context}\n[USER] {user_message}\n[RESPONSE]"
+                inputs = self._gen_tokenizer(prompt, return_tensors="pt", truncation=True, max_length=180).to(self.device)
+                with torch.no_grad():
+                    output = self._gen_model.generate(
+                        **inputs,
+                        max_new_tokens=120,
+                        do_sample=True,
+                        temperature=0.7,
+                        top_p=0.9,
+                        pad_token_id=self._gen_tokenizer.pad_token_id,
+                        repetition_penalty=1.2,
+                    )
+                generated = self._gen_tokenizer.decode(output[0], skip_special_tokens=False)
+                if "[RESPONSE]" in generated:
+                    response = generated.split("[RESPONSE]")[-1].strip()
+                    response = response.split("<|endoftext|>")[0].strip()
+                    response = response.split("<|pad|>")[0].strip()
+                    if len(response) > 25 and not response.endswith(":"):
+                        return response
+            except Exception as e:
+                logger.warning("Generation error: %s", e)
 
         # Fallback to template
         return self._template_response(intent, context, user_message)
