@@ -79,12 +79,6 @@ export default function App() {
   if (activeTab === "admin" || user?.role === "ADMIN") {
     return (
       <>
-        <div className="bg-[#1F2937] text-white px-4 py-2 flex items-center justify-between text-xs font-bold sticky top-0 z-50 shadow-md">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>DealFlow360 Admin & Enterprise Management Suite (Super Admin Access)</span>
-          </div>
-        </div>
         <AdminDashboard />
         <ChatWidget activeTab="admin" />
       </>
