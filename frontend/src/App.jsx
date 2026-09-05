@@ -5,7 +5,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import QuotationBuilder from "./pages/QuotationBuilder";
 import ApprovalScreen from "./pages/ApprovalScreen";
-import WarehouseSplitScreen from "./pages/WarehouseSplitScreen";
 import FulfillmentScreen from "./pages/FulfillmentScreen";
 import SubscriptionBillingScreen from "./pages/SubscriptionBillingScreen";
 import CustomerPortal from "./pages/CustomerPortal";
