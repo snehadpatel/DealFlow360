@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getBillingById, sendInvoice, downloadInvoicePdf } from '../api/billingApi';
+import { getBillingById, getBillingDetail, sendInvoice, downloadInvoicePdf } from '../api/billingApi';
 import BillingHeader from '../components/billing/BillingHeader';
 import BillingSummary from '../components/billing/BillingSummary';
 import BillingBreakdown from '../components/billing/BillingBreakdown';

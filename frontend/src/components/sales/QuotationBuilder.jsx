@@ -13,8 +13,8 @@ import {
 
 const CATEGORY_ORDER = ['Hardware', 'Services', 'Subscription'];
 
-const fmtUSD = (val) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val || 0);
+const fmtINR = (val) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
 
 // Local preview math ONLY — shown live while editing. The authoritative
 // numbers come back from the backend after Save/Submit (see `saved` state).
@@ -343,7 +343,7 @@ export default function QuotationBuilder() {
                           <div>
                             <div className="font-bold text-sm text-[#1F2937]">{product.name}</div>
                             <div className="flex items-center space-x-2 mt-0.5 text-xs text-[#6B7280]">
-                              <span className="font-semibold text-[#F26C4F]">{fmtUSD(product.price)}</span>
+                              <span className="font-semibold text-[#F26C4F]">{fmtINR(product.price)}</span>
                               <span>•</span>
                               <span>Ceiling: {product.discount_ceiling}%</span>
                             </div>
@@ -401,7 +401,7 @@ export default function QuotationBuilder() {
                             <span className="text-xs font-bold w-6 text-center">{item.qty}</span>
                             <button onClick={() => updateQty(item.id, 1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Plus className="w-3 h-3" /></button>
                           </div>
-                          <span className="font-bold text-sm text-[#1F2937]">{fmtUSD(previewLine(item).net)}</span>
+                          <span className="font-bold text-sm text-[#1F2937]">{fmtINR(previewLine(item).net)}</span>
                         </div>
                         {/* Per-line discount */}
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/70">
@@ -442,19 +442,19 @@ export default function QuotationBuilder() {
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#6B7280] font-medium">Subtotal</span>
-              <span className="font-bold">{fmtUSD(saved ? saved.subtotal : preview.subtotal)}</span>
+              <span className="font-bold">{fmtINR(saved ? saved.subtotal : preview.subtotal)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#6B7280] font-medium">Discount total</span>
-              <span className="font-bold text-amber-600">- {fmtUSD(saved ? saved.discount_total : preview.discount)}</span>
+              <span className="font-bold text-amber-600">- {fmtINR(saved ? saved.discount_total : preview.discount)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#6B7280] font-medium">Tax</span>
-              <span className="font-bold">{fmtUSD(saved ? saved.tax_total : preview.tax)}</span>
+              <span className="font-bold">{fmtINR(saved ? saved.tax_total : preview.tax)}</span>
             </div>
             <div className="flex items-center justify-between text-sm border-t border-gray-200 pt-2">
               <span className="text-base font-extrabold text-[#1F2937]">Total</span>
-              <span className="text-xl font-extrabold text-[#F26C4F] tracking-tight">{fmtUSD(saved ? saved.total : preview.total)}</span>
+              <span className="text-xl font-extrabold text-[#F26C4F] tracking-tight">{fmtINR(saved ? saved.total : preview.total)}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-2">
