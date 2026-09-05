@@ -85,6 +85,8 @@ class ApprovalResponse(BaseModel):
     discount_percent: Optional[float] = None
     risk_level: Optional[str] = None
     blended_risk: Optional[float] = None
+    risk_score: Optional[float] = None
+
 
 
 class QuoteResponse(BaseModel):

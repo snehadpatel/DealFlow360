@@ -74,6 +74,7 @@ def _build_detail(session: Session, quotation: Quotation) -> QuoteDetailResponse
     return detail
 
 
+
 # --- endpoints -------------------------------------------------------------
 
 @router.get("", response_model=List[QuoteResponse])

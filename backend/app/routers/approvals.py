@@ -27,6 +27,12 @@ def list_for_quote(quote_id: UUID, session: Session = Depends(get_session), user
     return approval_service.list_for_quote(session, quote_id)
 
 
+@router.get("/{approval_id}", response_model=ApprovalResponse)
+def get_approval(approval_id: UUID, session: Session = Depends(get_session), user: User = Depends(get_current_user)):
+    return approval_service.get_approval_by_id(session, approval_id)
+
+
+
 @router.post("/{approval_id}/approve", response_model=ApprovalResponse)
 def approve(
     approval_id: UUID,
