@@ -10,6 +10,7 @@ from app.routers import (
     portal,
     dashboard,
     ai_router,
+    billing,
 )
 
 app = FastAPI(
@@ -32,6 +33,8 @@ app.include_router(quotes.router)
 app.include_router(approvals.router)
 app.include_router(warehouses.router)
 app.include_router(subscriptions.router)
+app.include_router(billing.router)
+app.include_router(billing.router, prefix="/api")
 app.include_router(portal.router)
 app.include_router(dashboard.router)
 app.include_router(ai_router.router)

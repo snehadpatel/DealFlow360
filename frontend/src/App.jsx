@@ -7,6 +7,7 @@ import QuotationBuilder from "./pages/QuotationBuilder";
 import ApprovalScreen from "./pages/ApprovalScreen";
 import FulfillmentScreen from "./pages/FulfillmentScreen";
 import SubscriptionBillingScreen from "./pages/SubscriptionBillingScreen";
+import BillingDetail from "./pages/BillingDetail";
 import InvoicesScreen from "./pages/InvoicesScreen";
 import CustomerPortal from "./pages/CustomerPortal";
 import DealHealthDashboard from "./pages/DealHealthDashboard";
@@ -17,6 +18,7 @@ export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
   const [activeTab, setActiveTab] = useState("quotation");
+  const [selectedBillingId, setSelectedBillingId] = useState("BIL-2045");
 
   React.useEffect(() => {
     if (user?.role === 'CUSTOMER') {
@@ -51,7 +53,8 @@ export default function App() {
     { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "ADMIN"] },
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
     { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
-    { id: "subscription", label: "Billing & Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
+    { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
+    { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN", "CUSTOMER"] },
     { id: "portal", label: "Customer Portal", roles: ["CUSTOMER", "ADMIN"] },
     { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
@@ -126,10 +129,16 @@ export default function App() {
         {activeTab === "approval" && <ApprovalScreen />}
         {activeTab === "fulfillment" && <FulfillmentScreen />}
         {activeTab === "subscription" && <SubscriptionBillingScreen />}
+        {activeTab === "billing" && (
+          <BillingDetail
+            billingId={selectedBillingId || "BIL-2045"}
+            onBack={() => setActiveTab("subscription")}
+          />
+        )}
         {activeTab === "invoices" && (
           <InvoicesScreen
             onNavigateToQuotation={(qId) => setActiveTab("quotation")}
-            onNavigateToBilling={() => setActiveTab("subscription")}
+            onNavigateToBilling={() => setActiveTab("billing")}
           />
         )}
         {activeTab === "portal" && <CustomerPortal />}
