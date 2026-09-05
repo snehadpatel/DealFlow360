@@ -12,7 +12,7 @@ export default function CustomerBillingInfo({ customer }) {
           <h2 className="text-base font-bold text-textPrimary tracking-tight">Customer Billing Information</h2>
         </div>
         <span className="text-xs bg-slate-100 text-slate-700 font-mono font-bold px-2 py-0.5 rounded">
-          {customer.customerId}
+          {customer.customerId ? `CUST-${String(customer.customerId).replace(/-/g, '').slice(0, 6).toUpperCase()}` : 'CUST-104'}
         </span>
       </div>
 

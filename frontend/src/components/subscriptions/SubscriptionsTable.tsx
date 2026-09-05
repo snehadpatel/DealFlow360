@@ -69,13 +69,15 @@ export default function SubscriptionsTable({ subscriptions, loading, onView }: P
             <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex flex-col">
-                  <span className="font-semibold text-primary-700">{sub.id}</span>
-                  <span className="text-sm text-slate-500">{sub.customerName}</span>
+                  <span className="font-semibold font-mono text-primary-700">
+                    {sub.id.startsWith('SUB-') ? sub.id : `SUB-${sub.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`}
+                  </span>
+                  <span className="text-sm font-medium text-slate-800">{sub.customerName}</span>
                 </div>
               </td>
               <td className="px-6 py-4">
-                <div className="text-sm font-medium text-slate-900">{sub.planName}</div>
-                <div className="text-xs text-slate-500">Qty: {sub.quantity} | {sub.quotationId}</div>
+                <div className="text-sm font-semibold text-slate-900">{sub.planName}</div>
+                <div className="text-xs text-slate-500">Qty: {sub.quantity} | {sub.quotationId ? (sub.quotationId.startsWith('Q-') ? sub.quotationId : `Q-${sub.quotationId.replace(/-/g, '').slice(0, 6).toUpperCase()}`) : 'Enterprise SLA'}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                 ₹{sub.recurringAmount.toLocaleString('en-IN')}

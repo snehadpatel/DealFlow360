@@ -46,6 +46,22 @@ export default function BillingHeader({
     }
   };
 
+  const formatBillingId = (id, bId) => {
+    if (bId && !bId.includes('-4') && bId.startsWith('BIL-')) return bId;
+    if (!id) return 'BIL-2045';
+    if (String(id).startsWith('BIL-')) return id;
+    return `BIL-${String(id).replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+  };
+
+  const formatQuoteId = (qid) => {
+    if (!qid) return 'Q-2045';
+    if (String(qid).startsWith('Q-')) return qid;
+    return `Q-${String(qid).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+  };
+
+  const displayBillingId = formatBillingId(billing.id, billing.billingId);
+  const displayQuoteId = formatQuoteId(billing.quotationId);
+
   return (
     <div className="space-y-4">
       {/* Top Breadcrumb & Back Navigation */}
@@ -63,7 +79,7 @@ export default function BillingHeader({
           <span className="text-slate-300">/</span>
           <span>Billing</span>
           <span className="text-slate-300">/</span>
-          <span className="text-textPrimary font-bold">{billing.id}</span>
+          <span className="text-textPrimary font-bold">{displayBillingId}</span>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -98,10 +114,10 @@ export default function BillingHeader({
           <div className="flex items-center space-x-3 mb-1.5">
             <h1 className="text-2xl font-bold text-textPrimary tracking-tight">Billing Detail</h1>
             <span className="text-sm font-mono font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-              {billing.id}
+              {displayBillingId}
             </span>
-            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getStatusBadge(billing.status)}`}>
-              {billing.status.replace('_', ' ')}
+            <span className={`text-xs font-bold px-3 py-1 rounded-full border ${getStatusBadge(billing.status || 'PENDING')}`}>
+              {(billing.status || 'PENDING').replace('_', ' ')}
             </span>
           </div>
           <p className="text-sm text-textSecondary">
@@ -114,7 +130,7 @@ export default function BillingHeader({
           <div className="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <FileText className="w-4 h-4 text-primary" />
             <span>Quote:</span>
-            <span className="font-semibold text-textPrimary font-mono">{billing.quotationId}</span>
+            <span className="font-semibold text-textPrimary font-mono">{displayQuoteId}</span>
           </div>
 
           <div className="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
