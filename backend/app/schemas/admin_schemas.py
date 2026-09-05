@@ -91,6 +91,7 @@ class ProductCreate(BaseModel):
     unit: str = "unit"
     variants: Optional[str] = None
     image_url: Optional[str] = None
+    stock: Optional[int] = 0
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -106,6 +107,7 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str] = None
     active: Optional[bool] = None
     is_archived: Optional[bool] = None
+    stock: Optional[int] = None
 
 class ProductResponse(BaseModel):
     id: UUID
@@ -120,6 +122,7 @@ class ProductResponse(BaseModel):
     unit: str
     active: bool
     is_archived: bool
+    stock: Optional[int] = 0
     class Config: from_attributes = True
 
 

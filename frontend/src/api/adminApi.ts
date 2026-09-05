@@ -92,7 +92,7 @@ export async function deleteCustomerApi(id: string): Promise<void> {
 
 export async function fetchProductsList(): Promise<ApiProduct[]> {
   try {
-    const data = await apiClient.get("/products");
+    const data = await apiClient.get("/products?include_archived=true");
     return Array.isArray(data) ? data : [];
   } catch (err) {
     console.warn("Failed to fetch products from backend:", err);
