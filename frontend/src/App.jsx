@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
@@ -14,6 +15,15 @@ import DealHealthDashboard from "./pages/DealHealthDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SalesWorkspace from "./pages/SalesWorkspace";
 import ChatWidget from "./components/chat/ChatWidget";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -146,30 +156,32 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
-        {activeTab === "sales_workspace" && <SalesWorkspace />}
-        {activeTab === "quotation" && <QuotationBuilder />}
-        {activeTab === "approval" && <ApprovalScreen />}
-        {activeTab === "fulfillment" && <FulfillmentScreen />}
-        {activeTab === "subscription" && <SubscriptionBillingScreen />}
-        {activeTab === "billing" && (
-          <BillingDetail
-            billingId={selectedBillingId || "BIL-2045"}
-            onBack={() => setActiveTab("subscription")}
-          />
-        )}
-        {activeTab === "invoices" && (
-          <InvoicesScreen
-            onNavigateToQuotation={(qId) => setActiveTab("quotation")}
-            onNavigateToBilling={() => setActiveTab("billing")}
-          />
-        )}
-        {activeTab.startsWith("cust_") && (
-          <CustomerPortal 
-            activeTab={activeTab.replace('cust_', '')} 
-            onTabChange={(tab) => setActiveTab(`cust_${tab}`)} 
-          />
-        )}
-        {activeTab === "dashboard" && <DealHealthDashboard />}
+        <QueryClientProvider client={queryClient}>
+          {activeTab === "sales_workspace" && <SalesWorkspace />}
+          {activeTab === "quotation" && <QuotationBuilder />}
+          {activeTab === "approval" && <ApprovalScreen />}
+          {activeTab === "fulfillment" && <FulfillmentScreen />}
+          {activeTab === "subscription" && <SubscriptionBillingScreen />}
+          {activeTab === "billing" && (
+            <BillingDetail
+              billingId={selectedBillingId || "BIL-2045"}
+              onBack={() => setActiveTab("subscription")}
+            />
+          )}
+          {activeTab === "invoices" && (
+            <InvoicesScreen
+              onNavigateToQuotation={(qId) => setActiveTab("quotation")}
+              onNavigateToBilling={() => setActiveTab("billing")}
+            />
+          )}
+          {activeTab.startsWith("cust_") && (
+            <CustomerPortal 
+              activeTab={activeTab.replace('cust_', '')} 
+              onTabChange={(tab) => setActiveTab(`cust_${tab}`)} 
+            />
+          )}
+          {activeTab === "dashboard" && <DealHealthDashboard />}
+        </QueryClientProvider>
       </main>
 
       {/* Floating AI Sales Assistant Chatbot */}

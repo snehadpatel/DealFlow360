@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getSalesDashboard } from '../../api/salesApi';
 import { FileText, Clock, Trophy, Edit3, MessageSquare, Percent, ArrowRight } from 'lucide-react';
 
 export default function SalesDashboard({ onAction }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getSalesDashboard().then(setData).finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['salesDashboard'],
+    queryFn: getSalesDashboard
+  });
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 

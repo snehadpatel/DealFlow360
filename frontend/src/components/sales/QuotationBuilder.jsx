@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   getProducts,
   getCustomers,
@@ -28,6 +29,7 @@ function previewLine(item) {
 }
 
 export default function QuotationBuilder() {
+  const queryClient = useQueryClient();
   const [catalog, setCatalog] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
@@ -191,6 +193,7 @@ export default function QuotationBuilder() {
         setQuoteId(result.id);
       }
       setSaved(result);
+      queryClient.invalidateQueries({ queryKey: ['salesDashboard'] });
       return result;
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to save the quote to the backend.');
@@ -210,6 +213,7 @@ export default function QuotationBuilder() {
     try {
       const result = await submitQuote(id);
       setSaved(result);
+      queryClient.invalidateQueries({ queryKey: ['salesDashboard'] });
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit the quote for approval.');
     } finally {

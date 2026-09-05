@@ -2,7 +2,7 @@
 from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.db import get_session
 from app.core.security import get_current_user, require_roles
@@ -16,6 +16,7 @@ from app.services import negotiation_service
 
 from app.models.quotation import Quotation
 from app.models.customer import Customer
+from app.models.negotiation import Negotiation, NegotiationMessage
 
 router = APIRouter(prefix="/negotiations", tags=["negotiations"])
 

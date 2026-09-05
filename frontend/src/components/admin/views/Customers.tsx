@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search, Filter, Download, Upload, Plus, Eye, Edit2, Ban, CheckCircle2,
   Trash2, ChevronLeft, ChevronRight, X, Building2, User, Mail, Phone,
@@ -22,7 +23,7 @@ const emptyForm = {
 };
 
 export default function Customers() {
-  const [customers, setCustomers] = useState<ApiCustomer[]>([]);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -31,21 +32,43 @@ export default function Customers() {
   const [detailCustomer, setDetailCustomer] = useState<any | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
-  const [loading, setLoading] = useState(true);
 
   const [editCustomer, setEditCustomer] = useState<any | null>(null);
   const [editForm, setEditForm] = useState(emptyForm);
 
-  useEffect(() => {
-    loadCustomers();
-  }, []);
+  const { data: customers = [], isLoading: loading } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomersList,
+  });
 
-  async function loadCustomers() {
-    setLoading(true);
-    const data = await fetchCustomersList();
-    setCustomers(data);
-    setLoading(false);
-  }
+  const createMutation = useMutation({
+    mutationFn: createCustomerApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setAddOpen(false);
+      setForm(emptyForm);
+      showToast("Customer created successfully");
+    },
+    onError: () => showToast("Error creating customer")
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => updateCustomerApi(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    },
+    onError: () => showToast("Error updating customer")
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCustomerApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setDeleteId(null);
+      showToast("Customer deleted successfully");
+    },
+    onError: () => showToast("Error deleting customer")
+  });
 
   const [perPage, setPerPage] = useState(10);
   const filtered = customers.filter((c) => {
@@ -70,15 +93,7 @@ export default function Customers() {
 
   async function handleCreateCustomer() {
     if (!form.name || !form.email) return;
-    try {
-      await createCustomerApi({ ...form });
-      await loadCustomers();
-      setAddOpen(false);
-      setForm(emptyForm);
-      showToast("Customer created successfully");
-    } catch (e) {
-      showToast("Error creating customer");
-    }
+    createMutation.mutate(form as any);
   }
 
   function openEditModal(c: any) {
@@ -96,49 +111,45 @@ export default function Customers() {
 
   async function handleSaveEditCustomer() {
     if (!editCustomer || !editForm.name || !editForm.email) return;
-    try {
-      await updateCustomerApi(editCustomer.id, editForm);
-      await loadCustomers();
-      setEditCustomer(null);
-      showToast("Customer updated successfully");
-    } catch (e) {
-      showToast("Error updating customer");
-    }
+    updateMutation.mutate(
+      { id: editCustomer.id, data: editForm },
+      {
+        onSuccess: () => {
+          setEditCustomer(null);
+          showToast("Customer updated successfully");
+        }
+      }
+    );
   }
 
   async function toggleStatus(id: string, currentStatus: string) {
     const nextStatus = currentStatus === "active" ? "suspended" : "active";
-    try {
-      await updateCustomerApi(id, { status: nextStatus });
-      await loadCustomers();
-      showToast(`Customer status changed to ${nextStatus}`);
-    } catch (e) {
-      showToast("Error updating status");
-    }
+    updateMutation.mutate(
+      { id, data: { status: nextStatus } },
+      {
+        onSuccess: () => {
+          showToast(`Customer status changed to ${nextStatus}`);
+        }
+      }
+    );
   }
 
   async function handleDeleteCustomer() {
     if (!deleteId) return;
-    try {
-      await deleteCustomerApi(deleteId);
-      await loadCustomers();
-      setDeleteId(null);
-      showToast("Customer deleted successfully");
-    } catch (e) {
-      showToast("Error deleting customer");
-    }
+    deleteMutation.mutate(deleteId);
   }
 
   async function handleUpdateAdminControls(tier: string, status: string) {
     if (!detailCustomer) return;
-    try {
-      await updateCustomerApi(detailCustomer.id, { tier, status });
-      await loadCustomers();
-      setDetailCustomer({ ...detailCustomer, tier, status });
-      showToast("Customer parameters updated");
-    } catch (err) {
-      showToast("Error updating customer");
-    }
+    updateMutation.mutate(
+      { id: detailCustomer.id, data: { tier, status } },
+      {
+        onSuccess: () => {
+          setDetailCustomer({ ...detailCustomer, tier, status });
+          showToast("Customer parameters updated");
+        }
+      }
+    );
   }
 
   function exportCSV() {
