@@ -146,4 +146,8 @@ class AuditResponse(BaseModel):
     reason: Optional[str] = None
     old_value: Optional[str] = None
     new_value: Optional[str] = None
+    entity_type: Optional[str] = None
+    entity_id: Optional[str] = None
+    details: Optional[str] = None
+    ip_address: Optional[str] = None
     timestamp: datetime

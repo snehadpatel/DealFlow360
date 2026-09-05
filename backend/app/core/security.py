@@ -57,7 +57,10 @@ def token_for_user(user: User) -> str:
     """Issue a signed JWT carrying the user id (subject), role and name."""
     return create_access_token({"sub": str(user.id), "role": user.role.value, "name": user.name})
 
+from fastapi import HTTPException, Security, Depends, status, Request
+
 def get_current_user(
+    request: Request,
     auth: Optional[HTTPAuthorizationCredentials] = Security(security_scheme),
     session: Session = Depends(get_session),
 ) -> User:
@@ -91,6 +94,12 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
+        
+    from app.core.context import current_user_id, client_ip
+    current_user_id.set(user.id)
+    if request.client:
+        client_ip.set(request.client.host)
+        
     return user
 
 def require_roles(allowed_roles: List[Role]):

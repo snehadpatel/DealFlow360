@@ -16,4 +16,11 @@ class AuditLog(SQLModel, table=True):
     reason: Optional[str] = Field(default=None)
     old_value: Optional[str] = Field(default=None, sa_column=Column(Text))
     new_value: Optional[str] = Field(default=None, sa_column=Column(Text))
+    
+    # Generic entity tracking
+    entity_type: Optional[str] = Field(default=None)
+    entity_id: Optional[str] = Field(default=None)
+    details: Optional[str] = Field(default=None, sa_column=Column(Text))
+    ip_address: Optional[str] = Field(default=None)
+    
     timestamp: datetime = Field(default_factory=datetime.utcnow)

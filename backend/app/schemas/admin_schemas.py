@@ -251,5 +251,9 @@ class AuditLogResponse(BaseModel):
     reason: Optional[str]
     old_value: Optional[str]
     new_value: Optional[str]
+    entity_type: Optional[str]
+    entity_id: Optional[str]
+    details: Optional[str]
+    ip_address: Optional[str]
     timestamp: datetime
     class Config: from_attributes = True

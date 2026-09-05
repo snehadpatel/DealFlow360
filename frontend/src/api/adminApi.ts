@@ -213,7 +213,7 @@ export async function fetchSubscriptionPlansList(): Promise<any[]> {
 
 export async function fetchAuditLogsList(): Promise<any[]> {
   try {
-    const res: any = await apiClient.get('/admin/audit-logs').catch(() => []);
+    const res: any = await apiClient.get('/audit-logs').catch(() => []);
     return Array.isArray(res) ? res : [];
   } catch {
     return [];

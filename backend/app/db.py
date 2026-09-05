@@ -8,6 +8,8 @@ if settings.DATABASE_URL.startswith("sqlite"):
 engine = create_engine(settings.DATABASE_URL, **engine_args)
 
 def init_db():
+    from app.core.audit_listener import setup_audit_listeners
+    setup_audit_listeners(SQLModel)
     SQLModel.metadata.create_all(engine)
 
 def get_session():
