@@ -99,14 +99,14 @@ export default function App() {
         </div>
 
         {/* Revalo Premium Nav Pills */}
-        <nav className="premium-navbar-container overflow-x-auto max-w-2xl bg-[#F4F5F7] border border-slate-200/80 p-1">
+        <nav className="premium-navbar-container overflow-x-auto custom-scrollbar max-w-full mx-4 bg-[#F4F5F7] border border-slate-200/80 p-1">
           {allowedTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`nav-item-wave px-4 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
+                className={`nav-item-wave flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
                   isActive ? "active" : "text-[#6B7280]"
                 }`}
               >

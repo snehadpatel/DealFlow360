@@ -45,9 +45,38 @@ export default function QuotationBuilder() {
   useEffect(() => {
     Promise.all([getProducts(), getCustomers()])
       .then(([products, custs]) => {
-        setCatalog(Array.isArray(products) ? products : []);
+        const prodList = Array.isArray(products) ? products : [];
+        setCatalog(prodList);
         setCustomers(Array.isArray(custs) ? custs : []);
         if (custs?.length) setCustomerId(custs[0].id);
+        
+        // Auto-fill the cart with some initial data for demonstration purposes
+        if (prodList.length >= 2) {
+          setCart([
+            {
+              id: prodList[0].id,
+              name: prodList[0].name,
+              category: prodList[0].category,
+              price: prodList[0].price,
+              cost: prodList[0].cost,
+              tax_rate: prodList[0].tax_rate,
+              discount_ceiling: prodList[0].discount_ceiling,
+              qty: 2,
+              discount_percent: 0,
+            },
+            {
+              id: prodList[1].id,
+              name: prodList[1].name,
+              category: prodList[1].category,
+              price: prodList[1].price,
+              cost: prodList[1].cost,
+              tax_rate: prodList[1].tax_rate,
+              discount_ceiling: prodList[1].discount_ceiling,
+              qty: 5,
+              discount_percent: 12, // Give a small discount to show the UI
+            }
+          ]);
+        }
       })
       .catch(() => setError('Could not load catalog/customers. Is the backend running and seeded?'))
       .finally(() => setLoading(false));

@@ -154,18 +154,15 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
                   <button
                     key={item.id}
                     onClick={() => { onNavigate(item.id); onClose(); }}
-                    className={`nav-item-wave w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all mb-0.5
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all mb-0.5
                       ${isActive
-                        ? "active text-white shadow-xs bg-[#F26C4F]"
-                        : "text-[#4B5563]"
+                        ? "text-white shadow-xs bg-[#F26C4F]"
+                        : "text-[#4B5563] hover:bg-gray-100 hover:text-[#1F2937]"
                       }`}
                   >
-                    <span className="flex items-center gap-3 w-full">
-                      <span className="flex-shrink-0">{item.icon}</span>
-                      <span className="truncate flex-1 text-left">{item.label}</span>
-                      {isActive && <ChevronRight size={14} className="ml-auto flex-shrink-0 opacity-80" />}
-                    </span>
-                    <i></i>
+                    <span className="flex-shrink-0">{item.icon}</span>
+                    <span className="truncate flex-1 text-left">{item.label}</span>
+                    {isActive && <ChevronRight size={14} className="ml-auto flex-shrink-0 opacity-80" />}
                   </button>
                 );
               })}

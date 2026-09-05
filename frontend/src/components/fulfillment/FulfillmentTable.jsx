@@ -66,24 +66,24 @@ export default function FulfillmentTable({ orders, loading, onView }) {
                 {order.id}
               </td>
               <td className="p-4 text-xs font-semibold text-brand-600 whitespace-nowrap">
-                {order.quotationId}
+                {order.quotationId || order.orderId || '-'}
               </td>
               <td className="p-4 text-sm text-textPrimary font-medium whitespace-nowrap">
-                {order.customer}
+                {order.customer || 'Unknown Customer'}
               </td>
               <td className="p-4 text-xs text-textSecondary whitespace-nowrap">
-                {order.salesRep}
+                {order.salesRep || 'Unassigned'}
               </td>
               <td className="p-4 text-sm font-bold text-textPrimary text-right whitespace-nowrap">
-                ₹{order.orderValue.toLocaleString()}
+                ₹{(order.orderValue || 0).toLocaleString()}
               </td>
               <td className="p-4 text-center whitespace-nowrap">
                 <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-xs font-bold text-textSecondary">
-                  {order.itemsCount}
+                  {order.itemsCount || 0}
                 </span>
               </td>
               <td className="p-4 text-xs font-medium text-textSecondary whitespace-nowrap">
-                {order.warehouse}
+                {order.warehouse || 'Unassigned'}
               </td>
               <td className="p-4 whitespace-nowrap">
                 <StatusBadge status={order.status} />
@@ -94,7 +94,7 @@ export default function FulfillmentTable({ orders, loading, onView }) {
                 )}
               </td>
               <td className="p-4 text-xs text-textSecondary whitespace-nowrap">
-                {new Date(order.createdAt).toLocaleDateString()}
+                {new Date(order.createdAt || order.date || new Date()).toLocaleDateString()}
               </td>
               <td className="p-4 text-right whitespace-nowrap">
                 <button 

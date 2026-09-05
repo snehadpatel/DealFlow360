@@ -83,19 +83,24 @@ export const getApprovalById = async (id) => {
     throw new Error(`Approval request ${id} not found.`);
   }
   
+  const quotationId = found.quotationId || found.quotation_id;
+  const quotation = (await mockDb.getById('quotations', quotationId)) || {};
+  
+  const amount = quotation.amount || found.amount || found.total_value || 0;
+
   // Inject detailed mock data required for Screen 3 (Approval Detail)
   return {
     ...found,
     quotation: {
-      id: found.quotationId || found.quotation_id,
-      customer_name: found.customer || found.customer_name,
-      sales_rep_name: found.requestedBy || found.sales_rep_name,
+      id: quotationId,
+      customer_name: found.customer || found.customer_name || quotation.customer,
+      sales_rep_name: found.requestedBy || found.sales_rep_name || quotation.rep,
       currency: 'INR',
-      subtotal: found.amount || found.total_value,
-      discount: (found.amount || found.total_value) * 0.1,
-      tax: (found.amount || found.total_value) * 0.18,
-      total: (found.amount || found.total_value) * 1.18,
-      created_date: '04 Sep 2026',
+      subtotal: amount,
+      discount: amount * (found.requested_discount || 10) / 100,
+      tax: amount * 0.18,
+      total: amount * (1 - (found.requested_discount || 10)/100) * 1.18,
+      created_date: quotation.date || '04 Sep 2026',
       valid_until: '15 Sep 2026'
     },
     items: [
