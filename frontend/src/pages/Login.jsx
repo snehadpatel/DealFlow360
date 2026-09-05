@@ -8,6 +8,7 @@ export default function Login({ onNavigateToSignup }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedPersona, setSelectedPersona] = useState("REP");
 
   const {
     register,
@@ -41,53 +42,64 @@ export default function Login({ onNavigateToSignup }) {
   };
 
   const demoAccounts = [
-    { role: "REP", title: "Sales Rep", badge: "Builder & Upsell" },
-    { role: "MANAGER", title: "Approver", badge: "Discount Sign-Off" },
-    { role: "FINANCE", title: "Finance/Ops", badge: "Warehouse & Billing" },
-    { role: "CUSTOMER", title: "Customer", badge: "Negotiate Portal" },
+    { role: "REP", title: "Sales Rep", badge: "Quote Builder" },
+    { role: "MANAGER", title: "Manager", badge: "Approver" },
+    { role: "FINANCE", title: "Finance/Ops", badge: "Fulfillment" },
+    { role: "CUSTOMER", title: "Customer", badge: "Portal" },
   ];
+
+  const handlePersonaClick = (role) => {
+    setSelectedPersona(role);
+    loginDemoPersona(role);
+  };
 
   return (
     <div className="auth-page">
-      {/* Animated background glow orbs */}
-      <div className="bg-orb bg-orb-1" />
-      <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" />
-
       <div className="auth-card">
-        {/* Header */}
+        {/* Header with Revalo Primary Orange Logo Icon */}
         <div className="auth-header">
           <div className="auth-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
               <polygon points="12 2 2 7 12 12 22 7 12 2 12 22 22 17 22 7 12 12 2 7 2 17 12 22" />
             </svg>
           </div>
-          <h1>DealFlow<span className="text-emerald-400">360</span></h1>
-          <p>Sign in to your sales operations workspace</p>
+          <h1>DealFlow<span style={{ color: "var(--color-primary)" }}>360</span></h1>
+          <p>Sign in to access your sales operations workspace</p>
         </div>
 
-        {/* 1-Click Fast Demo Personas for Evaluation */}
-        <div className="mb-5 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 flex justify-between items-center">
-            <span>⚡ Instant Demo Personas</span>
-            <span className="text-emerald-400">1-click test</span>
+        {/* 1-Click Fast Demo Personas (Pill styled per Design.md Section 4.1) */}
+        <div className="mb-5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              ⚡ Instant Demo Access
+            </span>
+            <span className="text-[11px] font-semibold text-[#F26C4F]">
+              1-click test
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            {demoAccounts.map((acc) => (
-              <button
-                type="button"
-                key={acc.role}
-                onClick={() => loginDemoPersona(acc.role)}
-                className="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-700/70 border border-slate-700/60 transition-all text-xs group"
-              >
-                <div className="font-semibold text-white group-hover:text-emerald-300">{acc.title}</div>
-                <div className="text-[10px] text-slate-400">{acc.badge}</div>
-              </button>
-            ))}
+            {demoAccounts.map((acc) => {
+              const isSelected = selectedPersona === acc.role;
+              return (
+                <button
+                  type="button"
+                  key={acc.role}
+                  onClick={() => handlePersonaClick(acc.role)}
+                  className={`px-3 py-2 text-left rounded-xl transition-all text-xs border ${
+                    isSelected
+                      ? "bg-[#FEECE8] border-[#F26C4F] text-[#F26C4F] font-semibold shadow-xs"
+                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="font-semibold text-xs leading-tight">{acc.title}</div>
+                  <div className="text-[10px] text-slate-400 font-normal">{acc.badge}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Error Banner */}
+        {/* Error Alert */}
         {error && (
           <div className="auth-error" role="alert">
             <svg viewBox="0 0 20 20" fill="currentColor">
@@ -153,12 +165,12 @@ export default function Login({ onNavigateToSignup }) {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
@@ -168,7 +180,7 @@ export default function Login({ onNavigateToSignup }) {
             {errors.password && <span className="field-error">{errors.password.message}</span>}
           </div>
 
-          {/* Submit */}
+          {/* Primary CTA Button (Pill Shape per Design.md Section 4.1) */}
           <button type="submit" className="btn-primary" disabled={isSubmitting} id="login-submit">
             {isSubmitting ? (
               <span className="btn-loading">
@@ -176,7 +188,7 @@ export default function Login({ onNavigateToSignup }) {
                 Signing in…
               </span>
             ) : (
-              "Sign in to Platform"
+              "Sign In to Platform"
             )}
           </button>
         </form>
@@ -186,12 +198,12 @@ export default function Login({ onNavigateToSignup }) {
           <span>Or continue with</span>
         </div>
 
-        {/* Google OAuth (Fallback graceful if Client ID not provided) */}
+        {/* Google OAuth Button */}
         <div className="google-btn-wrapper">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => setError("Google sign-in could not be completed.")}
-            theme="filled_black"
+            theme="outline"
             size="large"
             width="100%"
             text="continue_with"
