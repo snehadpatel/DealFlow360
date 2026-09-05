@@ -90,6 +90,8 @@ def seed(force: bool = False):
         # Core standard logins
         admin = User(id=uuid4(), name="Super Admin", email="admin@dealflow360.com",
                      password_hash=admin_hash, role=Role.ADMIN)
+        rep_alex = User(id=uuid4(), name="Alex Kumar", email="alex.rep@dealflow360.com",
+                        password_hash=rep_hash, role=Role.REP)
         manager = User(id=uuid4(), name="Maria Manager", email="maria.manager@dealflow360.com",
                        password_hash=mgr_hash, role=Role.MANAGER)
         finance = User(id=uuid4(), name="Felix Finance", email="felix.finance@dealflow360.com",
@@ -101,7 +103,7 @@ def seed(force: bool = False):
         buyer2 = User(id=uuid4(), name="TechVision Lead", email="procurement@techvision.in",
                       password_hash=cust_hash, role=Role.CUSTOMER)
         
-        users.extend([admin, manager, finance, ops, buyer1, buyer2])
+        users.extend([admin, rep_alex, manager, finance, ops, buyer1, buyer2])
 
         roles_pool = [Role.REP, Role.CUSTOMER, Role.MANAGER, Role.FINANCE, Role.OPERATIONS]
         role_weights = [0.45, 0.35, 0.08, 0.06, 0.06]

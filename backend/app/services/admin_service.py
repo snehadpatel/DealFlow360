@@ -182,12 +182,15 @@ def update_product(session: Session, product_id: UUID, **kwargs) -> ProductRespo
 
     final_stock = 0
     if stock_val is not None:
-        existing_stock = session.exec(
+        stocks = session.exec(
             select(StockInventory).where(StockInventory.product_id == product_id)
-        ).first()
-        if existing_stock:
-            existing_stock.available_units = int(stock_val)
-            session.add(existing_stock)
+        ).all()
+        if stocks:
+            stocks[0].available_units = int(stock_val)
+            session.add(stocks[0])
+            for other in stocks[1:]:
+                other.available_units = 0
+                session.add(other)
         else:
             first_wh = session.exec(select(Warehouse)).first()
             if first_wh:

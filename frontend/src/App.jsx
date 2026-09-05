@@ -28,6 +28,8 @@ export default function App() {
       setActiveTab('approval');
     } else if (user?.role === 'ADMIN') {
       setActiveTab('admin');
+    } else if (user?.role === 'REP') {
+      setActiveTab('sales_workspace');
     } else {
       setActiveTab('quotation');
     }
@@ -51,9 +53,10 @@ export default function App() {
   }
 
   const baseTabs = [
+    { id: "sales_workspace", label: "Sales Dashboard", roles: ["REP", "ADMIN"] },
     { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
-    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
+    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN", "OPERATIONS"] },
     { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
@@ -143,6 +146,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        {activeTab === "sales_workspace" && <SalesWorkspace />}
         {activeTab === "quotation" && <QuotationBuilder />}
         {activeTab === "approval" && <ApprovalScreen />}
         {activeTab === "fulfillment" && <FulfillmentScreen />}
