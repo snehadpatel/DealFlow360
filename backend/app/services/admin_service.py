@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import datetime
 
 from fastapi import HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 
 from app.core.security import get_password_hash
 from app.models.user import User, Role
@@ -14,6 +14,7 @@ from app.models.price_list import PriceList, PriceListItem
 from app.models.discount_rule import DiscountRule, UpsellRule
 from app.models.warehouse import Warehouse, StockInventory
 from app.models.audit import AuditLog
+from app.schemas.admin_schemas import ProductResponse
 
 
 # ─── Users ───────────────────────────────────────────────────────────────────
@@ -88,6 +89,10 @@ def get_customer_or_404(session: Session, customer_id: UUID) -> Customer:
     return c
 
 def create_customer(session: Session, **kwargs) -> Customer:
+    if "tier" in kwargs and isinstance(kwargs["tier"], str):
+        kwargs["tier"] = kwargs["tier"].upper()
+    if "status" in kwargs and isinstance(kwargs["status"], str):
+        kwargs["status"] = kwargs["status"].upper()
     customer = Customer(**kwargs)
     customer.updated_at = datetime.utcnow()
     session.add(customer)
@@ -99,6 +104,8 @@ def update_customer(session: Session, customer_id: UUID, **kwargs) -> Customer:
     c = get_customer_or_404(session, customer_id)
     for key, val in kwargs.items():
         if val is not None and hasattr(c, key):
+            if key in ("tier", "status") and isinstance(val, str):
+                val = val.upper()
             setattr(c, key, val)
     c.updated_at = datetime.utcnow()
     session.add(c)
@@ -115,34 +122,90 @@ def delete_customer(session: Session, customer_id: UUID) -> None:
 
 # ─── Products ────────────────────────────────────────────────────────────────
 
-def list_products(session: Session, include_archived: bool = False) -> List[Product]:
+def _to_product_response(p: Product, stock: int = 0) -> ProductResponse:
+    data = {c.name: getattr(p, c.name) for c in p.__table__.columns}
+    data["stock"] = stock
+    return ProductResponse(**data)
+
+def list_products(session: Session, include_archived: bool = False) -> List[ProductResponse]:
     stmt = select(Product)
     if not include_archived:
         stmt = stmt.where(Product.is_archived == False)
-    return session.exec(stmt.order_by(Product.name)).all()
+    products = session.exec(stmt.order_by(Product.name)).all()
 
-def get_product_or_404(session: Session, product_id: UUID) -> Product:
+    stocks = session.exec(
+        select(StockInventory.product_id, func.sum(StockInventory.available_units))
+        .group_by(StockInventory.product_id)
+    ).all()
+    stock_map = {p_id: int(total or 0) for p_id, total in stocks}
+    
+    return [_to_product_response(p, stock_map.get(p.id, 0)) for p in products]
+
+def get_product_or_404(session: Session, product_id: UUID) -> ProductResponse:
     p = session.get(Product, product_id)
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
-    return p
+    total_stock = session.exec(
+        select(func.sum(StockInventory.available_units)).where(StockInventory.product_id == product_id)
+    ).one_or_none()
+    return _to_product_response(p, int(total_stock or 0))
 
-def create_product(session: Session, **kwargs) -> Product:
+def create_product(session: Session, **kwargs) -> ProductResponse:
+    stock_val = kwargs.pop("stock", 0)
     product = Product(**kwargs)
     session.add(product)
     session.commit()
     session.refresh(product)
-    return product
 
-def update_product(session: Session, product_id: UUID, **kwargs) -> Product:
-    p = get_product_or_404(session, product_id)
+    first_wh = session.exec(select(Warehouse)).first()
+    if first_wh:
+        new_stock = StockInventory(
+            warehouse_id=first_wh.id,
+            product_id=product.id,
+            available_units=int(stock_val or 0)
+        )
+        session.add(new_stock)
+        session.commit()
+    return _to_product_response(product, int(stock_val or 0))
+
+def update_product(session: Session, product_id: UUID, **kwargs) -> ProductResponse:
+    stock_val = kwargs.pop("stock", None)
+    p = session.get(Product, product_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Product not found")
     for key, val in kwargs.items():
         if val is not None and hasattr(p, key):
             setattr(p, key, val)
     session.add(p)
     session.commit()
     session.refresh(p)
-    return p
+
+    final_stock = 0
+    if stock_val is not None:
+        existing_stock = session.exec(
+            select(StockInventory).where(StockInventory.product_id == product_id)
+        ).first()
+        if existing_stock:
+            existing_stock.available_units = int(stock_val)
+            session.add(existing_stock)
+        else:
+            first_wh = session.exec(select(Warehouse)).first()
+            if first_wh:
+                new_stock = StockInventory(
+                    warehouse_id=first_wh.id,
+                    product_id=product_id,
+                    available_units=int(stock_val)
+                )
+                session.add(new_stock)
+        session.commit()
+        final_stock = int(stock_val)
+    else:
+        total_stock = session.exec(
+            select(func.sum(StockInventory.available_units)).where(StockInventory.product_id == product_id)
+        ).one_or_none()
+        final_stock = int(total_stock or 0)
+
+    return _to_product_response(p, final_stock)
 
 def archive_product(session: Session, product_id: UUID) -> Product:
     p = get_product_or_404(session, product_id)

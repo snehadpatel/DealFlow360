@@ -117,7 +117,10 @@ export default function Products() {
   async function handleSaveEditProduct() {
     if (!editProduct || !editForm.name || !editForm.sku) return;
     try {
-      await updateProductApi(editProduct.id, editForm);
+      await updateProductApi(editProduct.id, {
+        ...editForm,
+        cost: editForm.price * 0.7,
+      });
       await loadProducts();
       setEditProduct(null);
       showToast("Product updated successfully");
@@ -290,12 +293,10 @@ export default function Products() {
                         className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
                           (p.stock || 0) <= 3
                             ? "bg-red-100 text-red-700"
-                            : (p.stock || 0) > 100
-                            ? "bg-blue-50 text-blue-700"
                             : "bg-emerald-50 text-emerald-700"
                         }`}
                       >
-                        {(p.stock || 0) > 100 ? "Unlimited" : (p.stock || 0)}
+                        {p.stock || 0}
                       </span>
                     </td>
                     <td className="py-3 px-4"><StatusPill status={p.is_archived ? "inactive" : "active"} /></td>
