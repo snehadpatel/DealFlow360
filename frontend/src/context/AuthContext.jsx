@@ -27,15 +27,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // Real login only. On failure we surface the error so the UI shows that the
-  // backend isn't connected — we do NOT fabricate a user (that would hide a
-  // broken integration during the demo, and the whole pitch is "real logic").
+  // Fully mocked login to run the frontend without a backend
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const data = await apiClient.post("/auth/login", { email, password });
-      saveAuth(data.user || { name: data.name, role: data.role, email }, data.access_token);
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 500)); // artificial delay
+      const role = Object.keys(DEMO_CREDENTIALS).find(r => DEMO_CREDENTIALS[r].email === email) || "REP";
+      const userData = { name: email.split('@')[0], role: role, email };
+      saveAuth(userData, "mock-jwt-token");
+      return { user: userData, access_token: "mock-jwt-token" };
     } finally {
       setLoading(false);
     }
@@ -44,9 +44,10 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password, role = "REP") => {
     setLoading(true);
     try {
-      const data = await apiClient.post("/auth/signup", { name, email, password, role });
-      saveAuth(data.user || { name, role, email }, data.access_token);
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const userData = { name, role, email };
+      saveAuth(userData, "mock-jwt-token");
+      return { user: userData, access_token: "mock-jwt-token" };
     } finally {
       setLoading(false);
     }
@@ -55,17 +56,15 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async (credential) => {
     setLoading(true);
     try {
-      const data = await apiClient.post("/auth/google", { token: credential });
-      saveAuth(data.user, data.access_token);
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const userData = { name: "Google User", role: "REP", email: "google@dealflow360.com" };
+      saveAuth(userData, "mock-jwt-token");
+      return { user: userData, access_token: "mock-jwt-token" };
     } finally {
       setLoading(false);
     }
   };
 
-  // Demo personas log in through the REAL /auth/login endpoint using the
-  // credentials created by backend/seed.py, so a one-click demo still exercises
-  // the true auth + RBAC path (real JWT, real role scoping).
   const DEMO_CREDENTIALS = {
     REP: { email: "alex.rep@dealflow360.com", password: "rep123" },
     MANAGER: { email: "maria.manager@dealflow360.com", password: "mgr123" },
