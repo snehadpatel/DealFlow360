@@ -66,6 +66,13 @@ def toggle_user_active(session: Session, user_id: UUID, is_active: bool) -> User
     return user
 
 
+def delete_user(session: Session, user_id: UUID) -> None:
+    u = session.get(User, user_id)
+    if u:
+        session.delete(u)
+        session.commit()
+
+
 # ─── Customers ───────────────────────────────────────────────────────────────
 
 def list_customers(session: Session, rep_id: Optional[UUID] = None) -> List[Customer]:
@@ -98,6 +105,12 @@ def update_customer(session: Session, customer_id: UUID, **kwargs) -> Customer:
     session.commit()
     session.refresh(c)
     return c
+
+def delete_customer(session: Session, customer_id: UUID) -> None:
+    c = session.get(Customer, customer_id)
+    if c:
+        session.delete(c)
+        session.commit()
 
 
 # ─── Products ────────────────────────────────────────────────────────────────

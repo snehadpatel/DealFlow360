@@ -43,3 +43,8 @@ def enable_user(user_id: UUID, session: Session = Depends(get_session), _: User 
 def reset_password(user_id: UUID, payload: PasswordReset, session: Session = Depends(get_session), _: User = Depends(admin_guard)):
     admin_service.reset_password(session, user_id, payload.new_password)
     return {"message": "Password reset successfully"}
+
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(user_id: UUID, session: Session = Depends(get_session), _: User = Depends(admin_guard)):
+    admin_service.delete_user(session, user_id)

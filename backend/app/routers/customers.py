@@ -46,3 +46,12 @@ def update_customer(
     user: User = Depends(require_roles([Role.ADMIN, Role.MANAGER, Role.REP]))
 ):
     return admin_service.update_customer(session, customer_id, **payload.model_dump(exclude_none=True))
+
+
+@router.delete("/{customer_id}", status_code=204)
+def delete_customer(
+    customer_id: UUID,
+    session: Session = Depends(get_session),
+    user: User = Depends(require_roles([Role.ADMIN, Role.MANAGER]))
+):
+    admin_service.delete_customer(session, customer_id)

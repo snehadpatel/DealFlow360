@@ -160,9 +160,9 @@ export async function updateUserApi(id: string, data: Partial<ApiUser>): Promise
 
 export async function deleteUserApi(id: string): Promise<void> {
   try {
-    await apiClient.post(`/users/${id}/disable`);
+    await apiClient.delete(`/users/${id}`);
   } catch (err) {
-    console.error("Failed to disable user in DB:", err);
+    console.error("Failed to delete user in DB:", err);
   }
 }
 
