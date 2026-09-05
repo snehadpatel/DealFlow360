@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CustomerDashboard from '../components/customer/CustomerDashboard';
 import QuotationList from '../components/customer/QuotationList';
 import QuotationDetail from '../components/customer/QuotationDetail';
+import NegotiationsView from '../components/customer/NegotiationsView';
 import InvoicesView from '../components/customer/InvoicesView';
 import SubscriptionsView from '../components/customer/SubscriptionsView';
 import ProfileView from '../components/customer/ProfileView';
@@ -27,6 +28,7 @@ export default function CustomerPortal({ activeTab, onTabChange }) {
             <CustomerDashboard
               onSelectQuotation={handleSelectQuotation}
               onViewAllQuotations={() => onTabChange('quotations')}
+              onNavigateTab={(tab) => onTabChange(tab)}
             />
           )}
 
@@ -35,7 +37,7 @@ export default function CustomerPortal({ activeTab, onTabChange }) {
           )}
 
           {activeTab === 'negotiations' && (
-            <QuotationList onSelectQuotation={handleSelectQuotation} />
+            <NegotiationsView onSelectQuotation={handleSelectQuotation} />
           )}
 
           {activeTab === 'invoices' && <InvoicesView />}

@@ -168,14 +168,14 @@ def seed_rich_customer_portal():
             (InvoiceStatus.PAID, 115, "INV-2026-001"),
             (InvoiceStatus.PAID, 70, "INV-2026-002"),
             (InvoiceStatus.PAID, 55, "INV-2026-003"),
-            (InvoiceStatus.PENDING, 10, "INV-2026-004"),
+            (InvoiceStatus.SENT, 10, "INV-2026-004"),
             (InvoiceStatus.OVERDUE, 40, "INV-2026-005"),
             (InvoiceStatus.PAID, 200, "INV-2026-006"),
-            (InvoiceStatus.PENDING, 5, "INV-2026-007"),
+            (InvoiceStatus.SENT, 5, "INV-2026-007"),
             (InvoiceStatus.PAID, 140, "INV-2026-008"),
             (InvoiceStatus.OVERDUE, 35, "INV-2026-009"),
             (InvoiceStatus.PAID, 95, "INV-2026-010"),
-            (InvoiceStatus.PENDING, 8, "INV-2026-011"),
+            (InvoiceStatus.SENT, 8, "INV-2026-011"),
             (InvoiceStatus.PAID, 160, "INV-2026-012"),
         ]
 
@@ -265,13 +265,13 @@ def seed_rich_customer_portal():
         # 4. Seed 8 Subscriptions
         sub_specs = [
             (SubscriptionStatus.ACTIVE, 0, BillingCycle.MONTHLY, 3),
-            (SubscriptionStatus.ACTIVE, 1, BillingCycle.ANNUAL, 1),
+            (SubscriptionStatus.ACTIVE, 1, BillingCycle.YEARLY, 1),
             (SubscriptionStatus.ACTIVE, 2, BillingCycle.MONTHLY, 5),
             (SubscriptionStatus.PAUSED, 3, BillingCycle.MONTHLY, 2),
-            (SubscriptionStatus.ACTIVE, 4, BillingCycle.ANNUAL, 10),
+            (SubscriptionStatus.ACTIVE, 4, BillingCycle.YEARLY, 10),
             (SubscriptionStatus.CANCELLED, 5, BillingCycle.MONTHLY, 1),
             (SubscriptionStatus.ACTIVE, 6, BillingCycle.MONTHLY, 4),
-            (SubscriptionStatus.PAUSED, 7, BillingCycle.ANNUAL, 2),
+            (SubscriptionStatus.PAUSED, 7, BillingCycle.YEARLY, 2),
         ]
 
         for s_status, plan_idx, cycle, qty in sub_specs:
