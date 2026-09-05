@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, Bot, Sparkles, RefreshCw, Minimize2 } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatSuggestions from './ChatSuggestions';
@@ -13,30 +12,31 @@ const DEFAULT_WELCOME = {
   intent: 'general',
 };
 
-export default function ChatWidget() {
-  const location = useLocation();
+// Map the app's active tab id (useState-based nav; there is no Router) to a
+// chat context screen the assistant understands.
+function tabToScreen(activeTab = '') {
+  const t = activeTab.toLowerCase();
+  if (t.includes('billing')) return 'billing';
+  if (t.includes('subscription')) return 'subscriptions';
+  if (t.includes('quotation') || t.includes('quote')) return 'quotes';
+  if (t.includes('approval')) return 'approvals';
+  if (t.includes('fulfillment')) return 'fulfillment';
+  return 'general';
+}
+
+export default function ChatWidget({ activeTab = 'general' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([DEFAULT_WELCOME]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const [activeScreen, setActiveScreen] = useState('general');
+  const activeScreen = tabToScreen(activeTab);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Determine active screen based on URL
+  // Fetch screen-relevant suggestions whenever the active screen changes.
   useEffect(() => {
-    const path = location.pathname.toLowerCase();
-    let screen = 'general';
-    if (path.includes('billing')) screen = 'billing';
-    else if (path.includes('subscription')) screen = 'subscriptions';
-    else if (path.includes('quote')) screen = 'quotes';
-    else if (path.includes('approval')) screen = 'approvals';
-    else if (path.includes('fulfillment')) screen = 'fulfillment';
-    setActiveScreen(screen);
-
-    // Fetch screen-relevant suggestions
-    getChatSuggestions(screen)
+    getChatSuggestions(activeScreen)
       .then((res) => {
         if (res?.suggestions) setSuggestions(res.suggestions);
       })
@@ -47,7 +47,7 @@ export default function ChatWidget() {
           'Any pricing anomalies?',
         ]);
       });
-  }, [location.pathname]);
+  }, [activeScreen]);
 
   // Scroll to bottom on new messages
   useEffect(() => {

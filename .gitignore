@@ -45,3 +45,5 @@ Thumbs.db
 .vscode/
 .claude/
 backend/app/ml/models/
+# Seeded local demo database (regenerate with: python seed.py)
+backend/dealflow360.db

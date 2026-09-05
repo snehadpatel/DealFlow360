@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from uuid import UUID
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import HTTPException, Security, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
@@ -10,14 +10,24 @@ from app.core.config import settings
 from app.db import get_session
 from app.models.user import User, Role
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use the bcrypt library directly. passlib 1.7.4's bcrypt backend is broken
+# against bcrypt >= 4.1 (its version-detection probe raises "password cannot be
+# longer than 72 bytes"), so we call bcrypt ourselves. Hashes are the standard
+# $2b$ format, so any previously-seeded passlib hashes still verify.
 security_scheme = HTTPBearer(auto_error=False)
 
+# bcrypt hard-caps the input at 72 bytes; truncate so long passwords don't raise.
+def _to_bytes(password: str) -> bytes:
+    return password.encode("utf-8")[:72]
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(_to_bytes(plain_password), hashed_password.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(_to_bytes(password), bcrypt.gensalt()).decode("utf-8")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()

@@ -280,11 +280,11 @@ def seed():
 
         # ─── Approvals ────────────────────────────────────────────────────────
         apr1 = ApprovalRequest(id=uuid4(), quotation_id=q2.id, approver_id=manager.id,
-                                approver_role=Role.MANAGER, status=ApprovalStatus.PENDING,
-                                required_by=Role.MANAGER)
+                                approver_role=Role.MANAGER.value, approval_level=1,
+                                status=ApprovalStatus.PENDING, quote_version=q2.version)
         apr2 = ApprovalRequest(id=uuid4(), quotation_id=q2.id, approver_id=finance.id,
-                                approver_role=Role.FINANCE, status=ApprovalStatus.PENDING,
-                                required_by=Role.FINANCE)
+                                approver_role=Role.FINANCE.value, approval_level=2,
+                                status=ApprovalStatus.PENDING, quote_version=q2.version)
         session.add(apr1)
         session.add(apr2)
         session.flush()

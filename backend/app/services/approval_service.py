@@ -5,13 +5,15 @@ approver decisions (approve / reject / return), and — when an already-issued
 quote is renegotiated to more aggressive terms — automatically invalidates the
 stale approvals and requests fresh sign-off.
 
-Routing builds on the existing deterministic ``deal_logic.determine_approval_chain``
-(risk-based) and layers discount / margin rules on top:
+Routing is driven by the spec-compliant blended-risk model in
+``pricing_policy`` (the SUM of per-line discount overages beyond each line's
+binding ceiling — the exact figure judges hand-verify in §10), with a margin
+floor layered on as an independent Finance trigger:
 
-    discount <= 10%                     -> no approval
-    10% < discount <= 20%               -> Sales Manager
-    discount > 20%  OR  margin < 15%    -> Sales Manager + Finance
-    HIGH blended risk                   -> Sales Manager + Finance
+    summed overage == 0                 -> no approval (auto-approve)
+    0 < summed overage <= 15pp          -> Sales Manager
+    summed overage > 15pp               -> Sales Manager + Finance
+    margin < 15%                        -> Sales Manager + Finance
 """
 from datetime import datetime
 from typing import Optional
@@ -22,10 +24,12 @@ from sqlmodel import Session, select
 
 from app.models.approval import ApprovalRequest, ApprovalStatus
 from app.models.customer import Customer
-from app.models.quotation import Quotation, QuotationLine, QuoteStatus, RiskLevel
+from app.models.product import Product
+from app.models.quotation import Quotation, QuotationLine, QuoteStatus
 from app.models.user import Role, User
-from app.services import audit_service, deal_logic, risk_engine
+from app.services import audit_service, pricing_policy
 from app.services.audit_service import AuditAction
+from app.services.pricing_policy import LineInput
 
 # Ordering of approval tiers within a chain (lower level acts first).
 ROLE_LEVEL = {"MANAGER": 1, "FINANCE": 2}
@@ -38,21 +42,22 @@ MARGIN_FLOOR_FOR_FINANCE = 15.0  # margin % below which Finance must sign off
 # ---------------------------------------------------------------------------
 
 def determine_required_approvals(
-    blended_risk: Optional[float],
-    weighted_discount: float,
+    total_overage_pp: float,
     customer_tier: str,
     margin_percent: float,
 ) -> list[str]:
-    """Return the ordered list of approver roles required for these terms."""
-    roles: set[str] = set(deal_logic.determine_approval_chain(blended_risk or 0.0))
+    """Return the ordered list of approver roles required for these terms.
 
-    if weighted_discount > 10.0:
-        roles.add("MANAGER")
-    if weighted_discount > 20.0:
-        roles.update({"MANAGER", "FINANCE"})
+    Routing is driven by the spec-compliant blended risk = the SUM of per-line
+    discount overages beyond each line's binding ceiling (``pricing_policy``).
+    This is the exact figure judges hand-verify in §10. Margin floor is layered
+    on top as an independent Finance trigger.
+    """
+    roles: set[str] = set(pricing_policy.determine_approval_chain(total_overage_pp or 0.0))
+
+    # Thin margin always pulls in Finance (and therefore a Manager), even when
+    # every line sits within its discount ceiling.
     if margin_percent < MARGIN_FLOOR_FOR_FINANCE:
-        roles.update({"MANAGER", "FINANCE"})
-    if risk_engine.get_risk_level(blended_risk or 0.0) == RiskLevel.HIGH:
         roles.update({"MANAGER", "FINANCE"})
 
     return sorted(roles, key=lambda r: ROLE_LEVEL.get(r, 99))
@@ -63,13 +68,33 @@ def determine_required_approvals(
 # ---------------------------------------------------------------------------
 
 def _quote_inputs(session: Session, quotation: Quotation) -> tuple[float, str]:
+    """Compute the spec-compliant summed overage-pp and the customer tier.
+
+    Builds ``pricing_policy.LineInput``s from the real quote lines and each
+    product's discount ceiling so the routed number is the same sum-of-overages
+    the spec (§10) defines and judges hand-verify.
+    """
     lines = list(session.exec(select(QuotationLine).where(QuotationLine.quotation_id == quotation.id)))
-    weighted = risk_engine.weighted_discount_percent(
-        [{"discount_percent": l.discount_percent, "weight": l.line_subtotal} for l in lines]
-    )
     customer = session.get(Customer, quotation.customer_id)
     tier = (customer.tier.value if customer and hasattr(customer.tier, "value") else str(customer.tier)) if customer else ""
-    return weighted, tier
+
+    product_ids = [l.product_id for l in lines]
+    products = session.exec(select(Product).where(Product.id.in_(product_ids))).all() if product_ids else []
+    ceiling_by_id = {p.id: p.discount_ceiling for p in products}
+
+    line_inputs = [
+        LineInput(
+            list_price=l.unit_price,
+            cost=l.unit_cost,
+            category_ceiling=ceiling_by_id.get(l.product_id, 20.0),
+            discount_percent=l.discount_percent,
+            qty=l.quantity,
+            product_id=str(l.product_id),
+        )
+        for l in lines
+    ]
+    risk = pricing_policy.blended_risk(line_inputs, tier)
+    return risk.total_overage_pp, tier
 
 
 def _open_approvals(session: Session, quotation_id: UUID) -> list[ApprovalRequest]:
@@ -114,8 +139,8 @@ def route_for_approval(session: Session, quotation: Quotation, *, user_id: Optio
     If no approval is required the quote is auto-approved. Assumes totals/risk
     were already refreshed by ``quote_service.recalculate``. Stages only.
     """
-    weighted, tier = _quote_inputs(session, quotation)
-    required = determine_required_approvals(quotation.blended_risk, weighted, tier, quotation.margin_percent)
+    total_overage_pp, tier = _quote_inputs(session, quotation)
+    required = determine_required_approvals(total_overage_pp, tier, quotation.margin_percent)
 
     if not required:
         quotation.status = QuoteStatus.APPROVED

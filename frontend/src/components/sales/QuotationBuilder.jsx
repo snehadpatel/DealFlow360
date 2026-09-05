@@ -1,189 +1,353 @@
-import React, { useState, useEffect } from 'react';
-import { getProductCatalog, getAiRecommendation } from '../../api/salesApi';
-import { Search, Plus, Minus, X, AlertTriangle, AlertCircle, Bot, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  getProducts,
+  getCustomers,
+  createQuote,
+  updateQuote,
+  submitQuote,
+} from '../../api/salesRealApi';
+import AIRecommendationPanel from '../ai/AIRecommendationPanel';
+import {
+  Search, Plus, Minus, X, AlertTriangle, AlertCircle, CheckCircle2, ChevronRight, Loader2,
+} from 'lucide-react';
+
+const CATEGORY_ORDER = ['Hardware', 'Services', 'Subscription'];
+
+const fmtUSD = (val) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val || 0);
+
+// Local preview math ONLY — shown live while editing. The authoritative
+// numbers come back from the backend after Save/Submit (see `saved` state).
+function previewLine(item) {
+  const gross = item.price * item.qty;
+  const discountAmt = gross * (item.discount_percent / 100);
+  const net = gross - discountAmt;
+  const cost = item.cost * item.qty;
+  const tax = net * ((item.tax_rate ?? 0) / 100);
+  return { gross, discountAmt, net, cost, tax, total: net + tax };
+}
 
 export default function QuotationBuilder() {
   const [catalog, setCatalog] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [customerId, setCustomerId] = useState('');
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Builder state
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [customer, setCustomer] = useState('ABC Corporation');
-  const [quoteId] = useState('Q-' + Math.floor(1000 + Math.random() * 9000));
-  
-  // AI State
-  const [aiRec, setAiRec] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
+
+  // Backend interaction state
+  const [quoteId, setQuoteId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [saved, setSaved] = useState(null); // backend QuoteDetailResponse
 
   useEffect(() => {
-    getProductCatalog().then(setCatalog).finally(() => setLoading(false));
+    Promise.all([getProducts(), getCustomers()])
+      .then(([products, custs]) => {
+        setCatalog(Array.isArray(products) ? products : []);
+        setCustomers(Array.isArray(custs) ? custs : []);
+        if (custs?.length) setCustomerId(custs[0].id);
+      })
+      .catch(() => setError('Could not load catalog/customers. Is the backend running and seeded?'))
+      .finally(() => setLoading(false));
   }, []);
 
-  // AI Recommendation Trigger
-  useEffect(() => {
-    if (cart.length > 0) {
-      setAiLoading(true);
-      getAiRecommendation(cart).then((rec) => {
-        // Only show recommendation if it's not already in the cart
-        if (rec && !cart.find(item => item.id === rec.product.id)) {
-          setAiRec(rec);
-        } else {
-          setAiRec(null);
-        }
-      }).finally(() => setAiLoading(false));
-    } else {
-      setAiRec(null);
-    }
-  }, [cart]);
+  const selectedCustomer = customers.find((c) => c.id === customerId);
+
+  // --- Cart mutations (any change invalidates the saved backend snapshot) ---
+  const invalidate = () => setSaved(null);
 
   const addToCart = (product) => {
-    const existing = cart.find(item => item.id === product.id);
-    if (existing) {
-      setCart(cart.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item));
-    } else {
-      setCart([...cart, { ...product, qty: 1 }]);
-    }
+    invalidate();
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === product.id);
+      if (existing) {
+        return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i));
+      }
+      return [
+        ...prev,
+        {
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          cost: product.cost,
+          tax_rate: product.tax_rate,
+          discount_ceiling: product.discount_ceiling,
+          qty: 1,
+          discount_percent: 0,
+        },
+      ];
+    });
   };
 
   const updateQty = (id, delta) => {
-    setCart(cart.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.qty + delta);
-        return { ...item, qty: newQty };
-      }
-      return item;
-    }));
+    invalidate();
+    setCart((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i))
+    );
+  };
+
+  const updateLineDiscount = (id, value) => {
+    invalidate();
+    const pct = Math.min(100, Math.max(0, Number(value) || 0));
+    setCart((prev) => prev.map((i) => (i.id === id ? { ...i, discount_percent: pct } : i)));
   };
 
   const removeFromCart = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+    invalidate();
+    setCart((prev) => prev.filter((i) => i.id !== id));
   };
 
-  const addAiRecommendation = () => {
-    if (aiRec) {
-      addToCart(aiRec.product);
-      setAiRec(null);
+  // Accept an AI upsell suggestion: resolve it to a real catalog product (by id
+  // or name) and add it to the cart so it flows through the same backend pricing.
+  const handleAddRecommendation = (rec) => {
+    const match =
+      catalog.find((p) => p.id === rec.productId || p.id === rec.product_id) ||
+      catalog.find((p) => p.name?.toLowerCase() === (rec.productName || '').toLowerCase());
+    if (match) {
+      addToCart(match);
     }
   };
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+  // --- Live local preview totals ---
+  const preview = useMemo(() => {
+    return cart.reduce(
+      (acc, item) => {
+        const l = previewLine(item);
+        acc.subtotal += l.gross;
+        acc.discount += l.discountAmt;
+        acc.net += l.net;
+        acc.cost += l.cost;
+        acc.tax += l.tax;
+        acc.total += l.total;
+        return acc;
+      },
+      { subtotal: 0, discount: 0, net: 0, cost: 0, tax: 0, total: 0 }
+    );
+  }, [cart]);
 
-  // Live Margin & Financial Calculations
-  const rawSubtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const totalCost = cart.reduce((acc, item) => acc + (item.cost * item.qty), 0);
-  
-  const discountAmount = rawSubtotal * (discountPercent / 100);
-  const netRevenue = rawSubtotal - discountAmount;
-  const taxAmount = netRevenue * 0.18; // 18% GST assumed
-  const finalTotal = netRevenue + taxAmount;
-  
-  const profit = netRevenue - totalCost;
-  const marginPercent = netRevenue > 0 ? (profit / netRevenue) * 100 : 0;
-  
-  // Risk & Margin Indicators
-  let marginStatus = { color: 'text-success-600', bg: 'bg-success-50 border-success-200', icon: CheckCircle2, text: 'Healthy' };
-  let riskScore = 15 + (discountPercent * 2); // Mock risk calculation
-  
-  if (marginPercent < 15) {
-    marginStatus = { color: 'text-warning-600', bg: 'bg-warning-50 border-warning-200', icon: AlertCircle, text: 'Watch' };
-    riskScore += 20;
-  }
-  if (marginPercent < 10) {
-    marginStatus = { color: 'text-danger-600', bg: 'bg-danger-50 border-danger-200', icon: AlertTriangle, text: 'Risky' };
-    riskScore += 40;
-  }
-  
-  // Cap risk score
-  riskScore = Math.min(100, Math.max(0, riskScore));
+  const previewMarginPct = preview.net > 0 ? ((preview.net - preview.cost) / preview.net) * 100 : 0;
 
-  const filteredCatalog = catalog.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  // A line is over its ceiling when its discount exceeds the product ceiling.
+  const overCeilingLines = cart.filter((i) => i.discount_percent > (i.discount_ceiling ?? 100));
+
+  // --- Backend persistence ---
+  const buildPayload = () => ({
+    customer_id: customerId,
+    items: cart.map((i) => ({
+      product_id: i.id,
+      quantity: i.qty,
+      discount_percent: i.discount_percent,
+    })),
+  });
+
+  const persistDraft = async () => {
+    if (!customerId || cart.length === 0) return null;
+    setError(null);
+    setSaving(true);
+    try {
+      let result;
+      if (quoteId) {
+        result = await updateQuote(quoteId, {
+          items: cart.map((i) => ({
+            product_id: i.id,
+            quantity: i.qty,
+            discount_percent: i.discount_percent,
+          })),
+        });
+      } else {
+        result = await createQuote(buildPayload());
+        setQuoteId(result.id);
+      }
+      setSaved(result);
+      return result;
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to save the quote to the backend.');
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setError(null);
+    // Ensure the latest cart is persisted before submitting for approval.
+    const draft = await persistDraft();
+    const id = draft?.id || quoteId;
+    if (!id) return;
+    setSubmitting(true);
+    try {
+      const result = await submitQuote(id);
+      setSaved(result);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to submit the quote for approval.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // --- Derived display from the authoritative backend snapshot ---
+  const backendMarginPct = saved?.margin_percent;
+  const backendRisk = saved?.blended_risk;
+  const backendRiskLevel = saved?.risk_level;
+  const backendStatus = saved?.status;
+  const approvalChain = (saved?.approvals || [])
+    .filter((a) => a.status === 'PENDING')
+    .map((a) => a.approver_role);
+
+  const displayMargin = saved ? backendMarginPct : previewMarginPct;
+  let marginStatus = { color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200', icon: CheckCircle2, text: 'Healthy' };
+  if (displayMargin < 15) marginStatus = { color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200', icon: AlertCircle, text: 'Watch' };
+  if (displayMargin < 10) marginStatus = { color: 'text-red-600', bg: 'bg-red-50 border-red-200', icon: AlertTriangle, text: 'Risky' };
+
+  const grouped = CATEGORY_ORDER.map((cat) => ({
+    cat,
+    items: catalog.filter(
+      (p) => p.category === cat && p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+  })).filter((g) => g.items.length > 0);
+  const uncategorized = catalog.filter(
+    (p) => !CATEGORY_ORDER.includes(p.category) && p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  if (uncategorized.length) grouped.push({ cat: 'Other', items: uncategorized });
 
   return (
-    <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col">
+    <div className="space-y-6 flex flex-col">
       <div className="flex items-center justify-between border-b border-gray-200 pb-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-extrabold text-textPrimary">Quotation Builder</h1>
+          <h1 className="text-2xl font-extrabold text-[#1F2937]">Quotation Builder</h1>
           <div className="flex items-center space-x-2 mt-1">
-            <span className="text-sm font-semibold text-textSecondary">Customer:</span>
-            <span className="text-sm font-bold text-brand-500">{customer}</span>
-            <ChevronRight className="w-4 h-4 text-gray-300" />
-            <span className="text-sm font-bold text-textPrimary">{quoteId}</span>
+            <span className="text-sm font-semibold text-[#6B7280]">Customer:</span>
+            <select
+              value={customerId}
+              onChange={(e) => { setCustomerId(e.target.value); invalidate(); }}
+              className="text-sm font-bold text-[#F26C4F] bg-transparent border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#F26C4F]"
+            >
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.tier})
+                </option>
+              ))}
+            </select>
+            {quoteId && (
+              <>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+                <span className="text-sm font-bold text-[#1F2937]">#{String(quoteId).slice(0, 8)}</span>
+              </>
+            )}
           </div>
         </div>
         <div className="flex space-x-3">
-          <button className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-textPrimary rounded-full text-xs font-semibold transition">
+          <button
+            onClick={persistDraft}
+            disabled={cart.length === 0 || !customerId || saving}
+            className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 text-[#1F2937] rounded-full text-xs font-semibold transition inline-flex items-center gap-1.5"
+          >
+            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Save Draft
           </button>
-          <button disabled={cart.length === 0} className="px-4 py-2 bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-full text-xs font-semibold shadow-btn transition">
+          <button
+            onClick={handleSubmit}
+            disabled={cart.length === 0 || !customerId || submitting || saving}
+            className="px-4 py-2 bg-[#F26C4F] hover:bg-[#E05338] disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-full text-xs font-semibold shadow-sm transition inline-flex items-center gap-1.5"
+          >
+            {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Submit for Approval
           </button>
         </div>
       </div>
 
+      {error && (
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Backend result banner — proves the number is server-computed */}
+      {saved && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+          <span className="font-bold uppercase tracking-wider text-slate-500">Backend result</span>
+          <span>Status: <strong className="text-[#1F2937]">{backendStatus}</strong></span>
+          <span>Blended risk (overage): <strong className="text-[#1F2937]">{backendRisk ?? 0}</strong> ({backendRiskLevel})</span>
+          <span>Margin: <strong className="text-[#1F2937]">{Number(backendMarginPct).toFixed(1)}%</strong></span>
+          {backendStatus === 'APPROVED' && (
+            <span className="text-emerald-600 font-semibold">✓ Auto-approved (within all ceilings)</span>
+          )}
+          {approvalChain.length > 0 && (
+            <span className="text-amber-600 font-semibold">Routed to: {approvalChain.join(' → ')}</span>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
-        
-        {/* Left: Product Catalog */}
-        <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
+        {/* Left: Product Catalog grouped by category */}
+        <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-textSecondary mb-3">Product Catalog</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#6B7280] mb-3">Product Catalog</h3>
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-textSecondary" />
-              <input 
-                type="text" 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                placeholder="Search products..." 
-                className="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-xs text-textPrimary focus:outline-none focus:border-primary-500 transition" 
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#6B7280]" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search products..."
+                className="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-[#F26C4F] transition"
               />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-2 max-h-[460px]">
             {loading ? (
               <div className="space-y-2 p-2 animate-pulse">
-                {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-50 rounded-lg" />)}
+                {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-50 rounded-lg" />)}
               </div>
-            ) : filteredCatalog.length > 0 ? (
-              <div className="space-y-2">
-                {filteredCatalog.map(product => (
-                  <div key={product.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-brand-300 hover:shadow-sm transition group bg-white">
-                    <div>
-                      <div className="font-bold text-sm text-textPrimary">{product.name}</div>
-                      <div className="flex items-center space-x-2 mt-0.5 text-xs text-textSecondary">
-                        <span className="font-semibold text-brand-500">{formatCurrency(product.price)}</span>
-                        <span>•</span>
-                        <span>Stock: {product.stock > 100 ? '100+' : product.stock}</span>
-                      </div>
+            ) : grouped.length > 0 ? (
+              <div className="space-y-4">
+                {grouped.map((group) => (
+                  <div key={group.cat}>
+                    <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{group.cat}</div>
+                    <div className="space-y-2">
+                      {group.items.map((product) => (
+                        <div key={product.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-[#F26C4F]/40 hover:shadow-sm transition group bg-white">
+                          <div>
+                            <div className="font-bold text-sm text-[#1F2937]">{product.name}</div>
+                            <div className="flex items-center space-x-2 mt-0.5 text-xs text-[#6B7280]">
+                              <span className="font-semibold text-[#F26C4F]">{fmtUSD(product.price)}</span>
+                              <span>•</span>
+                              <span>Ceiling: {product.discount_ceiling}%</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => addToCart(product)}
+                            className="p-1.5 bg-gray-100 hover:bg-[#F26C4F] hover:text-white text-[#6B7280] rounded-lg transition"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <button 
-                      onClick={() => addToCart(product)}
-                      className="p-1.5 bg-gray-100 hover:bg-brand-500 hover:text-white text-textSecondary rounded-lg transition opacity-0 group-hover:opacity-100"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center p-8 text-xs text-textSecondary">No products found.</div>
+              <div className="text-center p-8 text-xs text-[#6B7280]">No products found.</div>
             )}
           </div>
         </div>
 
-        {/* Right: Cart, AI & Financials */}
+        {/* Right: Cart + Financials */}
         <div className="flex-1 flex flex-col gap-4 min-h-0">
-          
-          {/* Cart Section */}
-          <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-textSecondary">Quotation Cart</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#6B7280]">Quotation Cart</h3>
               <span className="text-xs font-bold bg-white border border-gray-200 px-2 py-0.5 rounded-full">{cart.length} items</span>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+
+            <div className="flex-1 overflow-y-auto p-4 max-h-[340px]">
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-gray-300 space-y-2">
+                <div className="h-full flex flex-col items-center justify-center text-gray-300 space-y-2 py-8">
                   <div className="w-12 h-12 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center">
                     <Plus className="w-5 h-5" />
                   </div>
@@ -191,126 +355,121 @@ export default function QuotationBuilder() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {cart.map(item => (
-                    <div key={item.id} className="flex flex-col p-3 border border-gray-200 rounded-lg bg-gray-50/50">
-                      <div className="flex justify-between items-start">
-                        <span className="font-bold text-sm text-textPrimary">{item.name}</span>
-                        <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-danger-500"><X className="w-3.5 h-3.5" /></button>
-                      </div>
-                      <div className="flex justify-between items-end mt-3">
-                        <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-lg p-0.5">
-                          <button onClick={() => updateQty(item.id, -1)} className="p-1 text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded"><Minus className="w-3 h-3" /></button>
-                          <span className="text-xs font-bold w-6 text-center">{item.qty}</span>
-                          <button onClick={() => updateQty(item.id, 1)} className="p-1 text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded"><Plus className="w-3 h-3" /></button>
+                  {cart.map((item) => {
+                    const overCeiling = item.discount_percent > (item.discount_ceiling ?? 100);
+                    return (
+                      <div key={item.id} className="flex flex-col p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-bold text-sm text-[#1F2937]">{item.name}</span>
+                            <span className="ml-2 text-[10px] text-slate-400">{item.category}</span>
+                          </div>
+                          <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5" /></button>
                         </div>
-                        <span className="font-bold text-sm text-textPrimary">{formatCurrency(item.price * item.qty)}</span>
+                        <div className="flex justify-between items-end mt-3">
+                          <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-lg p-0.5">
+                            <button onClick={() => updateQty(item.id, -1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Minus className="w-3 h-3" /></button>
+                            <span className="text-xs font-bold w-6 text-center">{item.qty}</span>
+                            <button onClick={() => updateQty(item.id, 1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Plus className="w-3 h-3" /></button>
+                          </div>
+                          <span className="font-bold text-sm text-[#1F2937]">{fmtUSD(previewLine(item).net)}</span>
+                        </div>
+                        {/* Per-line discount */}
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/70">
+                          <span className="text-[11px] font-medium text-[#6B7280]">Line discount %</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="0" max="100"
+                              value={item.discount_percent}
+                              onChange={(e) => updateLineDiscount(item.id, e.target.value)}
+                              className={`w-16 px-2 py-1 text-right text-xs font-bold bg-white border rounded focus:outline-none ${
+                                overCeiling ? 'border-amber-400 text-amber-600' : 'border-gray-200 focus:border-[#F26C4F]'
+                              }`}
+                            />
+                            {overCeiling && (
+                              <span className="text-[10px] font-semibold text-amber-600" title={`Exceeds ${item.discount_ceiling}% ceiling`}>
+                                over {item.discount_ceiling}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
-
-            {/* AI Recommendation Panel */}
-            {(aiLoading || aiRec) && (
-              <div className="border-t border-gray-200 p-4 bg-purple-50/30">
-                {aiLoading ? (
-                  <div className="flex items-center space-x-2 text-xs text-purple-500 font-medium animate-pulse">
-                    <Bot className="w-4 h-4" />
-                    <span>AI analyzing cart for upsell opportunities...</span>
-                  </div>
-                ) : aiRec ? (
-                  <div className="border border-purple-200 bg-purple-50 rounded-2xl p-3 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 opacity-10 transform translate-x-1/3 -translate-y-1/3">
-                      <Sparkles className="w-24 h-24 text-purple-600" />
-                    </div>
-                    <div className="relative z-10 flex flex-col space-y-2">
-                      <div className="flex items-center space-x-1.5 text-purple-700">
-                        <Bot className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">DealFlow AI Recommendation</span>
-                      </div>
-                      <div className="text-sm font-bold text-textPrimary leading-tight">
-                        Add <span className="text-purple-600">{aiRec.product.name}</span>
-                      </div>
-                      <div className="text-[11px] text-textSecondary italic">
-                        "{aiRec.reason}"
-                      </div>
-                      <div className="flex items-center space-x-4 pt-1">
-                        <div className="text-xs font-bold text-success-600">+{formatCurrency(aiRec.addedRevenue)} Rev</div>
-                        <div className="text-xs font-bold text-brand-500">+{aiRec.addedMarginPercent}% Margin</div>
-                      </div>
-                      <div className="pt-2 flex space-x-2">
-                        <button onClick={addAiRecommendation} className="flex-1 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition shadow-sm">
-                          Add to Quote
-                        </button>
-                        <button onClick={() => setAiRec(null)} className="py-1.5 px-3 bg-white border border-purple-200 text-textSecondary hover:text-textPrimary rounded-lg text-xs font-medium transition">
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
           </div>
 
-          {/* Financials & Live Margin */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-md p-4 shrink-0 space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-textSecondary border-b border-gray-200 pb-2">Financial Summary</h3>
-            
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-textSecondary font-medium">Subtotal</span>
-              <span className="font-bold">{formatCurrency(rawSubtotal)}</span>
-            </div>
-            
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-textSecondary font-medium">Discount</span>
-              <div className="flex items-center space-x-2">
-                <input 
-                  type="number" 
-                  min="0" max="100" 
-                  value={discountPercent} 
-                  onChange={(e) => setDiscountPercent(Number(e.target.value) || 0)}
-                  className="w-16 px-2 py-1 text-right text-xs font-bold bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-primary-500"
-                />
-                <span className="font-bold text-warning-600">- {formatCurrency(discountAmount)}</span>
-              </div>
-            </div>
+          {/* Financials */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 shrink-0 space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#6B7280] border-b border-gray-200 pb-2">
+              Financial Summary
+              {!saved && cart.length > 0 && (
+                <span className="ml-2 text-[10px] font-medium normal-case text-slate-400">(live preview — Save to compute on backend)</span>
+              )}
+            </h3>
 
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#6B7280] font-medium">Subtotal</span>
+              <span className="font-bold">{fmtUSD(saved ? saved.subtotal : preview.subtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#6B7280] font-medium">Discount total</span>
+              <span className="font-bold text-amber-600">- {fmtUSD(saved ? saved.discount_total : preview.discount)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[#6B7280] font-medium">Tax</span>
+              <span className="font-bold">{fmtUSD(saved ? saved.tax_total : preview.tax)}</span>
+            </div>
             <div className="flex items-center justify-between text-sm border-t border-gray-200 pt-2">
-              <span className="text-base font-extrabold text-textPrimary">Net Revenue</span>
-              <span className="text-xl font-extrabold text-brand-500 tracking-tight">{formatCurrency(netRevenue)}</span>
+              <span className="text-base font-extrabold text-[#1F2937]">Total</span>
+              <span className="text-xl font-extrabold text-[#F26C4F] tracking-tight">{fmtUSD(saved ? saved.total : preview.total)}</span>
             </div>
 
-            {/* Live Margin Indicator */}
-            <div className="grid grid-cols-2 gap-3 pt-3">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <div className={`p-3 rounded-lg border ${marginStatus.bg} flex flex-col justify-between`}>
                 <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Live Margin</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Margin</span>
                   <marginStatus.icon className={`w-3.5 h-3.5 ${marginStatus.color}`} />
                 </div>
                 <div className="mt-1">
-                  <span className={`text-xl font-extrabold ${marginStatus.color}`}>{marginPercent.toFixed(1)}%</span>
+                  <span className={`text-xl font-extrabold ${marginStatus.color}`}>{Number(displayMargin).toFixed(1)}%</span>
                   <span className={`text-[10px] font-bold uppercase ml-2 ${marginStatus.color}`}>{marginStatus.text}</span>
                 </div>
               </div>
-              
+
               <div className="p-3 rounded-lg border border-gray-200 bg-gray-50 flex flex-col justify-between">
                 <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-textSecondary">Risk Score</span>
-                  <AlertCircle className="w-3.5 h-3.5 text-textSecondary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Blended Risk</span>
+                  <AlertCircle className="w-3.5 h-3.5 text-[#6B7280]" />
                 </div>
                 <div className="mt-1">
-                  <span className={`text-xl font-extrabold ${riskScore > 60 ? 'text-danger-600' : riskScore > 30 ? 'text-warning-600' : 'text-success-600'}`}>
-                    {Math.round(riskScore)}<span className="text-xs opacity-50">/100</span>
-                  </span>
+                  {saved ? (
+                    <span className={`text-xl font-extrabold ${backendRiskLevel === 'HIGH' ? 'text-red-600' : backendRiskLevel === 'MEDIUM' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      {backendRisk ?? 0}<span className="text-xs opacity-50"> {backendRiskLevel}</span>
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-slate-400">
+                      {overCeilingLines.length > 0 ? `${overCeilingLines.length} line(s) over ceiling` : 'within ceilings'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
+
+      {/* AI upsell/cross-sell — live from /ai/upsell, grounded in deal history */}
+      {cart.length > 0 && (
+        <AIRecommendationPanel
+          quotationId={quoteId || 'draft'}
+          cart={cart.map((i) => ({ id: i.id, name: i.name, category: i.category }))}
+          onAddToQuote={handleAddRecommendation}
+        />
+      )}
     </div>
   );
 }
