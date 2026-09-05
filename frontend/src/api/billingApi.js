@@ -55,11 +55,43 @@ export const getBillingOrders = async (params = {}) => {
           taxId: cust.tax_id || 'GSTIN-29AAACA1234A1Z5',
         },
         oneTimeItems: [
-          { name: 'Hardware Setup & Provisioning', category: 'Hardware', qty: 2, unitPrice: Math.round(oneTime * 0.6 / 2), finalPrice: Math.round(oneTime * 0.6) },
-          { name: 'Implementation & Configuration', category: 'Services', qty: 1, unitPrice: Math.round(oneTime * 0.4), finalPrice: Math.round(oneTime * 0.4) }
+          {
+            id: 1,
+            productName: 'Hardware Setup & Provisioning Rack',
+            sku: 'HW-RACK-001',
+            quantity: 2,
+            unitPrice: Math.round(oneTime * 0.6 / 2),
+            discountPercent: 10,
+            discountAmount: Math.round(oneTime * 0.6 * 0.1),
+            taxAmount: Math.round(oneTime * 0.6 * 0.18),
+            taxPercent: 18,
+            total: Math.round(oneTime * 0.6),
+          },
+          {
+            id: 2,
+            productName: 'Implementation & Configuration Service',
+            sku: 'SRV-IMPL-002',
+            quantity: 1,
+            unitPrice: Math.round(oneTime * 0.4),
+            discountPercent: 5,
+            discountAmount: Math.round(oneTime * 0.4 * 0.05),
+            taxAmount: Math.round(oneTime * 0.4 * 0.18),
+            taxPercent: 18,
+            total: Math.round(oneTime * 0.4),
+          }
         ],
         recurringItems: [
-          { name: 'Enterprise Cloud License', cycle: 'Monthly', qty: 5, unitPrice: Math.round(recurring / 5), finalPrice: recurring }
+          {
+            id: 1,
+            planName: 'Enterprise Cloud License Plan',
+            sku: 'LIC-CLOUD-001',
+            quantity: 5,
+            billingCycle: 'MONTHLY',
+            recurringAmount: recurring,
+            nextBillingDate: '2026-10-01',
+            status: 'ACTIVE',
+            prorationNotice: 'Prorated from initial onboarding',
+          }
         ],
         payment: {
           status: inv.status || o.payment_status || 'PENDING',
@@ -161,11 +193,43 @@ export const getBillingDetail = async (billingId) => {
           taxId: 'GSTIN-29AAACA1234A1Z5',
         },
         oneTimeItems: [
-          { name: 'Enterprise Workstation Rack', category: 'Hardware', qty: 2, unitPrice: 70000, finalPrice: 140000 },
-          { name: 'Installation & Onboarding', category: 'Services', qty: 1, unitPrice: 35000, finalPrice: 35000 }
+          {
+            id: 1,
+            productName: 'Enterprise Workstation Rack',
+            sku: 'HW-RACK-001',
+            quantity: 2,
+            unitPrice: 70000,
+            discountPercent: 10,
+            discountAmount: 14000,
+            taxAmount: 22680,
+            taxPercent: 18,
+            total: 140000,
+          },
+          {
+            id: 2,
+            productName: 'Installation & Onboarding Service',
+            sku: 'SRV-IMPL-002',
+            quantity: 1,
+            unitPrice: 35000,
+            discountPercent: 0,
+            discountAmount: 0,
+            taxAmount: 6300,
+            taxPercent: 18,
+            total: 35000,
+          }
         ],
         recurringItems: [
-          { name: 'Managed Cloud Cluster SLA', cycle: 'Monthly', qty: 2, unitPrice: 35000, finalPrice: 70000 }
+          {
+            id: 1,
+            planName: 'Managed Cloud Cluster SLA',
+            sku: 'LIC-CLOUD-001',
+            quantity: 2,
+            billingCycle: 'MONTHLY',
+            recurringAmount: 70000,
+            nextBillingDate: '2026-10-01',
+            status: 'ACTIVE',
+            prorationNotice: 'Prorated from mid-month activation',
+          }
         ],
         payment: {
           status: 'PARTIALLY_PAID',

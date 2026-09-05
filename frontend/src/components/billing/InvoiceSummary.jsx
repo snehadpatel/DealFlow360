@@ -48,8 +48,8 @@ export default function InvoiceSummary({ invoice, currency = 'USD', onDownload, 
           <FileCheck className="w-4 h-4 text-primary" />
           <h2 className="text-base font-bold text-textPrimary tracking-tight">Invoice Status</h2>
         </div>
-        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(invoice.status)}`}>
-          {invoice.status.replace('_', ' ')}
+        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(invoice.status || 'PENDING')}`}>
+          {(invoice.status || 'PENDING').replace('_', ' ')}
         </span>
       </div>
 
