@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Signup from "./pages/Signup";
 import QuotationBuilder from './pages/QuotationBuilder';
 import ApprovalScreen from './pages/ApprovalScreen';
-import WarehouseSplitScreen from './pages/WarehouseSplitScreen';
+import FulfillmentScreen from './pages/FulfillmentScreen';
 import SubscriptionBillingScreen from './pages/SubscriptionBillingScreen';
 import CustomerPortal from './pages/CustomerPortal';
 import DealHealthDashboard from './pages/DealHealthDashboard';
@@ -54,7 +54,7 @@ export default function App() {
   const tabs = [
     { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "ADMIN"] },
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
-    { id: "warehouse", label: "Warehouse Split", roles: ["FINANCE", "ADMIN"] },
+    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
     { id: "subscription", label: "Billing & Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "portal", label: "Customer Portal", roles: ["CUSTOMER", "ADMIN"] },
     { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
@@ -111,7 +111,7 @@ export default function App() {
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
         {activeTab === "quotation" && <QuotationBuilder />}
         {activeTab === "approval" && <ApprovalScreen />}
-        {activeTab === "warehouse" && <WarehouseSplitScreen />}
+        {activeTab === "fulfillment" && <FulfillmentScreen />}
         {activeTab === "subscription" && <SubscriptionBillingScreen />}
         {activeTab === "portal" && <CustomerPortal />}
         {activeTab === "dashboard" && <DealHealthDashboard />}
