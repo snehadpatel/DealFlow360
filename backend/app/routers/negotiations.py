@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from app.db import get_session
 from app.core.security import get_current_user, require_roles
 from app.models.user import Role, User
+from app.models.negotiation import Negotiation, NegotiationMessage
 from app.schemas.negotiation_schemas import (
     NegotiationCreate, NegotiationResponse,
     NegotiationMessageCreate, NegotiationMessageResponse,
