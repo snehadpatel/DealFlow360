@@ -32,6 +32,8 @@ from app.core.security import get_password_hash
 
 
 def seed():
+    from sqlmodel import SQLModel
+    SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         print("🌱 Seeding DealFlow360 database...")
         existing_users = session.exec(select(User)).all()
