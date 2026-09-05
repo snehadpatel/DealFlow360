@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, Bell, ChevronDown, Menu, User, Settings, LogOut, X } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
 
 const pageTitles: Record<string, { title: string; breadcrumb: string }> = {
   dashboard: { title: "Dashboard", breadcrumb: "Overview" },
@@ -32,6 +33,7 @@ type Props = {
 };
 
 export default function Header({ activeView, onMenuToggle, onExitAdmin }: Props) {
+  const { user, logout } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -49,6 +51,23 @@ export default function Header({ activeView, onMenuToggle, onExitAdmin }: Props)
 
   const page = pageTitles[activeView] || { title: activeView, breadcrumb: "Admin" };
   const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const handleSignOut = () => {
+    setProfileOpen(false);
+    if (onExitAdmin) {
+      onExitAdmin();
+    }
+    logout();
+  };
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "SA";
 
   return (
     <header className="fixed top-0 left-0 lg:left-[240px] right-0 h-[64px] bg-white border-b border-[#E5E7EB] z-20 flex items-center px-6 gap-4">
@@ -128,26 +147,48 @@ export default function Header({ activeView, onMenuToggle, onExitAdmin }: Props)
             className="flex items-center gap-2 rounded-lg hover:bg-[#F4F5F7] px-2 py-1 transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-[#F26C4F] flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-semibold text-xs">SA</span>
+              <span className="text-white font-semibold text-xs">{userInitials}</span>
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-[13px] font-medium text-[#1F2937]">Super Admin</p>
+              <p className="text-[13px] font-medium text-[#1F2937]">{user?.name || "Super Admin"}</p>
             </div>
             <ChevronDown size={14} className="text-[#6B7280]" />
           </button>
           {profileOpen && (
-            <div className="absolute right-0 top-11 w-48 bg-white rounded-2xl border border-[#E5E7EB] shadow-lg py-1.5 z-50">
+            <div className="absolute right-0 top-11 w-52 bg-white rounded-2xl border border-[#E5E7EB] shadow-lg py-1.5 z-50">
+              <div className="px-4 py-2 border-b border-[#E5E7EB] mb-1">
+                <p className="text-xs font-semibold text-[#1F2937] truncate">{user?.name || "Super Admin"}</p>
+                <p className="text-[11px] text-[#6B7280] truncate">{user?.email || "admin@dealflow360.com"}</p>
+                <span className="inline-block px-2 py-0.5 mt-1 text-[10px] font-semibold bg-[#FEECE8] text-[#F26C4F] rounded-full">
+                  {user?.role || "ADMIN"}
+                </span>
+              </div>
               {[
                 { icon: <User size={14} />, label: "Profile" },
                 { icon: <Settings size={14} />, label: "Settings" },
               ].map((item) => (
-                <button key={item.label} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[#1F2937] hover:bg-[#F4F5F7]">
+                <button key={item.label} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[#1F2937] hover:bg-[#F4F5F7] text-left">
                   <span className="text-[#6B7280]">{item.icon}</span>
                   {item.label}
                 </button>
               ))}
+              {onExitAdmin && (
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    onExitAdmin();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[#1F2937] hover:bg-[#F4F5F7] text-left transition-colors"
+                >
+                  <LogOut size={14} className="text-[#6B7280] rotate-180" />
+                  Back to App
+                </button>
+              )}
               <div className="border-t border-[#E5E7EB] mt-1.5 pt-1.5">
-                <button className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[#EF4444] hover:bg-red-50">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[#EF4444] hover:bg-red-50 transition-colors text-left font-medium"
+                >
                   <LogOut size={14} />
                   Sign Out
                 </button>
