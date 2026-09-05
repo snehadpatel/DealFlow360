@@ -44,3 +44,5 @@ client/dist/
 Thumbs.db
 .vscode/
 .idea/
+
+.claude/
