@@ -62,6 +62,24 @@ def update_status(
     return invoice_service.update_invoice_status(session, invoice_id, status)
 
 
+@invoices_router.post("/{invoice_id}/pay", response_model=InvoiceResponse)
+def pay_invoice_endpoint(
+    invoice_id: UUID,
+    payload: PaymentCreate,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user)
+):
+    invoice_service.record_payment(
+        session,
+        invoice_id=invoice_id,
+        amount=payload.amount,
+        method=payload.method,
+        transaction_id=payload.transaction_id,
+        notes=payload.notes
+    )
+    return invoice_service.get_invoice_or_404(session, invoice_id)
+
+
 @invoices_router.get("/{invoice_id}/pdf")
 def download_invoice_pdf(
     invoice_id: str,
