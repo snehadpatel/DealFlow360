@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 
 from app.models.negotiation import Negotiation, NegotiationMessage, NegotiationStatus, SenderRole
 from app.models.user import User, Role
-from app.models.quotation import Quotation
+from app.models.quotation import Quotation, QuoteStatus
 
 
 def create_negotiation(session: Session, quotation_id: UUID, customer_id: Optional[UUID] = None,
@@ -25,6 +25,9 @@ def create_negotiation(session: Session, quotation_id: UUID, customer_id: Option
         existing.status = NegotiationStatus.OPEN
         existing.updated_at = datetime.utcnow()
         session.add(existing)
+        if quotation and quotation.status != QuoteStatus.NEGOTIATION:
+            quotation.status = QuoteStatus.NEGOTIATION
+            session.add(quotation)
         session.commit()
         session.refresh(existing)
         return existing
@@ -37,6 +40,9 @@ def create_negotiation(session: Session, quotation_id: UUID, customer_id: Option
         status=NegotiationStatus.OPEN,
     )
     session.add(neg)
+    if quotation and quotation.status != QuoteStatus.NEGOTIATION:
+        quotation.status = QuoteStatus.NEGOTIATION
+        session.add(quotation)
     session.commit()
     session.refresh(neg)
     return neg
@@ -95,6 +101,12 @@ def accept_negotiation(session: Session, neg_id: UUID, final_discount: Optional[
     neg.final_discount = final_discount or neg.counter_discount or neg.requested_discount
     neg.updated_at = datetime.utcnow()
     session.add(neg)
+    
+    quotation = session.get(Quotation, neg.quotation_id)
+    if quotation:
+        quotation.status = QuoteStatus.PENDING_APPROVAL
+        session.add(quotation)
+        
     session.commit()
     session.refresh(neg)
     return neg
@@ -116,6 +128,12 @@ def reject_negotiation(session: Session, neg_id: UUID) -> Negotiation:
     neg.status = NegotiationStatus.REJECTED
     neg.updated_at = datetime.utcnow()
     session.add(neg)
+    
+    quotation = session.get(Quotation, neg.quotation_id)
+    if quotation:
+        quotation.status = QuoteStatus.DRAFT
+        session.add(quotation)
+        
     session.commit()
     session.refresh(neg)
     return neg

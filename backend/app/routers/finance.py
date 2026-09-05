@@ -4,7 +4,6 @@ from uuid import UUID
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
-from datetime import datetime
 
 from app.db import get_session
 from app.core.security import get_current_user, require_roles
@@ -27,7 +26,8 @@ def list_invoices(
     user: User = Depends(get_current_user)
 ):
     filter_customer = user.customer_id if user.role == Role.CUSTOMER else customer_id
-    return invoice_service.list_invoices(session, customer_id=filter_customer, status=status)
+    filter_rep = user.id if user.role == Role.REP else None
+    return invoice_service.list_invoices(session, customer_id=filter_customer, status=status, rep_id=filter_rep)
 
 @invoices_router.get("/summary")
 def invoice_summary(session: Session = Depends(get_session), _: User = Depends(get_current_user)):
@@ -86,114 +86,144 @@ def download_invoice_pdf(
     invoice_id: str,
     session: Session = Depends(get_session)
 ):
-    try:
-        from fastapi.responses import HTMLResponse
-        from datetime import datetime
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Tax Invoice {invoice_id} — DealFlow360</title>
-          <style>
-            body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1F2937; background: #fff; }}
-            .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid #F26C4F; padding-bottom: 16px; margin-bottom: 30px; }}
-            .brand {{ font-size: 24px; font-weight: bold; color: #1F2937; }}
-            .brand span {{ color: #F26C4F; }}
-            .inv-title {{ text-align: right; }}
-            .inv-title h1 {{ margin: 0; font-size: 22px; color: #F26C4F; text-transform: uppercase; letter-spacing: 1px; }}
-            .inv-title p {{ margin: 4px 0 0 0; font-size: 12px; color: #6B7280; }}
-            .details {{ display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }}
-            .card {{ flex: 1; background: #FAFBFD; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; font-size: 12px; }}
-            .card h4 {{ margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #9CA3AF; letter-spacing: 0.5px; }}
-            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; }}
-            th {{ background: #FAFBFD; border-bottom: 2px solid #E5E7EB; text-align: left; padding: 10px; font-size: 11px; text-transform: uppercase; color: #6B7280; }}
-            td {{ padding: 12px 10px; border-bottom: 1px solid #F4F5F7; }}
-            .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-top: 20px; }}
-            .tot-row {{ display: flex; justify-content: space-between; padding: 6px 0; color: #4B5563; }}
-            .tot-row.grand {{ font-size: 16px; font-weight: bold; color: #F26C4F; border-top: 2px solid #E5E7EB; padding-top: 10px; margin-top: 6px; }}
-            .footer {{ margin-top: 50px; border-top: 1px solid #E5E7EB; padding-top: 20px; text-align: center; font-size: 11px; color: #9CA3AF; }}
-            @media print {{ body {{ padding: 0; }} }}
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="brand">DealFlow<span>360</span> Enterprise</div>
-            <div class="inv-title">
-              <h1>TAX INVOICE</h1>
-              <p>Invoice Ref: <strong>{invoice_id}</strong></p>
-              <p>Date: {datetime.utcnow().strftime('%d %b %Y')}</p>
-            </div>
-          </div>
+    from fastapi.responses import HTMLResponse
+    from app.models.invoice import Invoice
+    from app.models.customer import Customer
+    from app.models.order import Order, OrderLine
+    from app.models.product import Product
+    from sqlmodel import select
 
-          <div class="details">
-            <div class="card">
-              <h4>Billed From</h4>
-              <strong>DealFlow360 Technologies India Pvt Ltd</strong><br>
-              Tower 4, Prime Tech Park, Cyber Hub<br>
-              GSTIN: 27ABCDE1234F1Z5<br>
-              Email: billing@dealflow360.com
-            </div>
-            <div class="card">
-              <h4>Billed To</h4>
-              <strong>Corporate Customer Account</strong><br>
-              Tax ID / GSTIN: Verified<br>
-              Payment Terms: Net 30 Days<br>
-              Status: <span style="color: #F26C4F; font-weight: bold;">PAYMENT DUE</span>
-            </div>
-          </div>
+    invoice = session.get(Invoice, invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+        
+    customer = session.get(Customer, invoice.customer_id)
+    customer_name = customer.name if customer else "Corporate Customer"
+    customer_address = customer.address_billing or "Address Not Provided"
+    tax_id = customer.tax_id or "Not Provided"
 
-          <table>
-            <thead>
-              <tr>
-                <th>Item Description</th>
-                <th>SKU</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>GST Tax</th>
-                <th style="text-align: right;">Total (INR)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Enterprise Edge Router X1</strong><br><small style="color:#6B7280;">High-throughput hardware router</small></td>
-                <td>HW-RTR-X1</td>
-                <td>2</td>
-                <td>₹70,000</td>
-                <td>18% GST</td>
-                <td style="text-align: right; font-weight: bold;">₹1,65,200</td>
-              </tr>
-              <tr>
-                <td><strong>SaaS Management License (Gold)</strong><br><small style="color:#6B7280;">Annual cloud license</small></td>
-                <td>SW-LIC-GOLD</td>
-                <td>10</td>
-                <td>₹12,000</td>
-                <td>18% GST</td>
-                <td style="text-align: right; font-weight: bold;">₹1,41,600</td>
-              </tr>
-            </tbody>
-          </table>
+    order = session.get(Order, invoice.order_id) if invoice.order_id else None
+    
+    lines_html = ""
+    subtotal = invoice.amount
+    tax = 0.0 # simplified
+    grand_total = invoice.amount
 
-          <div class="totals">
-            <div class="tot-row"><span>Subtotal:</span><span>₹2,60,000</span></div>
-            <div class="tot-row"><span>GST (18%):</span><span>₹46,800</span></div>
-            <div class="tot-row grand"><span>Grand Total:</span><span>₹3,06,800</span></div>
-          </div>
-
-          <div class="footer">
-            <p>This is a computer-generated tax invoice issued by DealFlow360 Platform. Authorized signature verified.</p>
-          </div>
-
-          <script>
-            window.onload = function() {{ window.print(); }};
-          </script>
-        </body>
-        </html>
+    if order:
+        order_lines = session.exec(select(OrderLine).where(OrderLine.order_id == order.id)).all()
+        for line in order_lines:
+            product = session.get(Product, line.product_id)
+            product_name = product.name if product else "Custom Item"
+            product_desc = product.description if product else ""
+            sku = f"SKU-{str(line.product_id)[:8]}"
+            lines_html += f"""
+            <tr>
+                <td><strong>{product_name}</strong><br><small style="color:#6B7280;">{product_desc}</small></td>
+                <td>{sku}</td>
+                <td>{line.quantity}</td>
+                <td>₹{line.unit_price:,.2f}</td>
+                <td>Included</td>
+                <td style="text-align: right; font-weight: bold;">₹{line.line_total:,.2f}</td>
+            </tr>
+            """
+    else:
+        lines_html = f"""
+        <tr>
+            <td><strong>Custom Billing</strong><br><small style="color:#6B7280;">Direct Invoice</small></td>
+            <td>N/A</td>
+            <td>1</td>
+            <td>₹{invoice.amount:,.2f}</td>
+            <td>Included</td>
+            <td style="text-align: right; font-weight: bold;">₹{invoice.amount:,.2f}</td>
+        </tr>
         """
-        return HTMLResponse(content=html_content)
-    except Exception as e:
-        import traceback
-        return HTMLResponse(content=f"<pre>{traceback.format_exc()}</pre>", status_code=500)
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Tax Invoice {invoice.invoice_number} — DealFlow360</title>
+      <style>
+        body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1F2937; background: #fff; }}
+        .header {{ display: flex; justify-content: space-between; border-bottom: 3px solid #F26C4F; padding-bottom: 16px; margin-bottom: 30px; }}
+        .brand {{ font-size: 24px; font-weight: bold; color: #1F2937; }}
+        .brand span {{ color: #F26C4F; }}
+        .inv-title {{ text-align: right; }}
+        .inv-title h1 {{ margin: 0; font-size: 22px; color: #F26C4F; text-transform: uppercase; letter-spacing: 1px; }}
+        .inv-title p {{ margin: 4px 0 0 0; font-size: 12px; color: #6B7280; }}
+        .details {{ display: flex; justify-content: space-between; margin-bottom: 30px; gap: 20px; }}
+        .card {{ flex: 1; background: #FAFBFD; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; font-size: 12px; }}
+        .card h4 {{ margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; color: #9CA3AF; letter-spacing: 0.5px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; }}
+        th {{ background: #FAFBFD; border-bottom: 2px solid #E5E7EB; text-align: left; padding: 10px; font-size: 11px; text-transform: uppercase; color: #6B7280; }}
+        td {{ padding: 12px 10px; border-bottom: 1px solid #F4F5F7; }}
+        .totals {{ width: 280px; margin-left: auto; font-size: 13px; margin-top: 20px; }}
+        .tot-row {{ display: flex; justify-content: space-between; padding: 6px 0; color: #4B5563; }}
+        .tot-row.grand {{ font-size: 16px; font-weight: bold; color: #F26C4F; border-top: 2px solid #E5E7EB; padding-top: 10px; margin-top: 6px; }}
+        .footer {{ margin-top: 50px; border-top: 1px solid #E5E7EB; padding-top: 20px; text-align: center; font-size: 11px; color: #9CA3AF; }}
+        @media print {{ body {{ padding: 0; }} }}
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="brand">DealFlow<span>360</span> Enterprise</div>
+        <div class="inv-title">
+          <h1>TAX INVOICE</h1>
+          <p>Invoice Ref: <strong>{invoice.invoice_number}</strong></p>
+          <p>Date: {invoice.invoice_date.strftime('%d %b %Y')}</p>
+        </div>
+      </div>
+
+      <div class="details">
+        <div class="card">
+          <h4>Billed From</h4>
+          <strong>DealFlow360 Technologies India Pvt Ltd</strong><br>
+          Tower 4, Prime Tech Park, Cyber Hub<br>
+          GSTIN: 27ABCDE1234F1Z5<br>
+          Email: billing@dealflow360.com
+        </div>
+        <div class="card">
+          <h4>Billed To</h4>
+          <strong>{customer_name}</strong><br>
+          {customer_address}<br>
+          Tax ID / GSTIN: {tax_id}<br>
+          Status: <span style="color: #F26C4F; font-weight: bold;">{invoice.status}</span>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Item Description</th>
+            <th>SKU</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Tax</th>
+            <th style="text-align: right;">Total ({invoice.currency})</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lines_html}
+        </tbody>
+      </table>
+
+      <div class="totals">
+        <div class="tot-row"><span>Subtotal:</span><span>₹{subtotal:,.2f}</span></div>
+        <div class="tot-row grand"><span>Grand Total:</span><span>₹{grand_total:,.2f}</span></div>
+      </div>
+
+      <div class="footer">
+        <p>This is a computer-generated tax invoice issued by DealFlow360 Platform. Authorized signature verified.</p>
+      </div>
+
+      <script>
+        window.onload = function() {{ window.print(); }};
+      </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 # ─── Payments ─────────────────────────────────────────────────────────────────
@@ -242,4 +272,3 @@ def customer_credit_summary(
     _: User = Depends(require_roles([Role.FINANCE, Role.ADMIN]))
 ):
     return invoice_service.get_customer_credit_summary(session, customer_id)
-

@@ -38,8 +38,11 @@ def create_invoice(session: Session, customer_id: UUID, amount: float,
 
 
 def list_invoices(session: Session, customer_id: Optional[UUID] = None,
-                  status: Optional[str] = None) -> List[Invoice]:
+                  status: Optional[str] = None, rep_id: Optional[UUID] = None) -> List[Invoice]:
+    from app.models.customer import Customer
     stmt = select(Invoice).order_by(Invoice.created_at.desc())
+    if rep_id:
+        stmt = stmt.join(Customer, Invoice.customer_id == Customer.id).where(Customer.rep_id == rep_id)
     if customer_id:
         stmt = stmt.where(Invoice.customer_id == customer_id)
     if status:

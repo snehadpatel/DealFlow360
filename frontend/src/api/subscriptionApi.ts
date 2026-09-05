@@ -122,16 +122,16 @@ export const getSubscriptionTimeline = async (_id: string): Promise<Subscription
 };
 
 export const pauseSubscription = async (id: string): Promise<Subscription> => {
-  const res = await apiClient.put(`/subscriptions/${id}`, { status: 'PAUSED' });
-  return res as Subscription;
+  await apiClient.post(`/subscriptions/${id}/pause`);
+  return getSubscriptionById(id);
 };
 
 export const resumeSubscription = async (id: string): Promise<Subscription> => {
-  const res = await apiClient.put(`/subscriptions/${id}`, { status: 'ACTIVE' });
-  return res as Subscription;
+  await apiClient.post(`/subscriptions/${id}/resume`);
+  return getSubscriptionById(id);
 };
 
 export const cancelSubscription = async (id: string): Promise<Subscription> => {
-  const res = await apiClient.post(`/subscriptions/${id}/cancel`);
-  return res as Subscription;
+  await apiClient.post(`/subscriptions/${id}/cancel`);
+  return getSubscriptionById(id);
 };

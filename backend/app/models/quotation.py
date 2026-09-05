@@ -10,6 +10,7 @@ class QuoteStatus(str, Enum):
     DRAFT = "DRAFT"                        # Being built / edited by the rep
     PENDING_APPROVAL = "PENDING_APPROVAL"  # Waiting on one or more approvers
     APPROVED = "APPROVED"                  # Fully approved, ready to confirm
+    NEGOTIATION = "NEGOTIATION"            # Under active negotiation with customer
     REJECTED = "REJECTED"                  # Rejected by an approver
     CONFIRMED = "CONFIRMED"                # Accepted by customer / closed-won
     EXPIRED = "EXPIRED"                    # Validity window elapsed before confirmation
