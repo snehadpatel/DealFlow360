@@ -5,7 +5,14 @@ Importing ``app.models`` registers every table on ``SQLModel.metadata`` so that
 is taken from application settings (``DATABASE_URL``) rather than alembic.ini so
 migrations always target the same database the app uses.
 """
+import sys
+from pathlib import Path
 from logging.config import fileConfig
+
+# Ensure backend root directory is on sys.path so app imports work from any working directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -19,8 +26,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Point Alembic at the application's configured database.
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Point Alembic at the application's configured database (escape % for configparser).
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 target_metadata = SQLModel.metadata
 
