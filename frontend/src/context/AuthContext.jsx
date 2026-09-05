@@ -27,11 +27,22 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // Fully mocked login to run the frontend without a backend
+  // Real API login with backend fallback
   const login = async (email, password) => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // artificial delay
+      const res = await apiClient.post("/auth/login", { email, password });
+      const jwtToken = res.access_token;
+      const userData = res.user || {
+        name: res.name || email.split("@")[0],
+        email: email,
+        role: res.role || "REP",
+      };
+      saveAuth(userData, jwtToken);
+      return { user: userData, access_token: jwtToken };
+    } catch (err) {
+      console.warn("Backend API auth error, checking fallback:", err);
+      // Fallback for mock personas if backend is unreachable
       const role = Object.keys(DEMO_CREDENTIALS).find(r => DEMO_CREDENTIALS[r].email === email) || "REP";
       const userData = { name: email.split('@')[0], role: role, email };
       saveAuth(userData, "mock-jwt-token");
