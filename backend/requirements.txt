@@ -7,7 +7,14 @@ pydantic-settings>=2.2.1
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.9
-langchain>=0.1.13
-langchain-google-genai>=0.0.9
+# --- AI narration layer (OPTIONAL; the app boots & computes every number
+# without it). The glass-box ML — market-basket, anomaly, deal-health, pricing
+# policy — is pure stdlib by design (no numpy / pandas / scikit-learn), so it is
+# fast and hand-verifiable. Only Gemini *narration* needs these two packages; if
+# they are missing or GEMINI_API_KEY is unset, endpoints return identical numbers
+# with deterministic template prose. NOTE: pinned to the modern (>=0.3 core) API
+# used by app/agents/llm_runtime.py; the old 0.0.x/0.1.x pins are incompatible.
+langchain-core>=0.3.0
+langchain-google-genai>=2.0.0
 psycopg2-binary>=2.9.9
 python-dotenv>=1.0.1
