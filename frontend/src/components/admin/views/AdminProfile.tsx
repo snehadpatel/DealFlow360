@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Mail, ShieldCheck, KeyRound, Check, Edit2, Lock } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import Modal from "../ui/Modal";
 
 export default function AdminProfile() {
-  const { user } = useAuth();
+  const { user } = useAuth() as any;
   const [isEditing, setIsEditing] = useState(false);
   const [changePassOpen, setChangePassOpen] = useState(false);
   const [name, setName] = useState(user?.name || "Super Admin");
@@ -13,6 +13,12 @@ export default function AdminProfile() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [toast, setToast] = useState("");
+
+  // Sync state when user object loads asynchronously
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.email) setEmail(user.email);
+  }, [user]);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -32,6 +38,15 @@ export default function AdminProfile() {
     showToast("Super Admin password updated successfully");
   }
 
+  const userInitials = name
+    ? name
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "SA";
+
   return (
     <div className="space-y-6 max-w-3xl">
       {toast && (
@@ -49,7 +64,7 @@ export default function AdminProfile() {
       <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6 shadow-xs space-y-6">
         <div className="flex items-center gap-4 border-b border-[#E5E7EB] pb-5">
           <div className="w-16 h-16 rounded-full bg-[#F26C4F] text-white font-extrabold text-xl flex items-center justify-center shadow-md">
-            SA
+            {userInitials}
           </div>
           <div>
             <h3 className="text-lg font-bold text-[#1F2937]">{name}</h3>
@@ -120,7 +135,7 @@ export default function AdminProfile() {
       </div>
 
       {changePassOpen && (
-        <Modal title="Change Administrator Password" onClose={() => setChangePassOpen(false)}>
+        <Modal open={changePassOpen} title="Change Administrator Password" onClose={() => setChangePassOpen(false)}>
           <div className="space-y-3 text-xs">
             <div>
               <label className="block font-bold text-[#374151] mb-1">Current Password *</label>
