@@ -1,105 +1,159 @@
-import { useState } from "react";
-import { Search, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { UserCog, Plus, Search, Filter, KeyRound, Ban, CheckCircle2, Trash2, Edit2 } from "lucide-react";
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
-import ConfirmDialog from "../ui/ConfirmDialog";
 
-const roles = ["Admin", "Sales Representative", "Sales Manager", "Finance", "Operations"];
+const rolesList = ["ADMIN", "REP", "MANAGER", "FINANCE", "OPERATIONS"];
 
 const initialUsers = [
-  { id: 1, name: "Super Admin", email: "admin@revalo.com", role: "Admin", department: "Platform", status: "active", lastLogin: "5 Sep 2026, 09:14", created: "1 Jan 2026" },
-  { id: 2, name: "Priya Sharma", email: "priya.s@revalo.com", role: "Sales Representative", department: "Sales", status: "active", lastLogin: "5 Sep 2026, 08:41", created: "15 Jan 2026" },
-  { id: 3, name: "Rahul Mehta", email: "rahul.m@revalo.com", role: "Sales Manager", department: "Sales", status: "active", lastLogin: "4 Sep 2026, 17:22", created: "20 Jan 2026" },
-  { id: 4, name: "Deepa Nair", email: "deepa.n@revalo.com", role: "Finance", department: "Finance", status: "active", lastLogin: "4 Sep 2026, 14:08", created: "1 Feb 2026" },
-  { id: 5, name: "Ankit Singh", email: "ankit.s@revalo.com", role: "Operations", department: "Operations", status: "inactive", lastLogin: "20 Aug 2026, 11:30", created: "10 Feb 2026" },
-  { id: 6, name: "Kavitha Rao", email: "kavitha.r@revalo.com", role: "Sales Representative", department: "Sales", status: "active", lastLogin: "5 Sep 2026, 07:55", created: "1 Mar 2026" },
+  { id: 1, name: "Super Admin", email: "admin@dealflow360.com", role: "ADMIN", department: "Executive", status: "active", lastLogin: "10 mins ago", createdDate: "01 Jan 2026" },
+  { id: 2, name: "Alex Kumar", email: "alex.rep@dealflow360.com", role: "REP", department: "Sales", status: "active", lastLogin: "1 hour ago", createdDate: "10 Jan 2026" },
+  { id: 3, name: "Priya Sharma", email: "priya.rep@dealflow360.com", role: "REP", department: "Sales", status: "active", lastLogin: "35 mins ago", createdDate: "12 Jan 2026" },
+  { id: 4, name: "Maria Manager", email: "maria.manager@dealflow360.com", role: "MANAGER", department: "Sales Management", status: "active", lastLogin: "2 hours ago", createdDate: "05 Jan 2026" },
+  { id: 5, name: "Felix Finance", email: "felix.finance@dealflow360.com", role: "FINANCE", department: "Finance & Accounting", status: "active", lastLogin: "Yesterday", createdDate: "08 Jan 2026" },
+  { id: 6, name: "Ops Team Lead", email: "ops@dealflow360.com", role: "OPERATIONS", department: "Supply Chain & Fulfillment", status: "active", lastLogin: "3 hours ago", createdDate: "15 Jan 2026" },
 ];
-
-const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 placeholder-[#9CA3AF]";
-function FL({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
-  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}{required && <span className="text-[#EF4444] ml-0.5">*</span>}</label>{children}</div>;
-}
-
-const roleColors: Record<string, string> = {
-  Admin: "bg-purple-50 text-purple-700",
-  "Sales Representative": "bg-blue-50 text-blue-700",
-  "Sales Manager": "bg-indigo-50 text-indigo-700",
-  Finance: "bg-amber-50 text-amber-700",
-  Operations: "bg-teal-50 text-teal-700",
-};
 
 export default function Users() {
   const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", role: "REP", department: "Sales" });
   const [toast, setToast] = useState("");
 
-  const perPage = 5;
-  const filtered = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()));
-  const total = filtered.length;
-  const pages = Math.max(1, Math.ceil(total / perPage));
-  const rows = filtered.slice((page - 1) * perPage, page * perPage);
+  const filtered = users.filter((u) => {
+    const mSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const mRole = roleFilter === "all" || u.role === roleFilter;
+    return mSearch && mRole;
+  });
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2500); }
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }
+
+  function handleCreateUser() {
+    if (!form.name || !form.email) return;
+    const newUser = {
+      ...form,
+      id: Date.now(),
+      status: "active",
+      lastLogin: "Never",
+      createdDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    };
+    setUsers([newUser, ...users]);
+    setAddOpen(false);
+    showToast(`User ${form.name} created as ${form.role}`);
+  }
+
+  function toggleStatus(id: number, currentStatus: string) {
+    const nextStatus = currentStatus === "active" ? "inactive" : "active";
+    setUsers(users.map((u) => (u.id === id ? { ...u, status: nextStatus } : u)));
+    showToast(`User status changed to ${nextStatus}`);
+  }
+
+  function changeRole(id: number, newRole: string) {
+    setUsers(users.map((u) => (u.id === id ? { ...u, role: newRole } : u)));
+    showToast(`User role updated to ${newRole}`);
+  }
 
   return (
     <div className="space-y-5">
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />{toast}
+        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          {toast}
         </div>
       )}
-      <div className="flex items-center justify-between gap-4">
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-[18px] font-bold text-[#1F2937]">Users & Managers</h2>
-          <p className="text-[#6B7280] text-sm">Manage platform users, roles, and access.</p>
+          <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Users & Internal Roles</h2>
+          <p className="text-[#6B7280] text-xs mt-0.5">Manage user credentials, role assignments, department access, and account status.</p>
         </div>
-        <button onClick={() => setInviteOpen(true)} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E] flex-shrink-0">
-          <Mail size={16} /> Invite Manager
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-1.5 bg-[#F26C4F] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#e05535] transition shadow-xs"
+        >
+          <Plus size={16} /> Add Internal User
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
-        <div className="flex items-center gap-3 p-4 border-b border-[#E5E7EB]">
-          <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-lg px-3 py-2 flex-1 min-w-[180px]">
-            <Search size={15} className="text-[#9CA3AF]" />
-            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search users..." className="bg-transparent outline-none text-[13px] text-[#1F2937] w-full placeholder-[#9CA3AF]" />
+      {/* Table Container */}
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+        <div className="flex items-center justify-between gap-3 p-4 border-b border-[#E5E7EB] flex-wrap">
+          <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+            <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search user by name or email..."
+              className="bg-transparent outline-none text-xs text-[#1F2937] w-full placeholder-[#9CA3AF]"
+            />
           </div>
+
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-medium text-[#374151] outline-none"
+          >
+            <option value="all">All Roles</option>
+            {rolesList.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
         </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-[#E5E7EB]">
-              <tr>
-                {["User", "Email", "Role", "Department", "Status", "Last Login", "Created", "Actions"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[#6B7280] whitespace-nowrap">{h}</th>
-                ))}
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                <th className="py-3 px-4">User</th>
+                <th className="py-3 px-4">Email</th>
+                <th className="py-3 px-4">Role</th>
+                <th className="py-3 px-4">Department</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Last Login</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {rows.map((u) => (
-                <tr key={u.id} className="border-b border-[#F4F5F7] last:border-0 hover:bg-[#FAFAFA]">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[#F26C4F]/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[#F26C4F] font-semibold text-xs">{u.name.charAt(0)}</span>
-                      </div>
-                      <span className="text-[13px] font-medium text-[#1F2937] whitespace-nowrap">{u.name}</span>
-                    </div>
+            <tbody className="divide-y divide-[#F4F5F7] text-xs">
+              {filtered.map((u) => (
+                <tr key={u.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                  <td className="py-3 px-4 font-bold text-[#1F2937]">{u.name}</td>
+                  <td className="py-3 px-4 font-medium text-[#4B5563]">{u.email}</td>
+                  <td className="py-3 px-4">
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeRole(u.id, e.target.value)}
+                      className="bg-[#FAFBFD] border border-[#E5E7EB] rounded-lg px-2 py-0.5 text-xs font-bold text-[#F26C4F] outline-none"
+                    >
+                      {rolesList.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
                   </td>
-                  <td className="px-4 py-3 text-[13px] text-[#6B7280]">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${roleColors[u.role] ?? "bg-gray-100 text-gray-600"}`}>{u.role}</span>
-                  </td>
-                  <td className="px-4 py-3 text-[13px] text-[#6B7280]">{u.department}</td>
-                  <td className="px-4 py-3"><StatusPill status={u.status} /></td>
-                  <td className="px-4 py-3 text-[12px] text-[#6B7280] whitespace-nowrap">{u.lastLogin}</td>
-                  <td className="px-4 py-3 text-[12px] text-[#6B7280] whitespace-nowrap">{u.created}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F4F5F7] text-[#6B7280]"><Edit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(u.id)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-[#6B7280] hover:text-red-500"><Trash2 size={14} /></button>
+                  <td className="py-3 px-4 text-[#6B7280]">{u.department}</td>
+                  <td className="py-3 px-4"><StatusPill status={u.status} /></td>
+                  <td className="py-3 px-4 text-[#6B7280]">{u.lastLogin}</td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => showToast(`Password reset link sent to ${u.email}`)}
+                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
+                        title="Reset Password"
+                      >
+                        <KeyRound size={15} />
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(u.id, u.status)}
+                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-amber-600 hover:bg-amber-50 transition"
+                        title={u.status === "active" ? "Disable User" : "Enable User"}
+                      >
+                        {u.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -107,38 +161,67 @@ export default function Users() {
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between px-4 py-3 border-t border-[#E5E7EB]">
-          <p className="text-[12px] text-[#6B7280]">Showing {Math.min((page-1)*perPage+1,total)}–{Math.min(page*perPage,total)} of {total}</p>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage(Math.max(1,page-1))} disabled={page===1} className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] disabled:opacity-40"><ChevronLeft size={14} /></button>
-            {Array.from({length:pages},(_,i)=>i+1).map((p)=>(<button key={p} onClick={()=>setPage(p)} className={`w-7 h-7 flex items-center justify-center rounded-lg text-[12px] font-medium ${page===p?"bg-[#F26C4F] text-white":"border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F4F5F7]"}`}>{p}</button>))}
-            <button onClick={() => setPage(Math.min(pages,page+1))} disabled={page===pages} className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] disabled:opacity-40"><ChevronRight size={14} /></button>
-          </div>
-        </div>
       </div>
 
-      <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Invite Manager" description="Send an invitation to a new team member." onSave={() => { setInviteOpen(false); showToast("Invitation sent"); }} saveLabel="Send Invitation">
-        <div className="space-y-4">
-          <FL label="Full Name" required><input className={inputCls} placeholder="Name" /></FL>
-          <FL label="Email Address" required><input type="email" className={inputCls} placeholder="email@company.com" /></FL>
-          <FL label="Role" required>
-            <select className={inputCls}>{roles.map((r) => <option key={r}>{r}</option>)}</select>
-          </FL>
-          <div>
-            <label className="block text-[12px] font-medium text-[#6B7280] mb-2">Permissions</label>
-            <div className="grid grid-cols-2 gap-2">
-              {["View", "Create", "Edit", "Delete", "Approve"].map((p) => (
-                <label key={p} className="flex items-center gap-2 cursor-pointer text-[13px] text-[#1F2937]">
-                  <input type="checkbox" className="accent-[#F26C4F] w-4 h-4" defaultChecked={["View", "Create"].includes(p)} />
-                  {p}
-                </label>
-              ))}
+      {/* Add User Modal */}
+      {addOpen && (
+        <Modal title="Add Internal User Account" onClose={() => setAddOpen(false)}>
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Full Name *</label>
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Maria Manager"
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+              <input
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="name@dealflow360.com"
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Assigned Role</label>
+                <select
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                >
+                  <option value="ADMIN">Super Admin</option>
+                  <option value="REP">Sales Rep</option>
+                  <option value="MANAGER">Sales Manager</option>
+                  <option value="FINANCE">Finance</option>
+                  <option value="OPERATIONS">Operations</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Department</label>
+                <input
+                  value={form.department}
+                  onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  placeholder="Sales / Finance"
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setAddOpen(false)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
+                Cancel
+              </button>
+              <button onClick={handleCreateUser} className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535]">
+                Create User
+              </button>
             </div>
           </div>
-        </div>
-      </Modal>
-
-      <ConfirmDialog open={deleteId !== null} title="Remove User" message="This user will be removed from the platform and lose all access immediately." confirmLabel="Remove User" onConfirm={() => { setUsers(users.filter((u) => u.id !== deleteId)); setDeleteId(null); showToast("User removed"); }} onCancel={() => setDeleteId(null)} />
+        </Modal>
+      )}
     </div>
   );
 }

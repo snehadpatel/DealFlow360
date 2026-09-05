@@ -62,8 +62,8 @@ export default function App() {
 
   const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
-  if (activeTab === "admin") {
-    return <AdminDashboard onExitAdmin={() => setActiveTab("quotation")} />;
+  if (activeTab === "admin" || user?.role === "ADMIN") {
+    return <AdminDashboard />;
   }
 
   return (

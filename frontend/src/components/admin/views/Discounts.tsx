@@ -1,190 +1,192 @@
-import { useState } from "react";
-import { Plus, Edit2, Trash2, ChevronRight, Check } from "lucide-react";
+import React, { useState } from "react";
+import { Percent, Shield, Plus, Edit2, CheckCircle2, ShieldCheck, Layers, GitMerge } from "lucide-react";
 import Modal from "../ui/Modal";
-import ConfirmDialog from "../ui/ConfirmDialog";
 
-type Rule = {
-  id: number;
-  min: number;
-  max: number | null;
-  label: string;
-  approvers: string[];
-  status: boolean;
-};
-
-const initialRules: Rule[] = [
-  { id: 1, min: 0, max: 10, label: "0–10%", approvers: ["Sales Representative"], status: true },
-  { id: 2, min: 10, max: 20, label: "10–20%", approvers: ["Sales Manager"], status: true },
-  { id: 3, min: 20, max: null, label: ">20%", approvers: ["Sales Manager", "Finance"], status: true },
+const initialTiers = [
+  { id: 1, name: "Bronze Tier", maxDiscount: 5, status: "active", priority: "Standard" },
+  { id: 2, name: "Silver Tier", maxDiscount: 10, status: "active", priority: "Priority" },
+  { id: 3, name: "Gold Tier", maxDiscount: 15, status: "active", priority: "VIP" },
 ];
 
-const stages = ["Discount Entered", "Sales Representative", "Sales Manager", "Finance"];
+const initialCategories = [
+  { category: "Hardware", maxDiscount: 15, rule: "Requires stock check above 10%" },
+  { category: "Software", maxDiscount: 10, rule: "Ceiling enforced at checkout" },
+  { category: "Services", maxDiscount: 10, rule: "Consulting rate protection" },
+];
 
-function getActiveStages(pct: number): number[] {
-  if (pct <= 0) return [0];
-  if (pct <= 10) return [0, 1];
-  if (pct <= 20) return [0, 1, 2];
-  return [0, 1, 2, 3];
-}
-
-const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20";
+const initialChain = [
+  { range: "0% – 5%", requiredRole: "Auto Approved", color: "bg-emerald-100 text-emerald-800" },
+  { range: "5% – 10%", requiredRole: "Sales Manager", color: "bg-blue-100 text-blue-800" },
+  { range: "10% – 15%", requiredRole: "Finance Department", color: "bg-purple-100 text-purple-800" },
+  { range: "15%+", requiredRole: "Senior Management / Admin", color: "bg-red-100 text-red-800" },
+];
 
 export default function Discounts() {
-  const [rules, setRules] = useState(initialRules);
-  const [discountPct, setDiscountPct] = useState(15);
-  const [editRule, setEditRule] = useState<Rule | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [tiersList, setTiersList] = useState(initialTiers);
+  const [categoryRules, setCategoryRules] = useState(initialCategories);
+  const [approvalChain, setApprovalChain] = useState(initialChain);
+  const [editingTier, setEditingTier] = useState<any | null>(null);
   const [toast, setToast] = useState("");
-  const activeStages = getActiveStages(discountPct);
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2500); }
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }
 
-  function toggleRule(id: number) {
-    setRules(rules.map((r) => r.id === id ? { ...r, status: !r.status } : r));
-    showToast("Rule updated");
+  function handleSaveTierUpdate() {
+    if (!editingTier) return;
+    setTiersList(tiersList.map((t) => (t.id === editingTier.id ? editingTier : t)));
+    setEditingTier(null);
+    showToast("Tier discount threshold updated successfully");
   }
 
   return (
     <div className="space-y-6">
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />{toast}
+        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          {toast}
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[18px] font-bold text-[#1F2937]">Discounts & Approvals</h2>
-          <p className="text-[#6B7280] text-sm">Configure discount tiers and approval workflows.</p>
-        </div>
-        <button onClick={() => setEditRule({ id: 0, min: 0, max: 10, label: "", approvers: [], status: true })} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E]">
-          <Plus size={16} /> Add Rule
-        </button>
+      {/* Header */}
+      <div>
+        <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Discounts & Approval Workflows</h2>
+        <p className="text-[#6B7280] text-xs mt-0.5">Configure tier discount limits, category ceilings, and automated approval chains.</p>
       </div>
 
-      {/* Approval Workflow Visualizer */}
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-[15px] font-semibold text-[#1F2937]">Approval Workflow Simulator</h3>
-          <div className="flex items-center gap-3">
-            <span className="text-[13px] text-[#6B7280]">Discount: <span className="font-semibold text-[#1F2937]">{discountPct}%</span></span>
-            <input
-              type="range"
-              min={0}
-              max={35}
-              value={discountPct}
-              onChange={(e) => setDiscountPct(Number(e.target.value))}
-              className="w-32 accent-[#F26C4F]"
-            />
+      {/* 1. Customer Tier Discount Configuration (Prompt Specs) */}
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-orange-50 text-[#F26C4F]"><Percent size={18} /></div>
+            <div>
+              <h3 className="text-[#1F2937] font-bold text-[15px]">Customer Tier Discount Ceilings</h3>
+              <p className="text-[#6B7280] text-xs">Maximum allowed discount per quotation by tier</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-0">
-          {stages.map((stage, i) => {
-            const isActive = activeStages.includes(i);
-            const isLast = i === stages.length - 1;
-            return (
-              <div key={stage} className="flex items-center flex-1">
-                <div className={`flex-1 flex flex-col items-center`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isActive ? "bg-[#F26C4F] border-[#F26C4F] shadow-sm" : "bg-white border-[#E5E7EB]"}`}>
-                    {isActive ? <Check size={16} className="text-white" /> : <span className="text-[13px] font-bold text-[#9CA3AF]">{i + 1}</span>}
-                  </div>
-                  <p className={`text-[11px] font-medium mt-2 text-center max-w-[80px] ${isActive ? "text-[#F26C4F]" : "text-[#9CA3AF]"}`}>{stage}</p>
-                </div>
-                {!isLast && (
-                  <div className={`h-0.5 w-8 mx-1 transition-all duration-300 rounded-full ${activeStages.includes(i) && activeStages.includes(i + 1) ? "bg-[#F26C4F]" : "bg-[#E5E7EB]"}`} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 bg-[#FFF4F1] border border-[#F26C4F]/20 rounded-xl px-4 py-3">
-          <p className="text-[13px] text-[#1F2937]">
-            A <span className="font-semibold text-[#F26C4F]">{discountPct}%</span> discount requires approval from:{" "}
-            <span className="font-semibold">
-              {discountPct === 0 ? "No approval needed" :
-               discountPct <= 10 ? "Sales Representative" :
-               discountPct <= 20 ? "Sales Representative → Sales Manager" :
-               "Sales Representative → Sales Manager → Finance"}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      {/* Rule Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {rules.map((rule) => (
-          <div key={rule.id} className="bg-white rounded-2xl border border-[#E5E7EB] p-5">
-            <div className="flex items-start justify-between mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {tiersList.map((tier) => (
+            <div key={tier.id} className="bg-[#FAFBFD] border border-[#E5E7EB] rounded-xl p-4 flex flex-col justify-between">
               <div>
-                <div className="inline-flex items-center gap-1.5 bg-[#F26C4F]/10 text-[#F26C4F] text-sm font-bold px-3 py-1 rounded-full mb-2">
-                  {rule.label} discount
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-sm text-[#1F2937]">{tier.name}</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
+                    {tier.status}
+                  </span>
                 </div>
-                <p className="text-[13px] text-[#6B7280]">Requires approval from</p>
+                <p className="text-3xl font-extrabold text-[#F26C4F] my-1">{tier.maxDiscount}% <span className="text-xs font-normal text-[#6B7280]">max</span></p>
+                <p className="text-[11px] text-[#6B7280]">Priority Level: {tier.priority}</p>
               </div>
+
               <button
-                onClick={() => toggleRule(rule.id)}
-                className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 mt-1 ${rule.status ? "bg-[#F26C4F]" : "bg-[#E5E7EB]"}`}
+                onClick={() => setEditingTier(tier)}
+                className="mt-3 w-full py-1.5 border border-[#E5E7EB] bg-white hover:bg-[#F4F5F7] text-xs font-bold text-[#374151] rounded-lg transition"
               >
-                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${rule.status ? "translate-x-5" : "translate-x-0.5"}`} />
+                Edit Threshold
               </button>
             </div>
-            <div className="space-y-2 mb-4">
-              {rule.approvers.map((a, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[#F4F5F7] flex items-center justify-center flex-shrink-0">
-                    <Check size={11} className="text-emerald-600" />
-                  </div>
-                  <span className="text-[13px] text-[#1F2937] font-medium">{a}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB]">
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${rule.status ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
-                {rule.status ? "Active" : "Disabled"}
-              </span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setEditRule(rule)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F4F5F7] text-[#6B7280]"><Edit2 size={13} /></button>
-                <button onClick={() => setDeleteId(rule.id)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-[#6B7280] hover:text-red-500"><Trash2 size={13} /></button>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Edit Rule Modal */}
-      <Modal open={editRule !== null} onClose={() => setEditRule(null)} title={editRule?.id === 0 ? "Add Discount Rule" : "Edit Discount Rule"} onSave={() => { setEditRule(null); showToast("Rule saved"); }} saveLabel="Save Rule">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+      {/* 2. Category-Specific Discount Limits */}
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600"><Layers size={18} /></div>
             <div>
-              <label className="block text-[12px] font-medium text-[#6B7280] mb-1">Min Discount (%)</label>
-              <input type="number" className={inputCls} defaultValue={editRule?.min ?? 0} />
+              <h3 className="text-[#1F2937] font-bold text-[15px]">Category Discount Limits</h3>
+              <p className="text-[#6B7280] text-xs">Enforce margin protections per product line</p>
             </div>
-            <div>
-              <label className="block text-[12px] font-medium text-[#6B7280] mb-1">Max Discount (%)</label>
-              <input type="number" className={inputCls} defaultValue={editRule?.max ?? ""} placeholder="Leave blank for no limit" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-[12px] font-medium text-[#6B7280] mb-1">Required Approvers</label>
-            <div className="space-y-2">
-              {["Sales Representative", "Sales Manager", "Finance"].map((role) => (
-                <label key={role} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" defaultChecked={editRule?.approvers.includes(role)} className="accent-[#F26C4F] w-4 h-4" />
-                  <span className="text-[13px] text-[#1F2937]">{role}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-[12px] font-medium text-[#6B7280] mb-1">Status</label>
-            <select className={inputCls}><option>Active</option><option>Disabled</option></select>
           </div>
         </div>
-      </Modal>
 
-      <ConfirmDialog open={deleteId !== null} title="Delete Discount Rule" message="This rule will be permanently deleted. Discount requests in this range will no longer have an approval path." confirmLabel="Delete Rule" onConfirm={() => { setRules(rules.filter((r) => r.id !== deleteId)); setDeleteId(null); showToast("Rule deleted"); }} onCancel={() => setDeleteId(null)} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {categoryRules.map((c) => (
+            <div key={c.category} className="bg-white border border-[#E5E7EB] rounded-xl p-4">
+              <p className="font-bold text-sm text-[#1F2937]">{c.category}</p>
+              <p className="text-2xl font-extrabold text-[#1F2937] my-1">{c.maxDiscount}% Limit</p>
+              <p className="text-[11px] text-[#6B7280]">{c.rule}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Configurable Approval Chain (Prompt Specs) */}
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-purple-50 text-purple-600"><GitMerge size={18} /></div>
+            <div>
+              <h3 className="text-[#1F2937] font-bold text-[15px]">Multi-Tier Approval Chain Routing</h3>
+              <p className="text-[#6B7280] text-xs">Automatic routing of quotation discount requests based on threshold</p>
+            </div>
+          </div>
+          <button
+            onClick={() => showToast("Approval chain rules saved")}
+            className="text-xs font-bold text-[#F26C4F] hover:underline"
+          >
+            Save Chain Routing
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {approvalChain.map((step, i) => (
+            <div key={i} className="flex items-center justify-between p-3.5 bg-[#FAFBFD] border border-[#E5E7EB] rounded-xl text-xs">
+              <div className="flex items-center gap-3">
+                <span className="w-6 h-6 rounded-full bg-[#1F2937] text-white flex items-center justify-center font-bold text-[11px]">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="font-bold text-[#1F2937]">Discount Request Range: <span className="text-[#F26C4F]">{step.range}</span></p>
+                  <p className="text-[11px] text-[#6B7280]">Target Approver Role</p>
+                </div>
+              </div>
+
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${step.color}`}>
+                {step.requiredRole}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Edit Tier Modal */}
+      {editingTier && (
+        <Modal title={`Edit ${editingTier.name} Discount Limit`} onClose={() => setEditingTier(null)}>
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Maximum Discount % Ceiling *</label>
+              <input
+                type="number"
+                value={editingTier.maxDiscount}
+                onChange={(e) => setEditingTier({ ...editingTier, maxDiscount: Number(e.target.value) })}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Priority Classification</label>
+              <input
+                value={editingTier.priority}
+                onChange={(e) => setEditingTier({ ...editingTier, priority: e.target.value })}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setEditingTier(null)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
+                Cancel
+              </button>
+              <button onClick={handleSaveTierUpdate} className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535]">
+                Save Threshold
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

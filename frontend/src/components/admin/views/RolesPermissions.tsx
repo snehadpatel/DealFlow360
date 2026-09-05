@@ -1,140 +1,118 @@
-import { useState } from "react";
-import { Check, X } from "lucide-react";
+import React, { useState } from "react";
+import { ShieldCheck, Check, X } from "lucide-react";
 
-const roles = ["Admin", "Sales Rep", "Sales Manager", "Finance", "Operations"];
-const modules = [
-  "Dashboard",
-  "Customers",
-  "Products",
-  "Pricing",
-  "Discounts & Approvals",
-  "Warehouses",
-  "Subscription Plans",
-  "Customer Tiers",
-  "Premium Support",
-  "Maintenance Plans",
-  "Users & Managers",
-  "Roles & Permissions",
-  "Cloud Backup",
-  "Reports & Analytics",
+const rolesList = [
+  { id: "REP", name: "Sales Rep" },
+  { id: "MANAGER", name: "Sales Manager" },
+  { id: "FINANCE", name: "Finance" },
+  { id: "OPERATIONS", name: "Operations" },
+  { id: "ADMIN", name: "Super Admin" },
 ];
-const permissions = ["View", "Create", "Edit", "Delete", "Approve"];
 
-type PermMatrix = Record<string, Record<string, Record<string, boolean>>>;
+const initialMatrix: Record<string, Record<string, boolean>> = {
+  create_quotation: { REP: true, MANAGER: true, FINANCE: false, OPERATIONS: false, ADMIN: true },
+  edit_own_quotation: { REP: true, MANAGER: true, FINANCE: false, OPERATIONS: false, ADMIN: true },
+  view_team_quotations: { REP: false, MANAGER: true, FINANCE: true, OPERATIONS: false, ADMIN: true },
+  approve_discounts: { REP: false, MANAGER: true, FINANCE: true, OPERATIONS: false, ADMIN: true },
+  manage_inventory: { REP: false, MANAGER: false, FINANCE: false, OPERATIONS: true, ADMIN: true },
+  view_invoices: { REP: true, MANAGER: true, FINANCE: true, OPERATIONS: true, ADMIN: true },
+  view_payment_info: { REP: false, MANAGER: false, FINANCE: true, OPERATIONS: false, ADMIN: true },
+  full_admin_access: { REP: false, MANAGER: false, FINANCE: false, OPERATIONS: false, ADMIN: true },
+};
 
-function initMatrix(): PermMatrix {
-  const m: PermMatrix = {};
-  for (const mod of modules) {
-    m[mod] = {};
-    for (const role of roles) {
-      m[mod][role] = {};
-      for (const perm of permissions) {
-        if (role === "Admin") {
-          m[mod][role][perm] = true;
-        } else if (perm === "View") {
-          m[mod][role][perm] = true;
-        } else if (role === "Sales Rep") {
-          m[mod][role][perm] = ["Customers", "Products", "Pricing"].includes(mod) && ["Create", "Edit"].includes(perm);
-        } else if (role === "Sales Manager") {
-          m[mod][role][perm] = perm !== "Delete" && !["Users & Managers", "Roles & Permissions", "Cloud Backup"].includes(mod);
-        } else if (role === "Finance") {
-          m[mod][role][perm] = ["Approve"].includes(perm) || (["Edit"].includes(perm) && ["Pricing", "Discounts & Approvals"].includes(mod));
-        } else if (role === "Operations") {
-          m[mod][role][perm] = ["Create", "Edit"].includes(perm) && ["Warehouses", "Products"].includes(mod);
-        } else {
-          m[mod][role][perm] = false;
-        }
-      }
-    }
-  }
-  return m;
-}
+const permissionLabels: Record<string, string> = {
+  create_quotation: "Create Quotation",
+  edit_own_quotation: "Edit Own Quotation",
+  view_team_quotations: "View Team Quotations",
+  approve_discounts: "Approve Discounts",
+  manage_inventory: "Manage Inventory & Stock",
+  view_invoices: "View Invoices",
+  view_payment_info: "View Payment Information",
+  full_admin_access: "Full Admin Access & System Config",
+};
 
 export default function RolesPermissions() {
-  const [matrix, setMatrix] = useState<PermMatrix>(initMatrix());
+  const [matrix, setMatrix] = useState(initialMatrix);
   const [toast, setToast] = useState("");
 
-  function toggle(mod: string, role: string, perm: string) {
-    if (role === "Admin") return;
-    setMatrix((prev) => ({
-      ...prev,
-      [mod]: { ...prev[mod], [role]: { ...prev[mod][role], [perm]: !prev[mod][role][perm] } },
-    }));
-    setToast("Permission updated");
-    setTimeout(() => setToast(""), 2000);
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }
+
+  function togglePermission(permKey: string, roleId: string) {
+    if (roleId === "ADMIN" && permKey === "full_admin_access") {
+      showToast("Cannot revoke Full Admin Access from Super Admin role");
+      return;
+    }
+    const updated = {
+      ...matrix,
+      [permKey]: {
+        ...matrix[permKey],
+        [roleId]: !matrix[permKey][roleId],
+      },
+    };
+    setMatrix(updated);
+    showToast("Role permission matrix saved");
   }
 
   return (
     <div className="space-y-5">
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />{toast}
+        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          {toast}
         </div>
       )}
+
       <div>
-        <h2 className="text-[18px] font-bold text-[#1F2937]">Roles & Permissions</h2>
-        <p className="text-[#6B7280] text-sm">Configure module-level access for each role. Click a cell to toggle.</p>
+        <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Role-Based Access Control (RBAC)</h2>
+        <p className="text-[#6B7280] text-xs mt-0.5">Toggle feature permissions and capabilities for each platform role.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs">
+        <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+          <h3 className="text-[#1F2937] font-bold text-sm">Permissions Matrix</h3>
+          <span className="text-xs text-[#6B7280]">Click checkbox to enable/disable capability</span>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#E5E7EB]">
-                <th className="px-4 py-3 text-left text-[11px] font-medium text-[#6B7280] min-w-[160px] sticky left-0 bg-white z-10">Module</th>
-                {roles.map((role) => (
-                  <th key={role} colSpan={5} className="px-2 py-3 text-center text-[11px] font-medium text-[#1F2937] border-l border-[#E5E7EB]">
-                    {role}
-                  </th>
+              <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                <th className="py-3 px-5">Permission Capability</th>
+                {rolesList.map((r) => (
+                  <th key={r.id} className="py-3 px-4 text-center">{r.name}</th>
                 ))}
               </tr>
-              <tr className="border-b border-[#E5E7EB] bg-[#FAFAFA]">
-                <th className="px-4 py-2 sticky left-0 bg-[#FAFAFA] z-10" />
-                {roles.map((role) =>
-                  permissions.map((perm) => (
-                    <th key={`${role}-${perm}`} className="px-1 py-2 text-center text-[10px] text-[#9CA3AF] font-medium border-l border-[#F4F5F7] first-of-type:border-l-[#E5E7EB] w-10">
-                      {perm.slice(0, 3)}
-                    </th>
-                  ))
-                )}
-              </tr>
             </thead>
-            <tbody>
-              {modules.map((mod, mi) => (
-                <tr key={mod} className={`border-b border-[#F4F5F7] last:border-0 ${mi % 2 === 0 ? "" : "bg-[#FAFAFA]/50"}`}>
-                  <td className="px-4 py-2.5 text-[13px] text-[#1F2937] font-medium sticky left-0 bg-inherit z-10 whitespace-nowrap">{mod}</td>
-                  {roles.map((role) =>
-                    permissions.map((perm) => {
-                      const granted = matrix[mod]?.[role]?.[perm];
-                      const isAdmin = role === "Admin";
-                      return (
-                        <td key={`${role}-${perm}`} className="px-1 py-2.5 text-center border-l border-[#F4F5F7] first-of-type:border-l-[#E5E7EB]">
-                          <button
-                            onClick={() => toggle(mod, role, perm)}
-                            disabled={isAdmin}
-                            className={`w-6 h-6 rounded-md flex items-center justify-center mx-auto transition-colors ${
-                              granted
-                                ? isAdmin
-                                  ? "bg-[#F26C4F]/20 text-[#F26C4F]"
-                                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                                : "bg-[#F4F5F7] text-[#D1D5DB] hover:bg-gray-200 hover:text-gray-400"
-                            } ${isAdmin ? "cursor-not-allowed" : "cursor-pointer"}`}
-                          >
-                            {granted ? <Check size={11} strokeWidth={2.5} /> : <X size={11} strokeWidth={2} />}
-                          </button>
-                        </td>
-                      );
-                    })
-                  )}
+            <tbody className="divide-y divide-[#F4F5F7] text-xs">
+              {Object.keys(matrix).map((permKey) => (
+                <tr key={permKey} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                  <td className="py-3.5 px-5 font-bold text-[#1F2937]">
+                    {permissionLabels[permKey] || permKey}
+                  </td>
+                  {rolesList.map((r) => {
+                    const isAllowed = matrix[permKey][r.id];
+                    return (
+                      <td key={r.id} className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => togglePermission(permKey, r.id)}
+                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                            isAllowed
+                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                              : "bg-[#F4F5F7] text-[#9CA3AF] hover:bg-gray-200"
+                          }`}
+                        >
+                          {isAllowed ? <Check size={16} className="stroke-[3]" /> : <X size={14} />}
+                        </button>
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-        <div className="px-4 py-3 border-t border-[#E5E7EB] flex items-center gap-4 text-[12px] text-[#6B7280]">
-          <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-emerald-50 flex items-center justify-center"><Check size={9} className="text-emerald-600" /></span> Granted</div>
-          <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[#F4F5F7] flex items-center justify-center"><X size={9} className="text-gray-300" /></span> Denied</div>
-          <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[#F26C4F]/20 flex items-center justify-center"><Check size={9} className="text-[#F26C4F]" /></span> Admin (locked)</div>
         </div>
       </div>
     </div>

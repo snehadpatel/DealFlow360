@@ -1,97 +1,122 @@
-import { useState } from "react";
-import { Plus, Edit2, Trash2, Eye } from "lucide-react";
-import StatusPill from "../ui/StatusPill";
+import React, { useState } from "react";
+import { Wrench, Plus, Edit2, Ban, CheckCircle2, ShieldCheck } from "lucide-react";
 import Modal from "../ui/Modal";
-import ConfirmDialog from "../ui/ConfirmDialog";
+import StatusPill from "../ui/StatusPill";
 
 const initialPlans = [
-  { id: 1, name: "Basic Maintenance", price: 5000, coverage: "Hardware inspection", sla: "72 hours", eligible: "Bronze", status: "active" },
-  { id: 2, name: "Standard Maintenance", price: 12000, coverage: "Hardware + Software", sla: "24 hours", eligible: "Silver", status: "active" },
-  { id: 3, name: "Premium Maintenance", price: 25000, coverage: "Full stack + On-site", sla: "4 hours", eligible: "Gold", status: "active" },
-  { id: 4, name: "On-Demand Repairs", price: 8000, coverage: "Pay-per-service", sla: "48 hours", eligible: "All tiers", status: "active" },
+  {
+    id: 1,
+    name: "Hardware Preventive Maintenance",
+    description: "Quarterly hardware health check, firmware updates, and component replacement",
+    monthlyPrice: "₹4,500",
+    annualPrice: "₹45,000",
+    coverage: "Hardware components & firewalls",
+    sla: "4h Onsite Response",
+    supportLevel: "L2 Hardware Specialist",
+    renewalPeriod: "Annual",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Cloud Server Health & Patching",
+    description: "Monthly security patches, backup audits, database optimization",
+    monthlyPrice: "₹8,000",
+    annualPrice: "₹85,000",
+    coverage: "SaaS infra & database clusters",
+    sla: "1h Critical Remote SLA",
+    supportLevel: "Cloud Architect Team",
+    renewalPeriod: "Annual",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Legacy Equipment AMC",
+    description: "Extended warranty coverage for end-of-life legacy servers",
+    monthlyPrice: "₹12,000",
+    annualPrice: "₹1,20,000",
+    coverage: "Legacy server racks",
+    sla: "8h Next Business Day",
+    supportLevel: "Field Engineer",
+    renewalPeriod: "Annual",
+    status: "inactive",
+  },
 ];
-
-const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 placeholder-[#9CA3AF]";
-function FL({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}</label>{children}</div>;
-}
 
 export default function MaintenancePlans() {
   const [plans, setPlans] = useState(initialPlans);
   const [addOpen, setAddOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [toast, setToast] = useState("");
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2500); }
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }
+
+  function toggleStatus(id: number, currentStatus: string) {
+    const nextStatus = currentStatus === "active" ? "inactive" : "active";
+    setPlans(plans.map((p) => (p.id === id ? { ...p, status: nextStatus } : p)));
+    showToast(`Maintenance plan status changed to ${nextStatus}`);
+  }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />{toast}
+        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          {toast}
         </div>
       )}
+
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[18px] font-bold text-[#1F2937]">Maintenance Plans</h2>
-          <p className="text-[#6B7280] text-sm">Configure maintenance tiers, coverage, and SLAs.</p>
+          <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Maintenance & Service Plans</h2>
+          <p className="text-[#6B7280] text-xs mt-0.5">Manage annual maintenance contracts (AMC), SLAs, and recurring coverage plans.</p>
         </div>
-        <button onClick={() => setAddOpen(true)} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E]">
-          <Plus size={16} /> Create Plan
+        <button
+          onClick={() => showToast("Create plan modal opened")}
+          className="flex items-center gap-1.5 bg-[#F26C4F] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#e05535] transition shadow-xs"
+        >
+          <Plus size={16} /> Create Maintenance Plan
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-[#E5E7EB]">
-              <tr>
-                {["Plan Name", "Price / Month", "Coverage", "SLA", "Eligible Customers", "Status", "Actions"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[#6B7280] whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {plans.map((p) => (
-                <tr key={p.id} className="border-b border-[#F4F5F7] last:border-0 hover:bg-[#FAFAFA]">
-                  <td className="px-4 py-4 text-[13px] font-medium text-[#1F2937]">{p.name}</td>
-                  <td className="px-4 py-4 text-[13px] text-[#1F2937] font-medium">₹{p.price.toLocaleString("en-IN")}</td>
-                  <td className="px-4 py-4 text-[13px] text-[#6B7280]">{p.coverage}</td>
-                  <td className="px-4 py-4 text-[13px] text-[#6B7280]">{p.sla}</td>
-                  <td className="px-4 py-4">
-                    <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${p.eligible === "Gold" ? "bg-amber-50 text-amber-700" : p.eligible === "Silver" ? "bg-gray-100 text-gray-600" : p.eligible === "Bronze" ? "bg-orange-50 text-orange-700" : "bg-[#F4F5F7] text-[#6B7280]"}`}>{p.eligible}</span>
-                  </td>
-                  <td className="px-4 py-4"><StatusPill status={p.status} /></td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-1">
-                      <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F4F5F7] text-[#6B7280]"><Eye size={14} /></button>
-                      <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F4F5F7] text-[#6B7280]"><Edit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(p.id)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-[#6B7280] hover:text-red-500"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {plans.map((plan) => (
+          <div key={plan.id} className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-extrabold text-base text-[#1F2937]">{plan.name}</span>
+                <StatusPill status={plan.status} />
+              </div>
+              <p className="text-xs text-[#6B7280] mb-3">{plan.description}</p>
+
+              <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#E5E7EB] space-y-1.5 text-xs text-[#374151] mb-4">
+                <p><strong className="text-[#1F2937]">Monthly Price:</strong> {plan.monthlyPrice}</p>
+                <p><strong className="text-[#1F2937]">Annual Price:</strong> {plan.annualPrice}</p>
+                <p><strong className="text-[#1F2937]">Coverage:</strong> {plan.coverage}</p>
+                <p><strong className="text-[#1F2937]">SLA Guarantee:</strong> {plan.sla}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => showToast(`Edit plan for ${plan.name}`)}
+                className="flex items-center gap-1 text-xs font-bold text-[#374151] hover:text-[#F26C4F]"
+              >
+                <Edit2 size={14} /> Edit Plan
+              </button>
+
+              <button
+                onClick={() => toggleStatus(plan.id, plan.status)}
+                className="flex items-center gap-1 text-xs font-bold text-[#6B7280] hover:text-amber-600"
+              >
+                {plan.status === "active" ? <Ban size={14} /> : <CheckCircle2 size={14} />}
+                {plan.status === "active" ? "Deactivate" : "Activate"}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
-
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Create Maintenance Plan" onSave={() => { setAddOpen(false); showToast("Plan created"); }} saveLabel="Create Plan">
-        <div className="space-y-4">
-          <FL label="Plan Name"><input className={inputCls} placeholder="e.g. Enterprise Maintenance" /></FL>
-          <FL label="Monthly Price (₹)"><input type="number" className={inputCls} placeholder="0" /></FL>
-          <FL label="Coverage Description"><textarea className={`${inputCls} resize-none`} rows={2} placeholder="Describe what's covered" /></FL>
-          <FL label="SLA Response Time">
-            <select className={inputCls}><option>4 hours</option><option>8 hours</option><option>24 hours</option><option>48 hours</option><option>72 hours</option></select>
-          </FL>
-          <FL label="Eligible Customers">
-            <select className={inputCls}><option>All tiers</option><option>Bronze</option><option>Silver</option><option>Gold</option></select>
-          </FL>
-          <FL label="Status"><select className={inputCls}><option>Active</option><option>Draft</option></select></FL>
-        </div>
-      </Modal>
-
-      <ConfirmDialog open={deleteId !== null} title="Delete Maintenance Plan" message="This plan will be permanently deleted. Customers enrolled in this plan will be affected." confirmLabel="Delete Plan" onConfirm={() => { setPlans(plans.filter((p) => p.id !== deleteId)); setDeleteId(null); showToast("Plan deleted"); }} onCancel={() => setDeleteId(null)} />
     </div>
   );
 }
