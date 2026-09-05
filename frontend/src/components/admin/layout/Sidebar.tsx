@@ -15,7 +15,9 @@ import {
   BarChart3,
   X,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
 
 type NavItem = {
   id: string;
@@ -76,6 +78,17 @@ type Props = {
 };
 
 export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }: Props) {
+  const { user, logout } = useAuth();
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "SA";
+
   return (
     <>
       {mobileOpen && (
@@ -104,11 +117,11 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
 
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E5E7EB]">
           <div className="w-9 h-9 rounded-full bg-[#F26C4F] flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-semibold text-sm">SA</span>
+            <span className="text-white font-semibold text-sm">{userInitials}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-[#1F2937] font-medium text-sm truncate">Super Admin</p>
-            <p className="text-[#6B7280] text-xs truncate">admin@revalo.com</p>
+            <p className="text-[#1F2937] font-medium text-sm truncate">{user?.name || "Super Admin"}</p>
+            <p className="text-[#6B7280] text-xs truncate">{user?.email || "admin@dealflow360.com"}</p>
           </div>
         </div>
 
@@ -140,8 +153,19 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
           ))}
         </nav>
 
-        <div className="px-5 py-4 border-t border-[#E5E7EB]">
+        <div className="px-5 py-4 border-t border-[#E5E7EB] flex items-center justify-between">
           <p className="text-[11px] text-[#9CA3AF]">DealFlow360 Admin</p>
+          <button
+            onClick={() => {
+              onClose();
+              logout();
+            }}
+            className="flex items-center gap-1.5 text-xs text-[#EF4444] hover:text-[#DC2626] font-medium transition-colors"
+            title="Sign Out"
+          >
+            <LogOut size={13} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
     </>
