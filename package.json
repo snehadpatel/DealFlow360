@@ -1,0 +1,14 @@
+{
+  "name": "dealflow360-root",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start:backend": "cd backend && python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "seed": "cd backend && python3 seed.py --reset",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  }
+}
