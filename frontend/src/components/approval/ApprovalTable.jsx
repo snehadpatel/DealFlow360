@@ -1,0 +1,41 @@
+import React from 'react';
+import StatusBadge from './StatusBadge';
+import RiskBadge from './RiskBadge';
+import { ArrowRight } from 'lucide-react';
+
+export default function ApprovalTable({ items = [], onReview }) {
+  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+  const formatDate = (isoStr) => new Date(isoStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const formatApprovalType = (type) => { switch (type) { case 'CUSTOMER_NEGOTIATION': return 'Customer Negotiation'; case 'DISCOUNT': return 'Discount Override'; case 'FINANCE': return 'Finance'; default: return type || 'Discount'; } };
+
+  return (
+    <div className="bg-white border border-surface-border rounded-card shadow-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm text-text-secondary">
+          <thead className="bg-gray-50 text-text-secondary text-xs font-bold uppercase tracking-wider border-b border-surface-border">
+            <tr>
+              <th className="py-3.5 px-4">Approval ID</th><th className="py-3.5 px-4">Quotation</th><th className="py-3.5 px-4">Customer</th><th className="py-3.5 px-4">Sales Rep</th><th className="py-3.5 px-4 text-right">Total Value</th><th className="py-3.5 px-4 text-center">Discount</th><th className="py-3.5 px-4">Risk Score</th><th className="py-3.5 px-4">Approval Type</th><th className="py-3.5 px-4">Submitted</th><th className="py-3.5 px-4">Status</th><th className="py-3.5 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-surface-border">
+            {items.map((item) => (
+              <tr key={item.id} onClick={() => onReview(item.id)} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                <td className="py-4 px-4 font-bold text-text-primary font-mono">{item.id}</td>
+                <td className="py-4 px-4 font-semibold text-primary-500">{item.quotation_id}</td>
+                <td className="py-4 px-4 font-medium text-text-primary">{item.customer_name}</td>
+                <td className="py-4 px-4 text-xs">{item.sales_rep_name}</td>
+                <td className="py-4 px-4 text-right font-bold text-text-primary">{formatCurrency(item.total_value)}</td>
+                <td className="py-4 px-4 text-center font-bold text-warning-600">{item.discount}%</td>
+                <td className="py-4 px-4"><RiskBadge riskScore={item.risk_score} riskLevel={item.risk_level} /></td>
+                <td className="py-4 px-4 text-xs font-semibold"><span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 border border-surface-border">{formatApprovalType(item.approval_type)}</span></td>
+                <td className="py-4 px-4 text-xs">{formatDate(item.submitted_at)}</td>
+                <td className="py-4 px-4"><StatusBadge status={item.status} /></td>
+                <td className="py-4 px-4 text-right"><button onClick={(e) => { e.stopPropagation(); onReview(item.id); }} className="inline-flex items-center space-x-1 px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-xs font-semibold shadow-btn transition"><span>Review</span><ArrowRight className="w-3.5 h-3.5" /></button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

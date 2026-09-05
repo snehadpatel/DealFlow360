@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import QuotationBuilder from './pages/QuotationBuilder';
@@ -7,13 +7,34 @@ import WarehouseSplitScreen from './pages/WarehouseSplitScreen';
 import SubscriptionBillingScreen from './pages/SubscriptionBillingScreen';
 import CustomerPortal from './pages/CustomerPortal';
 import DealHealthDashboard from './pages/DealHealthDashboard';
+import SalesWorkspace from './pages/SalesWorkspace';
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('quotation');
 
+  useEffect(() => {
+    if (user?.role === 'CUSTOMER') {
+      setActiveTab('portal');
+    } else if (user?.role === 'MANAGER' || user?.role === 'FINANCE') {
+      setActiveTab('approval');
+    } else {
+      setActiveTab('quotation');
+    }
+  }, [user]);
+
   if (!isAuthenticated) {
     return <Login />;
+  }
+
+  // Pure customer role gets restricted customer portal layout
+  if (user?.role === 'CUSTOMER') {
+    return <CustomerPortal />;
+  }
+
+  // Pure rep role gets the dedicated Sales Workspace
+  if (user?.role === 'REP') {
+    return <SalesWorkspace />;
   }
 
   const tabs = [
@@ -28,25 +49,27 @@ export default function App() {
   const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-surface-app text-text-primary flex flex-col font-sans">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/70 px-6 py-4 flex items-center justify-between backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-surface-border bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-card">
         <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center font-bold text-emerald-400">
+          <div className="h-8 w-8 rounded-btn bg-primary-50 border border-primary-200 flex items-center justify-center font-bold text-primary-500">
             DF
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">DealFlow<span className="text-emerald-400">360</span></span>
+          <span className="text-xl font-bold tracking-tight text-text-primary">
+            DealFlow<span className="text-primary-500">360</span>
+          </span>
         </div>
 
-        <nav className="flex items-center space-x-2">
+        <nav className="flex items-center space-x-1 bg-gray-100 p-1 rounded-pill">
           {allowedTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+              className={`px-4 py-1.5 text-sm font-medium rounded-pill transition-all ${
                 activeTab === tab.id
-                  ? 'bg-emerald-500 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  ? 'bg-primary-500 text-white shadow-btn'
+                  : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               {tab.label}
@@ -56,14 +79,14 @@ export default function App() {
 
         <div className="flex items-center space-x-4">
           <div className="text-right">
-            <div className="text-xs text-slate-400">{user?.name || 'Demo User'}</div>
-            <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 rounded">
+            <div className="text-xs font-medium text-text-primary">{user?.name || 'Demo User'}</div>
+            <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-primary-50 text-primary-600 border border-primary-200 rounded-pill">
               {user?.role || 'REP'}
             </span>
           </div>
           <button
             onClick={logout}
-            className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded border border-rose-900/50 hover:bg-rose-950/40"
+            className="text-xs text-danger-500 hover:text-danger-600 px-3 py-1.5 rounded-btn border border-danger-100 hover:bg-danger-50 font-medium transition"
           >
             Logout
           </button>
