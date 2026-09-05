@@ -78,39 +78,43 @@ def seed(force: bool = False):
         last_names = ["Kumar", "Sharma", "Mehta", "Desai", "Patel", "Singh", "Verma", "Reddy", "Nair", "Chopra",
                       "Joshi", "Bose", "Iyer", "Rao", "Gupta", "Malhotra", "Kapoor", "Bhat", "Saxena", "Sen"]
 
+        # Precalculate hashes once for blazing speed
+        admin_hash = get_password_hash("admin123")
+        rep_hash = get_password_hash("rep123")
+        cust_hash = get_password_hash("cust123")
+        mgr_hash = get_password_hash("mgr123")
+        fin_hash = get_password_hash("fin123")
+        ops_hash = get_password_hash("ops123")
+
         users = []
         # Core standard logins
         admin = User(id=uuid4(), name="Super Admin", email="admin@dealflow360.com",
-                     password_hash=get_password_hash("admin123"), role=Role.ADMIN)
+                     password_hash=admin_hash, role=Role.ADMIN)
         manager = User(id=uuid4(), name="Maria Manager", email="maria.manager@dealflow360.com",
-                       password_hash=get_password_hash("mgr123"), role=Role.MANAGER)
+                       password_hash=mgr_hash, role=Role.MANAGER)
         finance = User(id=uuid4(), name="Felix Finance", email="felix.finance@dealflow360.com",
-                       password_hash=get_password_hash("fin123"), role=Role.FINANCE)
+                       password_hash=fin_hash, role=Role.FINANCE)
         ops = User(id=uuid4(), name="Ops Team Lead", email="ops@dealflow360.com",
-                   password_hash=get_password_hash("ops123"), role=Role.OPERATIONS)
+                   password_hash=ops_hash, role=Role.OPERATIONS)
         buyer1 = User(id=uuid4(), name="ABC Corp Buyer", email="buyer@abccorp.com",
-                      password_hash=get_password_hash("cust123"), role=Role.CUSTOMER)
+                      password_hash=cust_hash, role=Role.CUSTOMER)
         buyer2 = User(id=uuid4(), name="TechVision Lead", email="procurement@techvision.in",
-                      password_hash=get_password_hash("cust123"), role=Role.CUSTOMER)
+                      password_hash=cust_hash, role=Role.CUSTOMER)
         
         users.extend([admin, manager, finance, ops, buyer1, buyer2])
 
-        user_emails = {"admin@dealflow360.com", "maria.manager@dealflow360.com", "felix.finance@dealflow360.com", "ops@dealflow360.com", "buyer@abccorp.com", "procurement@techvision.in"}
         roles_pool = [Role.REP, Role.CUSTOMER, Role.MANAGER, Role.FINANCE, Role.OPERATIONS]
         role_weights = [0.45, 0.35, 0.08, 0.06, 0.06]
 
         while len(users) < 200:
             fn = random.choice(first_names)
             ln = random.choice(last_names)
-            email_candidate = f"{fn.lower()}.{ln.lower()}{random.randint(1, 999)}@dealflow360.com"
-            if email_candidate in user_emails:
-                continue
-            user_emails.add(email_candidate)
+            email_candidate = f"{fn.lower()}.{ln.lower()}.{len(users)+1}@dealflow360.com"
             role = random.choices(roles_pool, weights=role_weights)[0]
-            pwd = "rep123" if role == Role.REP else ("cust123" if role == Role.CUSTOMER else "admin123")
+            phash = rep_hash if role == Role.REP else (cust_hash if role == Role.CUSTOMER else admin_hash)
             u = User(
                 id=uuid4(), name=f"{fn} {ln}", email=email_candidate,
-                password_hash=get_password_hash(pwd), role=role, is_active=True
+                password_hash=phash, role=role, is_active=True
             )
             users.append(u)
 
