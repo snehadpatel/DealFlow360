@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login({ onNavigateToSignup }) {
-  const { login, loginDemoPersona, loginWithGoogle } = useAuth();
+export default function Signup({ onNavigateToLogin }) {
+  const { signup, loginWithGoogle } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -12,16 +12,19 @@ export default function Login({ onNavigateToSignup }) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({ mode: "onBlur" });
+
+  const passwordValue = watch("password");
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setError(null);
     try {
-      await login(data.email, data.password);
+      await signup(data.name, data.email, data.password, data.role || "REP");
     } catch (err) {
-      setError(err.response?.data?.detail || "Invalid email or password. Please try again.");
+      setError(err.response?.data?.detail || "Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -34,18 +37,11 @@ export default function Login({ onNavigateToSignup }) {
     try {
       await loginWithGoogle(response.credential);
     } catch {
-      setError("Google sign-in failed. Please try again.");
+      setError("Google sign-up failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const demoAccounts = [
-    { role: "REP", title: "Sales Rep", badge: "Builder & Upsell" },
-    { role: "MANAGER", title: "Approver", badge: "Discount Sign-Off" },
-    { role: "FINANCE", title: "Finance/Ops", badge: "Warehouse & Billing" },
-    { role: "CUSTOMER", title: "Customer", badge: "Negotiate Portal" },
-  ];
 
   return (
     <div className="auth-page">
@@ -62,29 +58,8 @@ export default function Login({ onNavigateToSignup }) {
               <polygon points="12 2 2 7 12 12 22 7 12 2 12 22 22 17 22 7 12 12 2 7 2 17 12 22" />
             </svg>
           </div>
-          <h1>DealFlow<span className="text-emerald-400">360</span></h1>
-          <p>Sign in to your sales operations workspace</p>
-        </div>
-
-        {/* 1-Click Fast Demo Personas for Evaluation */}
-        <div className="mb-5 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 flex justify-between items-center">
-            <span>⚡ Instant Demo Personas</span>
-            <span className="text-emerald-400">1-click test</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {demoAccounts.map((acc) => (
-              <button
-                type="button"
-                key={acc.role}
-                onClick={() => loginDemoPersona(acc.role)}
-                className="p-2 text-left rounded-lg bg-slate-800/60 hover:bg-slate-700/70 border border-slate-700/60 transition-all text-xs group"
-              >
-                <div className="font-semibold text-white group-hover:text-emerald-300">{acc.title}</div>
-                <div className="text-[10px] text-slate-400">{acc.badge}</div>
-              </button>
-            ))}
-          </div>
+          <h1>Create an account</h1>
+          <p>Join the DealFlow360 platform</p>
         </div>
 
         {/* Error Banner */}
@@ -101,16 +76,33 @@ export default function Login({ onNavigateToSignup }) {
           </div>
         )}
 
-        {/* Login Form */}
+        {/* Signup Form */}
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          {/* Full Name */}
+          <div className="form-group">
+            <label htmlFor="name">Full name</label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              placeholder="Alex Morgan"
+              className={errors.name ? "input-error" : ""}
+              {...register("name", {
+                required: "Full name is required",
+                minLength: { value: 2, message: "Name must be at least 2 characters" },
+              })}
+            />
+            {errors.name && <span className="field-error">{errors.name.message}</span>}
+          </div>
+
           {/* Email */}
           <div className="form-group">
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="email">Work email address</label>
             <input
               id="email"
               type="email"
               autoComplete="username"
-              placeholder="rep@dealflow360.com"
+              placeholder="alex@dealflow360.com"
               className={errors.email ? "input-error" : ""}
               {...register("email", {
                 required: "Email is required",
@@ -123,19 +115,29 @@ export default function Login({ onNavigateToSignup }) {
             {errors.email && <span className="field-error">{errors.email.message}</span>}
           </div>
 
+          {/* Role selector */}
+          <div className="form-group">
+            <label htmlFor="role">Platform Role</label>
+            <select
+              id="role"
+              className="bg-slate-950 text-slate-200 border border-slate-700"
+              {...register("role")}
+            >
+              <option value="REP">Sales Representative (Quotation Builder)</option>
+              <option value="MANAGER">Sales Manager (Discount Approver)</option>
+              <option value="FINANCE">Finance / Operations (Fulfillment & Billing)</option>
+              <option value="CUSTOMER">Customer (Negotiation Portal)</option>
+            </select>
+          </div>
+
           {/* Password */}
           <div className="form-group">
-            <div className="label-row">
-              <label htmlFor="password">Password</label>
-              <button type="button" className="text-link" tabIndex={-1}>
-                Forgot password?
-              </button>
-            </div>
+            <label htmlFor="new-password">Password</label>
             <div className="password-wrapper">
               <input
-                id="password"
+                id="new-password"
                 type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="••••••••"
                 className={errors.password ? "input-error" : ""}
                 {...register("password", {
@@ -168,15 +170,34 @@ export default function Login({ onNavigateToSignup }) {
             {errors.password && <span className="field-error">{errors.password.message}</span>}
           </div>
 
+          {/* Confirm Password */}
+          <div className="form-group">
+            <label htmlFor="confirm-password">Confirm password</label>
+            <input
+              id="confirm-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              className={errors.confirmPassword ? "input-error" : ""}
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) => value === passwordValue || "Passwords do not match",
+              })}
+            />
+            {errors.confirmPassword && (
+              <span className="field-error">{errors.confirmPassword.message}</span>
+            )}
+          </div>
+
           {/* Submit */}
-          <button type="submit" className="btn-primary" disabled={isSubmitting} id="login-submit">
+          <button type="submit" className="btn-primary" disabled={isSubmitting} id="signup-submit">
             {isSubmitting ? (
               <span className="btn-loading">
                 <span className="spinner-sm" />
-                Signing in…
+                Creating account…
               </span>
             ) : (
-              "Sign in to Platform"
+              "Complete Registration"
             )}
           </button>
         </form>
@@ -186,11 +207,11 @@ export default function Login({ onNavigateToSignup }) {
           <span>Or continue with</span>
         </div>
 
-        {/* Google OAuth (Fallback graceful if Client ID not provided) */}
+        {/* Google OAuth */}
         <div className="google-btn-wrapper">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
-            onError={() => setError("Google sign-in could not be completed.")}
+            onError={() => setError("Google sign-up could not be completed.")}
             theme="filled_black"
             size="large"
             width="100%"
@@ -201,13 +222,13 @@ export default function Login({ onNavigateToSignup }) {
 
         {/* Footer */}
         <p className="auth-footer">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <button
             type="button"
-            onClick={onNavigateToSignup}
+            onClick={onNavigateToLogin}
             className="text-link font-semibold ml-1"
           >
-            Create account
+            Sign in
           </button>
         </p>
       </div>
