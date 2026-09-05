@@ -47,7 +47,12 @@ class CustomerSubscriptionUpdate(BaseModel):
 class CustomerSubscriptionResponse(BaseModel):
     id: UUID
     customer_id: UUID
+    customer_name: Optional[str] = None
     plan_id: UUID
+    plan_name: Optional[str] = None
+    plan_billing_cycle: Optional[str] = None
+    plan_price: Optional[float] = None
+    total_amount: Optional[float] = None
     quantity: int
     status: str
     start_date: date

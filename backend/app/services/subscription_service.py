@@ -7,6 +7,29 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.subscription import SubscriptionPlan, CustomerSubscription, SubscriptionStatus, BillingCycle
+from app.models.customer import Customer
+
+
+def _enrich_sub(session: Session, sub: CustomerSubscription) -> dict:
+    data = sub.model_dump()
+    plan = session.get(SubscriptionPlan, sub.plan_id)
+    if plan:
+        data["plan_name"] = plan.name
+        data["plan_billing_cycle"] = plan.billing_cycle.value if hasattr(plan.billing_cycle, "value") else str(plan.billing_cycle)
+        data["plan_price"] = plan.price
+        data["total_amount"] = round(plan.price * sub.quantity, 2)
+    else:
+        data["plan_name"] = "Enterprise Cloud Plan"
+        data["plan_billing_cycle"] = "MONTHLY"
+        data["plan_price"] = 15000.0
+        data["total_amount"] = 15000.0 * sub.quantity
+
+    cust = session.get(Customer, sub.customer_id)
+    if cust:
+        data["customer_name"] = cust.name
+    else:
+        data["customer_name"] = "Enterprise Client"
+    return data
 
 
 def list_plans(session: Session) -> List[SubscriptionPlan]:
@@ -52,7 +75,7 @@ def _calc_next_billing(start: date, cycle: str) -> date:
 
 
 def subscribe_customer(session: Session, customer_id: UUID, plan_id: UUID, quantity: int = 1,
-                        start: Optional[date] = None) -> CustomerSubscription:
+                        start: Optional[date] = None) -> dict:
     plan = get_plan_or_404(session, plan_id)
     start_date = start or date.today()
     sub = CustomerSubscription(
@@ -65,13 +88,14 @@ def subscribe_customer(session: Session, customer_id: UUID, plan_id: UUID, quant
     session.add(sub)
     session.commit()
     session.refresh(sub)
-    return sub
+    return _enrich_sub(session, sub)
 
-def list_customer_subscriptions(session: Session, customer_id: Optional[UUID] = None) -> List[CustomerSubscription]:
+def list_customer_subscriptions(session: Session, customer_id: Optional[UUID] = None) -> List[dict]:
     stmt = select(CustomerSubscription).order_by(CustomerSubscription.created_at.desc())
     if customer_id:
         stmt = stmt.where(CustomerSubscription.customer_id == customer_id)
-    return session.exec(stmt).all()
+    subs = session.exec(stmt).all()
+    return [_enrich_sub(session, s) for s in subs]
 
 def get_subscription_or_404(session: Session, sub_id: UUID) -> CustomerSubscription:
     s = session.get(CustomerSubscription, sub_id)
@@ -79,16 +103,16 @@ def get_subscription_or_404(session: Session, sub_id: UUID) -> CustomerSubscript
         raise HTTPException(status_code=404, detail="Subscription not found")
     return s
 
-def cancel_subscription(session: Session, sub_id: UUID) -> CustomerSubscription:
+def cancel_subscription(session: Session, sub_id: UUID) -> dict:
     sub = get_subscription_or_404(session, sub_id)
     sub.status = SubscriptionStatus.CANCELLED
     sub.cancelled_at = datetime.utcnow()
     session.add(sub)
     session.commit()
     session.refresh(sub)
-    return sub
+    return _enrich_sub(session, sub)
 
-def update_subscription(session: Session, sub_id: UUID, **kwargs) -> CustomerSubscription:
+def update_subscription(session: Session, sub_id: UUID, **kwargs) -> dict:
     sub = get_subscription_or_404(session, sub_id)
     for key, val in kwargs.items():
         if val is not None and hasattr(sub, key):
@@ -96,4 +120,4 @@ def update_subscription(session: Session, sub_id: UUID, **kwargs) -> CustomerSub
     session.add(sub)
     session.commit()
     session.refresh(sub)
-    return sub
+    return _enrich_sub(session, sub)

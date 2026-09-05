@@ -339,22 +339,50 @@ def return_for_revision(session: Session, approval_id: UUID, *, approver: User, 
 
 
 # ---------------------------------------------------------------------------
-# Reads
+# Reads & Enrichment
 # ---------------------------------------------------------------------------
 
-def list_pending(session: Session, user: User) -> list[ApprovalRequest]:
+def enrich_approval(session: Session, appr: ApprovalRequest) -> dict:
+    """Enrich an ApprovalRequest with customer, rep, and quote metrics for UI display."""
+    data = appr.model_dump()
+    quotation = session.get(Quotation, appr.quotation_id)
+    if quotation:
+        data["quote_total"] = quotation.total
+        data["quote_subtotal"] = quotation.subtotal
+        data["quote_discount"] = quotation.discount_total
+        data["quote_margin"] = quotation.margin
+        data["quote_margin_percent"] = quotation.margin_percent
+        data["discount_percent"] = round((quotation.discount_total / quotation.subtotal * 100.0), 1) if quotation.subtotal > 0 else 0.0
+        data["risk_level"] = quotation.risk_level or "LOW"
+        data["blended_risk"] = quotation.blended_risk or 0.0
+        
+        customer = session.get(Customer, quotation.customer_id)
+        if customer:
+            data["customer_name"] = customer.name
+            data["customer_tier"] = customer.tier.value if hasattr(customer.tier, "value") else str(customer.tier)
+        
+        rep = session.get(User, quotation.rep_id)
+        if rep:
+            data["rep_name"] = rep.name or rep.email
+    return data
+
+
+def list_pending(session: Session, user: User) -> list[dict]:
     """Pending approvals visible to this approver (ADMIN sees all)."""
     stmt = select(ApprovalRequest).where(ApprovalRequest.status == ApprovalStatus.PENDING)
     if user.role != Role.ADMIN:
         stmt = stmt.where(ApprovalRequest.approver_role == user.role.value)
-    return list(session.exec(stmt.order_by(ApprovalRequest.created_at)))
+    requests = list(session.exec(stmt.order_by(ApprovalRequest.created_at)))
+    return [enrich_approval(session, a) for a in requests]
 
 
-def list_for_quote(session: Session, quotation_id: UUID) -> list[ApprovalRequest]:
-    return list(
+def list_for_quote(session: Session, quotation_id: UUID) -> list[dict]:
+    requests = list(
         session.exec(
             select(ApprovalRequest)
             .where(ApprovalRequest.quotation_id == quotation_id)
             .order_by(ApprovalRequest.approval_level, ApprovalRequest.created_at)
         )
     )
+    return [enrich_approval(session, a) for a in requests]
+
