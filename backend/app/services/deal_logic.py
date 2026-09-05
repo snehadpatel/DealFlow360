@@ -1,34 +1,17 @@
-"""Deterministic calculation logic for pricing, discounts, approvals, and splits."""
+"""DEPRECATED — superseded by ``app.services.pricing_policy``.
 
-def calculate_blended_discount_risk(lines: list, customer_tier: str) -> float:
-    """Calculates a weighted discount risk score based on category ceilings and customer tier."""
-    tier_weights = {"BRONZE": 1.2, "SILVER": 1.0, "GOLD": 0.8}
-    weight = tier_weights.get(customer_tier.upper(), 1.0)
-    
-    total_revenue = sum(l.get("line_total", 0) for l in lines)
-    if total_revenue == 0:
-        return 0.0
-    
-    weighted_discount = sum(l.get("discount_percent", 0) * (l.get("line_total", 0) / total_revenue) for l in lines)
-    return round(weighted_discount * weight, 2)
+This module previously held the deterministic calculations, but its
+``calculate_blended_discount_risk`` was incorrect (it computed a revenue-
+weighted *average* discount and ignored per-product ceilings, instead of the
+spec's *sum of per-line overages* against the stricter of tier/category
+ceiling). It had no callers.
 
-def determine_approval_chain(blended_risk: float) -> list:
-    """Determines whether quotation requires Manager or Finance sign-off."""
-    if blended_risk <= 10.0:
-        return []
-    elif blended_risk <= 20.0:
-        return ["MANAGER"]
-    else:
-        return ["MANAGER", "FINANCE"]
-
-def recommend_warehouse_split(required_qty: int, warehouses_stock: list) -> list:
-    """Allocates units across warehouses based on available stock."""
-    allocations = []
-    remaining = required_qty
-    for wh in sorted(warehouses_stock, key=lambda x: x["available_units"], reverse=True):
-        if remaining <= 0:
-            break
-        take = min(wh["available_units"], remaining)
-        allocations.append({"warehouse_id": wh["warehouse_id"], "allocated": take})
-        remaining -= take
-    return allocations
+The correct, spec-compliant logic now lives in ``pricing_policy``. The two
+functions that were always correct are re-exported here so any lingering
+import keeps working; prefer importing them from ``pricing_policy`` directly.
+"""
+from app.services.pricing_policy import (  # noqa: F401
+    blended_risk,
+    determine_approval_chain,
+    recommend_warehouse_split,
+)

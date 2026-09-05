@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
+import Signup from "./pages/Signup";
 import QuotationBuilder from './pages/QuotationBuilder';
 import ApprovalScreen from './pages/ApprovalScreen';
 import WarehouseSplitScreen from './pages/WarehouseSplitScreen';
@@ -11,7 +13,11 @@ import SalesWorkspace from './pages/SalesWorkspace';
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState('quotation');
+  const [authView, setAuthView] = useState("login"); // "login" | "signup"
+  const [activeTab, setActiveTab] = useState("quotation");
+
+  // Google OAuth client ID (fallback mock client id if not configured)
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1083921839128-mockclientid.apps.googleusercontent.com";
 
   useEffect(() => {
     if (user?.role === 'CUSTOMER') {
@@ -24,7 +30,15 @@ export default function App() {
   }, [user]);
 
   if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        {authView === "login" ? (
+          <Login onNavigateToSignup={() => setAuthView("signup")} />
+        ) : (
+          <Signup onNavigateToLogin={() => setAuthView("login")} />
+        )}
+      </GoogleOAuthProvider>
+    );
   }
 
   // Pure customer role gets restricted customer portal layout
@@ -38,12 +52,12 @@ export default function App() {
   }
 
   const tabs = [
-    { id: 'quotation', label: 'Quotation Builder', roles: ['REP', 'MANAGER', 'ADMIN'] },
-    { id: 'approval', label: 'Approvals', roles: ['MANAGER', 'FINANCE', 'ADMIN'] },
-    { id: 'warehouse', label: 'Warehouse Split', roles: ['FINANCE', 'ADMIN'] },
-    { id: 'subscription', label: 'Billing & Subscriptions', roles: ['REP', 'FINANCE', 'ADMIN'] },
-    { id: 'portal', label: 'Customer Portal', roles: ['CUSTOMER', 'ADMIN'] },
-    { id: 'dashboard', label: 'Deal Health Dashboard', roles: ['REP', 'MANAGER', 'FINANCE', 'ADMIN'] },
+    { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "ADMIN"] },
+    { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
+    { id: "warehouse", label: "Warehouse Split", roles: ["FINANCE", "ADMIN"] },
+    { id: "subscription", label: "Billing & Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
+    { id: "portal", label: "Customer Portal", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
   ];
 
   const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
@@ -95,12 +109,12 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
-        {activeTab === 'quotation' && <QuotationBuilder />}
-        {activeTab === 'approval' && <ApprovalScreen />}
-        {activeTab === 'warehouse' && <WarehouseSplitScreen />}
-        {activeTab === 'subscription' && <SubscriptionBillingScreen />}
-        {activeTab === 'portal' && <CustomerPortal />}
-        {activeTab === 'dashboard' && <DealHealthDashboard />}
+        {activeTab === "quotation" && <QuotationBuilder />}
+        {activeTab === "approval" && <ApprovalScreen />}
+        {activeTab === "warehouse" && <WarehouseSplitScreen />}
+        {activeTab === "subscription" && <SubscriptionBillingScreen />}
+        {activeTab === "portal" && <CustomerPortal />}
+        {activeTab === "dashboard" && <DealHealthDashboard />}
       </main>
     </div>
   );
