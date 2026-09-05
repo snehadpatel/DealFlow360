@@ -10,6 +10,11 @@ import ProfileView from '../components/customer/ProfileView';
 export default function CustomerPortal({ activeTab, onTabChange }) {
   const [selectedQuotationId, setSelectedQuotationId] = useState(null);
 
+  // Clear quotation detail view when navigating to a different top-level tab
+  React.useEffect(() => {
+    setSelectedQuotationId(null);
+  }, [activeTab]);
+
   const handleSelectQuotation = (quoteId) => {
     setSelectedQuotationId(quoteId);
   };
