@@ -22,7 +22,7 @@ export default function App() {
 
   React.useEffect(() => {
     if (user?.role === 'CUSTOMER') {
-      setActiveTab('portal');
+      setActiveTab('cust_dashboard');
     } else if (user?.role === 'MANAGER' || user?.role === 'FINANCE') {
       setActiveTab('approval');
     } else if (user?.role === 'ADMIN') {
@@ -49,18 +49,31 @@ export default function App() {
     );
   }
 
-  const tabs = [
+  const baseTabs = [
     { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "ADMIN"] },
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
     { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
     { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
-    { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN", "CUSTOMER"] },
-    { id: "portal", label: "Customer Portal", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
+    { id: "cust_dashboard", label: "Customer Portal", roles: ["ADMIN"] },
     { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
   ];
 
-  const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
+  const customerTabs = [
+    { id: "cust_dashboard", label: "Dashboard", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "cust_quotations", label: "My Quotations", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "cust_negotiations", label: "Negotiations", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "cust_invoices", label: "Invoices", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "cust_subscriptions", label: "Subscriptions", roles: ["CUSTOMER", "ADMIN"] },
+    { id: "cust_profile", label: "Profile", roles: ["CUSTOMER", "ADMIN"] },
+  ];
+
+  const isCustomerView = user?.role === 'CUSTOMER' || activeTab.startsWith('cust_');
+
+  const allowedTabs = isCustomerView 
+    ? customerTabs 
+    : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
   if (activeTab === "admin" || user?.role === "ADMIN") {
     return <AdminDashboard />;
@@ -141,7 +154,12 @@ export default function App() {
             onNavigateToBilling={() => setActiveTab("billing")}
           />
         )}
-        {activeTab === "portal" && <CustomerPortal />}
+        {activeTab.startsWith("cust_") && (
+          <CustomerPortal 
+            activeTab={activeTab.replace('cust_', '')} 
+            onTabChange={(tab) => setActiveTab(`cust_${tab}`)} 
+          />
+        )}
         {activeTab === "dashboard" && <DealHealthDashboard />}
       </main>
     </div>

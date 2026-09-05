@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import CustomerLayout from '../components/customer/CustomerLayout';
 import CustomerDashboard from '../components/customer/CustomerDashboard';
 import QuotationList from '../components/customer/QuotationList';
 import QuotationDetail from '../components/customer/QuotationDetail';
@@ -7,14 +6,8 @@ import InvoicesView from '../components/customer/InvoicesView';
 import SubscriptionsView from '../components/customer/SubscriptionsView';
 import ProfileView from '../components/customer/ProfileView';
 
-export default function CustomerPortal() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+export default function CustomerPortal({ activeTab, onTabChange }) {
   const [selectedQuotationId, setSelectedQuotationId] = useState(null);
-
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setSelectedQuotationId(null);
-  };
 
   const handleSelectQuotation = (quoteId) => {
     setSelectedQuotationId(quoteId);
@@ -25,7 +18,7 @@ export default function CustomerPortal() {
   };
 
   return (
-    <CustomerLayout activeTab={activeTab} onTabChange={handleTabChange}>
+    <div className="w-full">
       {selectedQuotationId ? (
         <QuotationDetail quotationId={selectedQuotationId} onBack={handleBackToList} />
       ) : (
@@ -33,7 +26,7 @@ export default function CustomerPortal() {
           {activeTab === 'dashboard' && (
             <CustomerDashboard
               onSelectQuotation={handleSelectQuotation}
-              onViewAllQuotations={() => handleTabChange('quotations')}
+              onViewAllQuotations={() => onTabChange('quotations')}
             />
           )}
 
@@ -52,6 +45,6 @@ export default function CustomerPortal() {
           {activeTab === 'profile' && <ProfileView />}
         </>
       )}
-    </CustomerLayout>
+    </div>
   );
 }
