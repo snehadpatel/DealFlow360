@@ -1,33 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { useAuth } from './context/AuthContext';
-import Login from './pages/Login';
+import { useAuth } from "./context/AuthContext";
+import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import QuotationBuilder from './pages/QuotationBuilder';
-import ApprovalScreen from './pages/ApprovalScreen';
-import FulfillmentScreen from './pages/FulfillmentScreen';
-import SubscriptionBillingScreen from './pages/SubscriptionBillingScreen';
-import CustomerPortal from './pages/CustomerPortal';
-import DealHealthDashboard from './pages/DealHealthDashboard';
-import SalesWorkspace from './pages/SalesWorkspace';
+import QuotationBuilder from "./pages/QuotationBuilder";
+import ApprovalScreen from "./pages/ApprovalScreen";
+import WarehouseSplitScreen from "./pages/WarehouseSplitScreen";
+import FulfillmentScreen from "./pages/FulfillmentScreen";
+import SubscriptionBillingScreen from "./pages/SubscriptionBillingScreen";
+import CustomerPortal from "./pages/CustomerPortal";
+import DealHealthDashboard from "./pages/DealHealthDashboard";
+import SalesWorkspace from "./pages/SalesWorkspace";
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
   const [activeTab, setActiveTab] = useState("quotation");
 
-  // Google OAuth client ID (fallback mock client id if not configured)
+  // Google OAuth client ID (fallback mock client id if not configured in env)
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1083921839128-mockclientid.apps.googleusercontent.com";
-
-  useEffect(() => {
-    if (user?.role === 'CUSTOMER') {
-      setActiveTab('portal');
-    } else if (user?.role === 'MANAGER' || user?.role === 'FINANCE') {
-      setActiveTab('approval');
-    } else {
-      setActiveTab('quotation');
-    }
-  }, [user]);
 
   if (!isAuthenticated) {
     return (
@@ -39,16 +30,6 @@ export default function App() {
         )}
       </GoogleOAuthProvider>
     );
-  }
-
-  // Pure customer role gets restricted customer portal layout
-  if (user?.role === 'CUSTOMER') {
-    return <CustomerPortal />;
-  }
-
-  // Pure rep role gets the dedicated Sales Workspace
-  if (user?.role === 'REP') {
-    return <SalesWorkspace />;
   }
 
   const tabs = [
@@ -63,44 +44,48 @@ export default function App() {
   const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-surface-app text-text-primary flex flex-col font-sans">
-      {/* Top Navbar */}
-      <header className="border-b border-surface-border bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-card">
+    <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans">
+      {/* Top Navbar styled according to Revalo Design System (Design.md) */}
+      <header className="border-b border-[#E5E7EB] bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-xs">
         <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 rounded-btn bg-primary-50 border border-primary-200 flex items-center justify-center font-bold text-primary-500">
+          <div className="h-9 w-9 rounded-xl bg-[#FEECE8] border border-[#F26C4F]/30 flex items-center justify-center font-bold text-[#F26C4F]">
             DF
           </div>
-          <span className="text-xl font-bold tracking-tight text-text-primary">
-            DealFlow<span className="text-primary-500">360</span>
+          <span className="text-xl font-bold tracking-tight text-[#1F2937]">
+            DealFlow<span className="text-[#F26C4F]">360</span>
           </span>
         </div>
 
-        <nav className="flex items-center space-x-1 bg-gray-100 p-1 rounded-pill">
-          {allowedTabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-pill transition-all ${
-                activeTab === tab.id
-                  ? 'bg-primary-500 text-white shadow-btn'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Revalo Nav Pills (Design.md Section 4.1: Active Nav Pill Primary Orange #F26C4F, Pill Shape) */}
+        <nav className="flex items-center space-x-1.5 bg-[#F4F5F7] p-1 rounded-full border border-slate-200/80">
+          {allowedTabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 ${
+                  isActive
+                    ? "bg-[#F26C4F] text-white shadow-xs"
+                    : "text-[#6B7280] hover:text-[#1F2937] hover:bg-white/60"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="flex items-center space-x-4">
           <div className="text-right">
-            <div className="text-xs font-medium text-text-primary">{user?.name || 'Demo User'}</div>
-            <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-primary-50 text-primary-600 border border-primary-200 rounded-pill">
-              {user?.role || 'REP'}
+            <div className="text-xs text-[#1F2937] font-semibold">{user?.name || "Demo User"}</div>
+            <span className="inline-block px-2.5 py-0.5 text-[10px] font-semibold bg-[#FEECE8] text-[#F26C4F] rounded-full">
+              {user?.role || "REP"}
             </span>
           </div>
           <button
             onClick={logout}
-            className="text-xs text-danger-500 hover:text-danger-600 px-3 py-1.5 rounded-btn border border-danger-100 hover:bg-danger-50 font-medium transition"
+            className="text-xs text-[#EF4444] hover:text-[#DC2626] px-3 py-1 rounded-full border border-[#EF4444]/30 hover:bg-[#FEE2E2]/50 transition font-medium"
           >
             Logout
           </button>

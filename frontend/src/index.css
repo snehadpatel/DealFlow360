@@ -1,72 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ════════════════════════════════════════════════════════════════════
-   Design Tokens
+   Revalo Design System Tokens (from Design.md)
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --color-bg: #090d16;
-  --color-surface: rgba(255, 255, 255, 0.04);
-  --color-surface-hover: rgba(255, 255, 255, 0.07);
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-focus: rgba(16, 185, 129, 0.5);
-  --color-text: #f0f0f5;
-  --color-text-muted: #94a3b8;
-  --color-text-dim: #64748b;
+  /* Primary Colors */
+  --color-primary: #F26C4F;
+  --color-primary-hover: #E0583B;
+  --color-primary-light: #FEECE8;
+  --color-secondary-peach: #F8B179;
 
-  --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-  --gradient-accent: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%);
-  --gradient-bg: radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
-                 radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                 radial-gradient(ellipse at 50% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+  /* Neutral Colors */
+  --color-bg: #F4F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-dark: #161616;
 
-  --color-error: #f87171;
-  --color-error-bg: rgba(248, 113, 113, 0.1);
-  --color-error-border: rgba(248, 113, 113, 0.25);
-  --color-success: #34d399;
+  /* Text Colors */
+  --color-text: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-text-inverse: #FFFFFF;
 
+  /* Semantic Colors */
+  --color-success: #10B981;
+  --color-success-bg: #D1FAE5;
+  --color-success-text: #065F46;
+  --color-error: #EF4444;
+  --color-error-bg: #FEE2E2;
+  --color-error-border: #FCA5A5;
+  --color-warning: #F59E0B;
+  --color-warning-bg: #FEF3C7;
+
+  /* Border & Shadows */
+  --color-border: #E5E7EB;
+  --color-border-focus: #F26C4F;
+
+  /* Radii */
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
 
+  /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', 'Roboto', 'Public Sans', system-ui, sans-serif;
-  background-color: #F4F5F7;
-  color: #1F2937;
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   min-height: 100vh;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #F4F5F7;
-}
-::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Auth Page Layout & Glassmorphism
+   Auth Page Layout (Revalo Style)
    ════════════════════════════════════════════════════════════════════ */
 
 .auth-page {
@@ -76,88 +72,27 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 24px;
-  overflow: hidden;
-  background: var(--color-bg);
-}
-
-.auth-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-bg);
-  pointer-events: none;
-}
-
-.bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  opacity: 0.45;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
-}
-
-.bg-orb-1 {
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%);
-  top: -10%;
-  left: -5%;
-  animation: float-1 12s infinite;
-}
-
-.bg-orb-2 {
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 70%);
-  bottom: -10%;
-  right: -5%;
-  animation: float-2 14s infinite;
-}
-
-.bg-orb-3 {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: float-3 10s infinite;
-}
-
-@keyframes float-1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(40px, 30px); }
-}
-
-@keyframes float-2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-35px, -25px); }
-}
-
-@keyframes float-3 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.15); }
+  background-color: var(--color-bg);
+  background-image: 
+    radial-gradient(ellipse at 15% 20%, rgba(242, 108, 79, 0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 80%, rgba(248, 177, 121, 0.10) 0%, transparent 45%);
 }
 
 .auth-card {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-w: 460px;
+  max-width: 460px;
   padding: 36px 32px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -173,28 +108,22 @@ body {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-md);
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   margin-bottom: 12px;
 }
 
-.auth-logo svg {
-  width: 24px;
-  height: 24px;
-}
-
 .auth-header h1 {
-  font-size: 1.6rem;
+  font-size: 1.65rem;
   font-weight: 700;
-  letter-spacing: -0.025em;
-  color: #ffffff;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
   margin-bottom: 4px;
 }
 
 .auth-header p {
   font-size: 0.875rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .auth-error {
@@ -211,12 +140,6 @@ body {
   animation: shake 0.3s ease;
 }
 
-.auth-error svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
@@ -231,9 +154,8 @@ body {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--color-text);
   margin-bottom: 6px;
-  letter-spacing: 0.01em;
 }
 
 .label-row {
@@ -252,8 +174,8 @@ body {
   width: 100%;
   padding: 11px 14px;
   font-size: 0.875rem;
-  color: #f8fafc;
-  background: rgba(2, 6, 23, 0.6);
+  color: var(--color-text);
+  background: #FFFFFF;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   outline: none;
@@ -262,8 +184,8 @@ body {
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(242, 108, 79, 0.18);
 }
 
 .form-group input.input-error {
@@ -292,7 +214,7 @@ body {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--color-text-dim);
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -305,32 +227,28 @@ body {
   color: var(--color-text);
 }
 
-.password-toggle svg {
-  width: 18px;
-  height: 18px;
-}
-
+/* Primary CTA Button (Pill shape per Design.md Section 4.1) */
 .btn-primary {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 12px 20px;
+  padding: 12px 24px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: white;
-  background: var(--gradient-primary);
+  color: var(--color-text-inverse);
+  background-color: var(--color-primary);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: opacity var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(242, 108, 79, 0.28);
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.92;
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 6px 18px rgba(242, 108, 79, 0.38);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -357,10 +275,14 @@ body {
   animation: spin 0.6s linear infinite;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .text-link {
-  color: #34d399;
+  color: var(--color-primary);
   font-size: 0.825rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   background: none;
   border: none;
@@ -369,7 +291,7 @@ body {
 }
 
 .text-link:hover {
-  color: #6ee7b7;
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 
@@ -390,7 +312,7 @@ body {
 
 .divider span {
   font-size: 0.775rem;
-  color: var(--color-text-dim);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -401,11 +323,7 @@ body {
 
 .auth-footer {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 22px;
   font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  color: var(--color-text-secondary);
 }

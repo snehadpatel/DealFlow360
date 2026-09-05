@@ -45,16 +45,11 @@ export default function Signup({ onNavigateToLogin }) {
 
   return (
     <div className="auth-page">
-      {/* Animated background glow orbs */}
-      <div className="bg-orb bg-orb-1" />
-      <div className="bg-orb bg-orb-2" />
-      <div className="bg-orb bg-orb-3" />
-
       <div className="auth-card">
-        {/* Header */}
+        {/* Header with Revalo Primary Orange Logo Icon */}
         <div className="auth-header">
           <div className="auth-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
               <polygon points="12 2 2 7 12 12 22 7 12 2 12 22 22 17 22 7 12 12 2 7 2 17 12 22" />
             </svg>
           </div>
@@ -120,7 +115,7 @@ export default function Signup({ onNavigateToLogin }) {
             <label htmlFor="role">Platform Role</label>
             <select
               id="role"
-              className="bg-slate-950 text-slate-200 border border-slate-700"
+              className="bg-white text-slate-800 border border-slate-200"
               {...register("role")}
             >
               <option value="REP">Sales Representative (Quotation Builder)</option>
@@ -155,12 +150,12 @@ export default function Signup({ onNavigateToLogin }) {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
@@ -189,7 +184,7 @@ export default function Signup({ onNavigateToLogin }) {
             )}
           </div>
 
-          {/* Submit */}
+          {/* Primary CTA Button (Pill shape per Design.md Section 4.1) */}
           <button type="submit" className="btn-primary" disabled={isSubmitting} id="signup-submit">
             {isSubmitting ? (
               <span className="btn-loading">
@@ -207,12 +202,12 @@ export default function Signup({ onNavigateToLogin }) {
           <span>Or continue with</span>
         </div>
 
-        {/* Google OAuth */}
+        {/* Google OAuth Button */}
         <div className="google-btn-wrapper">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => setError("Google sign-up could not be completed.")}
-            theme="filled_black"
+            theme="outline"
             size="large"
             width="100%"
             text="continue_with"
