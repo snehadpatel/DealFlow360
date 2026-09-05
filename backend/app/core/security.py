@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional, List
+from uuid import UUID
 from jose import jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, Security, Depends, status
@@ -33,6 +34,19 @@ def decode_token(token: str) -> dict:
             detail="Invalid or expired authentication token",
         )
 
+def authenticate_user(session: Session, email: str, password: str) -> Optional[User]:
+    """Return the user when the email exists, is active, and the password matches."""
+    user = session.exec(select(User).where(User.email == email)).first()
+    if not user or not user.is_active:
+        return None
+    if not verify_password(password, user.password_hash):
+        return None
+    return user
+
+def token_for_user(user: User) -> str:
+    """Issue a signed JWT carrying the user id (subject), role and name."""
+    return create_access_token({"sub": str(user.id), "role": user.role.value, "name": user.name})
+
 def get_current_user(
     auth: Optional[HTTPAuthorizationCredentials] = Security(security_scheme),
     session: Session = Depends(get_session),
@@ -42,20 +56,30 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication credentials required",
         )
-    
+
     payload = decode_token(auth.credentials)
-    user_id = payload.get("sub")
-    if not user_id:
+    subject = payload.get("sub")
+    if not subject:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token payload",
         )
-    
-    user = session.get(User, user_id)
-    if not user:
+
+    # Token subject is the stringified user UUID.
+    try:
+        user_id = UUID(str(subject))
+    except (ValueError, TypeError):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token subject",
+        )
+
+    user = session.get(User, user_id)
+    # 401 (not 404) so the frontend's interceptor clears the session and re-logs in.
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
         )
     return user
 
@@ -64,7 +88,7 @@ def require_roles(allowed_roles: List[Role]):
         if current_user.role not in allowed_roles and current_user.role != Role.ADMIN:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation not permitted for role {current_user.role}",
+                detail=f"Operation not permitted for role {current_user.role.value}",
             )
         return current_user
     return role_checker
