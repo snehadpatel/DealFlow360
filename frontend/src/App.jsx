@@ -7,6 +7,7 @@ import QuotationBuilder from "./pages/QuotationBuilder";
 import ApprovalScreen from "./pages/ApprovalScreen";
 import FulfillmentScreen from "./pages/FulfillmentScreen";
 import SubscriptionBillingScreen from "./pages/SubscriptionBillingScreen";
+import InvoicesScreen from "./pages/InvoicesScreen";
 import CustomerPortal from "./pages/CustomerPortal";
 import DealHealthDashboard from "./pages/DealHealthDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -30,7 +31,9 @@ export default function App() {
   }, [user]);
 
   // Google OAuth client ID (fallback mock client id if not configured in env)
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1083921839128-mockclientid.apps.googleusercontent.com";
+  const googleClientId =
+    import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+    "1083921839128-mockclientid.apps.googleusercontent.com";
 
   if (!isAuthenticated) {
     return (
@@ -49,6 +52,7 @@ export default function App() {
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
     { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
     { id: "subscription", label: "Billing & Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
+    { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN", "CUSTOMER"] },
     { id: "portal", label: "Customer Portal", roles: ["CUSTOMER", "ADMIN"] },
     { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
   ];
@@ -61,7 +65,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans">
-      {/* Top Navbar styled according to Revalo Design System (Design.md) */}
+      {/* Top Navbar styled according to Revalo Design System */}
       <header className="border-b border-[#E5E7EB] bg-white px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-xs">
         <div className="flex items-center space-x-3">
           <div className="h-9 w-9 rounded-xl bg-[#FEECE8] border border-[#F26C4F]/30 flex items-center justify-center font-bold text-[#F26C4F]">
@@ -72,15 +76,15 @@ export default function App() {
           </span>
         </div>
 
-        {/* Revalo Nav Pills (Design.md Section 4.1: Active Nav Pill Primary Orange #F26C4F, Pill Shape) */}
-        <nav className="flex items-center space-x-1.5 bg-[#F4F5F7] p-1 rounded-full border border-slate-200/80">
+        {/* Revalo Nav Pills */}
+        <nav className="flex items-center space-x-1 bg-[#F4F5F7] p-1 rounded-full border border-slate-200/80 overflow-x-auto max-w-2xl">
           {allowedTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 ${
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 whitespace-nowrap ${
                   isActive
                     ? "bg-[#F26C4F] text-white shadow-xs"
                     : "text-[#6B7280] hover:text-[#1F2937] hover:bg-white/60"
@@ -122,6 +126,12 @@ export default function App() {
         {activeTab === "approval" && <ApprovalScreen />}
         {activeTab === "fulfillment" && <FulfillmentScreen />}
         {activeTab === "subscription" && <SubscriptionBillingScreen />}
+        {activeTab === "invoices" && (
+          <InvoicesScreen
+            onNavigateToQuotation={(qId) => setActiveTab("quotation")}
+            onNavigateToBilling={() => setActiveTab("subscription")}
+          />
+        )}
         {activeTab === "portal" && <CustomerPortal />}
         {activeTab === "dashboard" && <DealHealthDashboard />}
       </main>
