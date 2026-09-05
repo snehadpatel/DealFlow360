@@ -34,7 +34,7 @@ export default function BillingTimeline({ timeline = [] }) {
   };
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-card p-6 shadow-xs space-y-4">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
       <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
         <History className="w-4 h-4 text-primary" />
         <h2 className="text-base font-bold text-textPrimary tracking-tight">Billing Lifecycle Timeline</h2>

@@ -55,16 +55,16 @@ export default function ApprovalDetail({ approvalId, onBack }) {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse max-w-7xl mx-auto">
-        <div className="h-16 bg-white border border-surface-border rounded-card" />
-        <div className="h-32 bg-gray-100 rounded-card" />
+        <div className="h-16 bg-white border border-gray-200 rounded-2xl" />
+        <div className="h-32 bg-gray-100 rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="h-64 bg-white border border-surface-border rounded-card" />
-            <div className="h-64 bg-white border border-surface-border rounded-card" />
+            <div className="h-64 bg-white border border-gray-200 rounded-2xl" />
+            <div className="h-64 bg-white border border-gray-200 rounded-2xl" />
           </div>
           <div className="space-y-6">
-            <div className="h-48 bg-white border border-surface-border rounded-card" />
-            <div className="h-48 bg-white border border-surface-border rounded-card" />
+            <div className="h-48 bg-white border border-gray-200 rounded-2xl" />
+            <div className="h-48 bg-white border border-gray-200 rounded-2xl" />
           </div>
         </div>
       </div>
@@ -73,13 +73,13 @@ export default function ApprovalDetail({ approvalId, onBack }) {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto bg-white border border-surface-border p-12 text-center rounded-card shadow-card space-y-4">
+      <div className="max-w-7xl mx-auto bg-white border border-gray-200 p-12 text-center rounded-2xl shadow-md space-y-4">
         <div className="w-16 h-16 mx-auto bg-danger-50 text-danger-500 rounded-full flex items-center justify-center text-2xl font-bold">!</div>
-        <h2 className="text-xl font-bold text-text-primary">Unable to load approval request</h2>
-        <p className="text-sm text-text-secondary max-w-md mx-auto">{error}</p>
+        <h2 className="text-xl font-bold text-textPrimary">Unable to load approval request</h2>
+        <p className="text-sm text-textSecondary max-w-md mx-auto">{error}</p>
         <div className="flex items-center justify-center space-x-3 pt-4">
-          <button onClick={onBack} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-text-primary rounded-btn font-semibold text-sm transition">Go Back</button>
-          <button onClick={() => fetchApproval(true)} className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-btn font-semibold text-sm shadow-btn transition">Retry</button>
+          <button onClick={onBack} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg font-semibold text-sm transition">Go Back</button>
+          <button onClick={() => fetchApproval(true)} className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-semibold text-sm shadow-btn transition">Retry</button>
         </div>
       </div>
     );
@@ -121,27 +121,27 @@ export default function ApprovalDetail({ approvalId, onBack }) {
 
       {/* Fixed Bottom Action Bar */}
       {approval.status === 'PENDING' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-surface-border p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="hidden sm:block text-sm text-text-secondary font-medium">
-              Reviewer: <span className="font-bold text-text-primary">{approval.current_reviewer?.person || approval.current_reviewer?.role}</span>
+            <div className="hidden sm:block text-sm text-textSecondary font-medium">
+              Reviewer: <span className="font-bold text-textPrimary">{approval.current_reviewer?.person || approval.current_reviewer?.role}</span>
             </div>
             <div className="flex space-x-3 w-full sm:w-auto">
               <button 
                 onClick={() => setModalConfig({ isOpen: true, type: 'reject' })}
-                className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-danger-200 text-danger-600 hover:bg-danger-50 hover:border-danger-300 rounded-pill text-sm font-bold transition"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-danger-200 text-danger-600 hover:bg-danger-50 hover:border-danger-300 rounded-full text-sm font-bold transition"
               >
                 Reject
               </button>
               <button 
                 onClick={() => setModalConfig({ isOpen: true, type: 'changes' })}
-                className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-warning-300 text-warning-700 hover:bg-warning-50 hover:border-warning-400 rounded-pill text-sm font-bold transition"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-warning-300 text-warning-700 hover:bg-warning-50 hover:border-warning-400 rounded-full text-sm font-bold transition"
               >
                 Request Changes
               </button>
               <button 
                 onClick={() => setModalConfig({ isOpen: true, type: 'approve' })}
-                className="flex-1 sm:flex-none px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-bold shadow-btn transition"
+                className="flex-1 sm:flex-none px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-full text-sm font-bold shadow-btn transition"
               >
                 Approve
               </button>

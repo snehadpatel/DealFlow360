@@ -13,7 +13,7 @@ export default function StatusBadge({ status, className = '' }) {
   const config = statusConfig[norm] || { style: 'bg-gray-100 text-gray-600 border-gray-200', label: status || 'Unknown', icon: Clock };
   const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-pill text-xs font-semibold border ${config.style} ${className}`}>
+    <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${config.style} ${className}`}>
       <Icon className="w-3.5 h-3.5 flex-shrink-0" /><span>{config.label}</span>
     </span>
   );

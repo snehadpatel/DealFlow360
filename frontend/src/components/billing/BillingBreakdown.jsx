@@ -28,7 +28,7 @@ export default function BillingBreakdown({ oneTimeItems = [], recurringItems = [
   const showRecurring = activeTab === 'all' || activeTab === 'recurring';
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-card p-6 shadow-xs space-y-6">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>

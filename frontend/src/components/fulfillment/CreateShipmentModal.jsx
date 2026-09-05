@@ -39,11 +39,11 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-card shadow-card w-full max-w-lg overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-surface-border flex items-center justify-between bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-md w-full max-w-lg overflow-hidden flex flex-col">
+        <div className="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
           <div className="flex items-center space-x-2">
-            <Truck className="w-5 h-5 text-primary-500" />
-            <h2 className="text-xl font-bold text-text-primary">Create Shipment</h2>
+            <Truck className="w-5 h-5 text-brand-500" />
+            <h2 className="text-xl font-bold text-textPrimary">Create Shipment</h2>
           </div>
           <button onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
             <X className="w-5 h-5" />
@@ -52,18 +52,18 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-danger-50 border border-danger-200 text-danger-700 text-sm font-semibold rounded-btn">
+            <div className="p-3 bg-danger-50 border border-danger-200 text-danger-700 text-sm font-semibold rounded-lg">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Carrier *</label>
+            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Carrier *</label>
             <select 
               name="carrier"
               value={formData.carrier}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
             >
               <option value="">Select Carrier</option>
               <option value="BlueDart">BlueDart</option>
@@ -74,60 +74,60 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Shipping Address *</label>
+            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Shipping Address *</label>
             <textarea 
               name="address"
               value={formData.address}
               onChange={handleChange}
               rows="3"
               placeholder="Enter full shipping address..."
-              className="w-full px-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Packages</label>
+              <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Packages</label>
               <input 
                 type="number"
                 name="packageCount"
                 min="1"
                 value={formData.packageCount}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Expected Delivery *</label>
+              <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Expected Delivery *</label>
               <input 
                 type="date"
                 name="expectedDelivery"
                 value={formData.expectedDelivery}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Notes</label>
+            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Notes</label>
             <textarea 
               name="notes"
               value={formData.notes}
               onChange={handleChange}
               rows="2"
               placeholder="Any specific delivery instructions..."
-              className="w-full px-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
             />
           </div>
         </form>
 
-        <div className="p-5 border-t border-surface-border bg-gray-50 flex justify-end space-x-3">
+        <div className="p-5 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
           <button 
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 border border-surface-border text-text-secondary font-bold hover:bg-gray-100 rounded-pill transition"
+            className="px-4 py-2 border border-gray-200 text-textSecondary font-bold hover:bg-gray-100 rounded-full transition"
           >
             Cancel
           </button>
@@ -135,7 +135,7 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-pill shadow-btn transition flex items-center"
+            className="px-6 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-full shadow-btn transition flex items-center"
           >
             {isSubmitting ? (
               <>

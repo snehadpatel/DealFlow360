@@ -19,14 +19,14 @@ export default function RiskScoreCard({ risk }) {
   const Icon = config.icon;
 
   return (
-    <div className={`border ${config.border} rounded-card p-6 shadow-sm relative overflow-hidden bg-white`}>
+    <div className={`border ${config.border} rounded-2xl p-6 shadow-sm relative overflow-hidden bg-white`}>
       {/* Background Graphic */}
       <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full ${config.bg} opacity-50 flex items-center justify-center`}>
         <Icon className={`w-12 h-12 ${config.color} opacity-20`} />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-textSecondary mb-2">
           Blended Discount Risk Score
         </h3>
         
@@ -35,7 +35,7 @@ export default function RiskScoreCard({ risk }) {
             <span className={`text-5xl font-extrabold ${config.color} tracking-tighter`}>{risk.score}</span>
             <span className="text-xl font-bold text-gray-400 mb-1">/ 100</span>
           </div>
-          <div className={`mt-2 px-3 py-1 rounded-pill text-xs font-extrabold uppercase tracking-widest ${config.bg} ${config.color} shadow-sm border ${config.border}`}>
+          <div className={`mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest ${config.bg} ${config.color} shadow-sm border ${config.border}`}>
             {risk.level} RISK
           </div>
         </div>
@@ -47,14 +47,14 @@ export default function RiskScoreCard({ risk }) {
 
         {/* Risk Factors */}
         {risk.factors && risk.factors.length > 0 && (
-          <div className="w-full mt-4 text-left border-t border-surface-border pt-4">
-            <div className="flex items-center space-x-1.5 mb-3 text-text-primary">
-              <Info className="w-4 h-4 text-text-secondary" />
+          <div className="w-full mt-4 text-left border-t border-gray-200 pt-4">
+            <div className="flex items-center space-x-1.5 mb-3 text-textPrimary">
+              <Info className="w-4 h-4 text-textSecondary" />
               <span className="text-xs font-bold uppercase tracking-wider">Risk Factors:</span>
             </div>
             <ul className="space-y-2">
               {risk.factors.map((factor, idx) => (
-                <li key={idx} className="flex items-start space-x-2 text-sm text-text-secondary">
+                <li key={idx} className="flex items-start space-x-2 text-sm text-textSecondary">
                   <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${config.bar}`} />
                   <span className="leading-snug">{factor}</span>
                 </li>

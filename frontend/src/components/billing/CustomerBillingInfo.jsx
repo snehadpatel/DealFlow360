@@ -5,7 +5,7 @@ export default function CustomerBillingInfo({ customer }) {
   if (!customer) return null;
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-card p-6 shadow-xs space-y-4">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center space-x-2">
           <Building className="w-4 h-4 text-primary" />

@@ -7,7 +7,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
   };
 
   return (
-    <div className="p-5 border-b border-surface-border bg-white flex flex-col sm:flex-row gap-4 justify-between items-center">
+    <div className="p-5 border-b border-gray-200 bg-white flex flex-col sm:flex-row gap-4 justify-between items-center">
       
       {/* Search */}
       <div className="relative w-full sm:max-w-xs">
@@ -17,7 +17,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
         <input
           type="text"
           placeholder="Search by ID, Customer..."
-          className="block w-full pl-10 pr-3 py-2 border border-surface-border rounded-btn text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-50 hover:bg-white transition"
+          className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-50 hover:bg-white transition"
           value={filters.search}
           onChange={(e) => handleChange('search', e.target.value)}
         />
@@ -28,7 +28,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
         
         <div className="relative flex-shrink-0">
           <select 
-            className="appearance-none block w-full pl-3 pr-8 py-2 border border-surface-border rounded-btn text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-text-secondary cursor-pointer hover:border-gray-300"
+            className="appearance-none block w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-textSecondary cursor-pointer hover:border-gray-300"
             value={filters.status}
             onChange={(e) => handleChange('status', e.target.value)}
           >
@@ -45,7 +45,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
 
         <div className="relative flex-shrink-0">
           <select 
-            className="appearance-none block w-full pl-3 pr-8 py-2 border border-surface-border rounded-btn text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-text-secondary cursor-pointer hover:border-gray-300"
+            className="appearance-none block w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-textSecondary cursor-pointer hover:border-gray-300"
             value={filters.warehouse}
             onChange={(e) => handleChange('warehouse', e.target.value)}
           >
@@ -60,10 +60,10 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
         <button 
           onClick={onRefresh}
           disabled={loading}
-          className="flex-shrink-0 p-2 border border-surface-border rounded-btn bg-white text-text-secondary hover:text-primary-600 hover:border-primary-200 transition focus:outline-none"
+          className="flex-shrink-0 p-2 border border-gray-200 rounded-lg bg-white text-textSecondary hover:text-brand-600 hover:border-brand-200 transition focus:outline-none"
           title="Refresh Data"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary-500' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-brand-500' : ''}`} />
         </button>
       </div>
     </div>

@@ -5,8 +5,8 @@ export default function ApprovalChain({ chain }) {
   if (!chain || chain.length === 0) return null;
 
   return (
-    <div className="bg-white border border-surface-border rounded-card shadow-card p-5 h-full">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary border-b border-surface-border pb-3 mb-5">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md p-5 h-full">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-textSecondary border-b border-gray-200 pb-3 mb-5">
         Approval Chain
       </h3>
       
@@ -26,9 +26,9 @@ export default function ApprovalChain({ chain }) {
             iconBg = 'bg-success-500 border-success-500';
             textColor = 'text-success-600';
           } else if (isCurrent) {
-            icon = <Clock className="w-4 h-4 text-primary-500" />;
-            iconBg = 'bg-primary-50 border-primary-500 ring-4 ring-primary-50';
-            textColor = 'text-primary-600';
+            icon = <Clock className="w-4 h-4 text-brand-500" />;
+            iconBg = 'bg-brand-50 border-primary-500 ring-4 ring-primary-50';
+            textColor = 'text-brand-600';
           }
 
           return (
@@ -39,18 +39,18 @@ export default function ApprovalChain({ chain }) {
               </div>
               
               {/* Card */}
-              <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-3 rounded-btn border border-surface-border bg-white shadow-sm transition hover:shadow-card-hover group-hover:border-primary-200">
+              <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-3 rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md-hover group-hover:border-brand-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${textColor}`}>
                     {step.status.replace('_', ' ')}
                   </span>
                   {step.timestamp && (
-                    <span className="text-[10px] text-text-secondary font-medium">{step.timestamp}</span>
+                    <span className="text-[10px] text-textSecondary font-medium">{step.timestamp}</span>
                   )}
                 </div>
-                <div className="font-bold text-sm text-text-primary">{step.role}</div>
+                <div className="font-bold text-sm text-textPrimary">{step.role}</div>
                 {step.person && (
-                  <div className="text-xs text-text-secondary mt-0.5 flex items-center">
+                  <div className="text-xs text-textSecondary mt-0.5 flex items-center">
                     <FileText className="w-3 h-3 mr-1" />
                     {step.person}
                   </div>

@@ -4,7 +4,7 @@ import StatusBadge from './StatusBadge';
 
 export default function NegotiationTimeline({ history = [] }) {
   if (!history || history.length === 0) {
-    return <div className="bg-white border border-surface-border rounded-card p-6 shadow-card text-center text-text-secondary text-xs">No negotiation history recorded for this quotation yet.</div>;
+    return <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md text-center text-textSecondary text-xs">No negotiation history recorded for this quotation yet.</div>;
   }
 
   const getStatusIcon = (status) => {
@@ -17,24 +17,24 @@ export default function NegotiationTimeline({ history = [] }) {
   };
 
   return (
-    <div className="bg-white border border-surface-border rounded-card p-6 shadow-card space-y-6">
-      <div className="flex items-center space-x-2 border-b border-surface-border pb-3">
-        <History className="w-4 h-4 text-primary-500" />
-        <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">Negotiation History</h3>
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md space-y-6">
+      <div className="flex items-center space-x-2 border-b border-gray-200 pb-3">
+        <History className="w-4 h-4 text-brand-500" />
+        <h3 className="text-sm font-bold text-textPrimary uppercase tracking-wider">Negotiation History</h3>
       </div>
       <div className="relative pl-6 space-y-6">
         <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-surface-border" />
         {history.map((step, idx) => (
           <div key={step.id || idx} className="relative flex flex-col space-y-1">
-            <div className="absolute -left-6 top-0.5 p-1 bg-white rounded-full border border-surface-border z-10">{getStatusIcon(step.status)}</div>
+            <div className="absolute -left-6 top-0.5 p-1 bg-white rounded-full border border-gray-200 z-10">{getStatusIcon(step.status)}</div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-bold text-text-primary">{step.author || step.action}</span>
+              <span className="text-xs font-bold text-textPrimary">{step.author || step.action}</span>
               <div className="flex items-center space-x-2">
                 {step.status && <StatusBadge status={step.status} />}
-                <span className="text-[11px] text-text-secondary">{step.date}</span>
+                <span className="text-[11px] text-textSecondary">{step.date}</span>
               </div>
             </div>
-            {step.details && <p className="text-xs text-text-secondary bg-gray-50 p-2.5 rounded-btn border border-surface-border mt-1">{step.details}</p>}
+            {step.details && <p className="text-xs text-textSecondary bg-gray-50 p-2.5 rounded-lg border border-gray-200 mt-1">{step.details}</p>}
             {idx < history.length - 1 && <div className="pt-2 text-gray-300 flex items-center justify-center"><ArrowDown className="w-3.5 h-3.5" /></div>}
           </div>
         ))}

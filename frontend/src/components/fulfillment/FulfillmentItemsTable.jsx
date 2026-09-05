@@ -5,16 +5,16 @@ export default function FulfillmentItemsTable({ items }) {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="bg-white border border-surface-border rounded-card shadow-card overflow-hidden">
-      <div className="p-5 border-b border-surface-border bg-gray-50">
-        <h3 className="text-lg font-bold text-text-primary">Ordered Products</h3>
-        <p className="text-sm text-text-secondary">Summary of items requested in this fulfillment.</p>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
+      <div className="p-5 border-b border-gray-200 bg-gray-50">
+        <h3 className="text-lg font-bold text-textPrimary">Ordered Products</h3>
+        <p className="text-sm text-textSecondary">Summary of items requested in this fulfillment.</p>
       </div>
       
       <div className="overflow-x-auto w-full pb-2">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-white border-b border-surface-border text-[11px] uppercase tracking-wider text-text-secondary font-bold">
+            <tr className="bg-white border-b border-gray-200 text-[11px] uppercase tracking-wider text-textSecondary font-bold">
               <th className="p-4 whitespace-nowrap">Product</th>
               <th className="p-4 whitespace-nowrap text-center">Ordered</th>
               <th className="p-4 whitespace-nowrap text-center">Available</th>
@@ -27,13 +27,13 @@ export default function FulfillmentItemsTable({ items }) {
             {items.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50 transition-colors">
                 <td className="p-4 whitespace-nowrap">
-                  <div className="font-bold text-text-primary text-sm">{item.productName}</div>
-                  <div className="text-xs text-text-secondary">SKU: {item.sku}</div>
+                  <div className="font-bold text-textPrimary text-sm">{item.productName}</div>
+                  <div className="text-xs text-textSecondary">SKU: {item.sku}</div>
                 </td>
-                <td className="p-4 text-center font-bold text-text-primary whitespace-nowrap">
+                <td className="p-4 text-center font-bold text-textPrimary whitespace-nowrap">
                   {item.orderedQuantity}
                 </td>
-                <td className="p-4 text-center font-bold text-primary-600 whitespace-nowrap">
+                <td className="p-4 text-center font-bold text-brand-600 whitespace-nowrap">
                   {item.availableQuantity}
                 </td>
                 <td className="p-4 text-center font-bold text-success-600 whitespace-nowrap">

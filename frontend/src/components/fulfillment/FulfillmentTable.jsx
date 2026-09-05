@@ -16,7 +16,7 @@ export const StatusBadge = ({ status }) => {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-pill text-[10px] font-bold border uppercase tracking-wider ${config.color}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${config.color}`}>
       <Icon className="w-3 h-3 mr-1" />
       {safeStatus.replace('_', ' ')}
     </span>
@@ -34,9 +34,9 @@ export default function FulfillmentTable({ orders, loading, onView }) {
 
   if (!orders || orders.length === 0) {
     return (
-      <div className="p-16 text-center text-text-secondary flex flex-col items-center">
+      <div className="p-16 text-center text-textSecondary flex flex-col items-center">
         <PackageSearch className="h-12 w-12 text-gray-300 mb-4" />
-        <h3 className="text-lg font-bold text-text-primary mb-1">No fulfillment orders found</h3>
+        <h3 className="text-lg font-bold text-textPrimary mb-1">No fulfillment orders found</h3>
         <p className="text-sm">Try adjusting your filters or search terms.</p>
       </div>
     );
@@ -46,7 +46,7 @@ export default function FulfillmentTable({ orders, loading, onView }) {
     <div className="overflow-x-auto w-full pb-4">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-gray-50 border-b border-surface-border text-[11px] uppercase tracking-wider text-text-secondary font-bold">
+          <tr className="bg-gray-50 border-b border-gray-200 text-[11px] uppercase tracking-wider text-textSecondary font-bold">
             <th className="p-4 whitespace-nowrap">Fulfillment ID</th>
             <th className="p-4 whitespace-nowrap">Quotation</th>
             <th className="p-4 whitespace-nowrap">Customer</th>
@@ -61,28 +61,28 @@ export default function FulfillmentTable({ orders, loading, onView }) {
         </thead>
         <tbody className="divide-y divide-surface-border">
           {orders.map((order) => (
-            <tr key={order.id} className="hover:bg-primary-50/50 transition-colors group">
-              <td className="p-4 font-bold text-text-primary text-sm whitespace-nowrap">
+            <tr key={order.id} className="hover:bg-brand-50/50 transition-colors group">
+              <td className="p-4 font-bold text-textPrimary text-sm whitespace-nowrap">
                 {order.id}
               </td>
-              <td className="p-4 text-xs font-semibold text-primary-600 whitespace-nowrap">
+              <td className="p-4 text-xs font-semibold text-brand-600 whitespace-nowrap">
                 {order.quotationId}
               </td>
-              <td className="p-4 text-sm text-text-primary font-medium whitespace-nowrap">
+              <td className="p-4 text-sm text-textPrimary font-medium whitespace-nowrap">
                 {order.customer}
               </td>
-              <td className="p-4 text-xs text-text-secondary whitespace-nowrap">
+              <td className="p-4 text-xs text-textSecondary whitespace-nowrap">
                 {order.salesRep}
               </td>
-              <td className="p-4 text-sm font-bold text-text-primary text-right whitespace-nowrap">
+              <td className="p-4 text-sm font-bold text-textPrimary text-right whitespace-nowrap">
                 ₹{order.orderValue.toLocaleString()}
               </td>
               <td className="p-4 text-center whitespace-nowrap">
-                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-xs font-bold text-text-secondary">
+                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-xs font-bold text-textSecondary">
                   {order.itemsCount}
                 </span>
               </td>
-              <td className="p-4 text-xs font-medium text-text-secondary whitespace-nowrap">
+              <td className="p-4 text-xs font-medium text-textSecondary whitespace-nowrap">
                 {order.warehouse}
               </td>
               <td className="p-4 whitespace-nowrap">
@@ -93,13 +93,13 @@ export default function FulfillmentTable({ orders, loading, onView }) {
                   </div>
                 )}
               </td>
-              <td className="p-4 text-xs text-text-secondary whitespace-nowrap">
+              <td className="p-4 text-xs text-textSecondary whitespace-nowrap">
                 {new Date(order.createdAt).toLocaleDateString()}
               </td>
               <td className="p-4 text-right whitespace-nowrap">
                 <button 
                   onClick={() => onView(order.id)}
-                  className="px-3 py-1.5 bg-white border border-surface-border hover:border-primary-300 hover:text-primary-600 rounded-btn text-xs font-bold text-text-secondary transition shadow-sm"
+                  className="px-3 py-1.5 bg-white border border-gray-200 hover:border-brand-300 hover:text-brand-600 rounded-lg text-xs font-bold text-textSecondary transition shadow-sm"
                 >
                   View
                 </button>

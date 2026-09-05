@@ -35,27 +35,27 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
   ];
 
   return (
-    <div className="min-h-screen bg-surface-app text-text-primary flex flex-col font-sans">
+    <div className="min-h-screen bg-appBg text-textPrimary flex flex-col font-sans">
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-surface-border px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-card">
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
         {/* Left: Brand Logo & Mobile Toggle */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-btn text-text-secondary hover:text-text-primary hover:bg-gray-100 focus:outline-none"
+            className="lg:hidden p-2 rounded-lg text-textSecondary hover:text-textPrimary hover:bg-gray-100 focus:outline-none"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNavClick('dashboard')}>
-            <div className="h-9 w-9 rounded-card bg-primary-50 border border-primary-200 flex items-center justify-center font-extrabold text-primary-500">
+            <div className="h-9 w-9 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center font-extrabold text-brand-500">
               DF
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-text-primary leading-tight">
-                DealFlow<span className="text-primary-500">360</span>
+              <span className="text-lg font-bold tracking-tight text-textPrimary leading-tight">
+                DealFlow<span className="text-brand-500">360</span>
               </span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-primary-500">
+              <span className="text-[10px] font-semibold tracking-wider uppercase text-brand-500">
                 Sales Workspace
               </span>
             </div>
@@ -68,17 +68,17 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
           <div className="relative">
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-gray-100 rounded-btn transition-colors focus:outline-none"
+              className="relative p-2 text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-lg transition-colors focus:outline-none"
             >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full ring-2 ring-white" />
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-surface-border rounded-card shadow-card-hover z-50 py-2">
-                <div className="px-4 py-2 border-b border-surface-border flex justify-between items-center">
-                  <span className="text-xs font-bold text-text-primary uppercase tracking-wider">Notifications</span>
-                  <span className="text-[10px] bg-primary-50 text-primary-600 px-2 py-0.5 rounded-pill font-semibold">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-md-hover z-50 py-2">
+                <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                  <span className="text-xs font-bold text-textPrimary uppercase tracking-wider">Notifications</span>
+                  <span className="text-[10px] bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full font-semibold">
                     2 New
                   </span>
                 </div>
@@ -91,11 +91,11 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
                         setNotificationsOpen(false);
                       }}
                       className={`p-3 text-xs hover:bg-gray-50 cursor-pointer transition-colors ${
-                        n.unread ? 'bg-primary-50/40' : ''
+                        n.unread ? 'bg-brand-50/40' : ''
                       }`}
                     >
-                      <div className="font-semibold text-text-primary">{n.title}</div>
-                      <div className="text-text-secondary text-[11px] mt-0.5">{n.time}</div>
+                      <div className="font-semibold text-textPrimary">{n.title}</div>
+                      <div className="text-textSecondary text-[11px] mt-0.5">{n.time}</div>
                     </div>
                   ))}
                 </div>
@@ -104,20 +104,20 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
           </div>
 
           {/* User Profile */}
-          <div className="hidden sm:flex items-center space-x-3 px-3 py-1.5 bg-gray-50 border border-surface-border rounded-card">
-            <div className="p-1.5 rounded-btn bg-primary-50 text-primary-500">
+          <div className="hidden sm:flex items-center space-x-3 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-2xl">
+            <div className="p-1.5 rounded-lg bg-brand-50 text-brand-500">
               <User className="w-4 h-4" />
             </div>
             <div className="text-left text-xs">
-              <div className="font-bold text-text-primary leading-snug">{user?.name || 'Sales Rep'}</div>
-              <div className="text-[10px] text-text-secondary">Direct Sales</div>
+              <div className="font-bold text-textPrimary leading-snug">{user?.name || 'Sales Rep'}</div>
+              <div className="text-[10px] text-textSecondary">Direct Sales</div>
             </div>
           </div>
 
           {/* Logout Button */}
           <button
             onClick={logout}
-            className="flex items-center space-x-1.5 text-xs text-danger-500 hover:text-danger-600 px-3 py-2 rounded-btn border border-danger-100 hover:bg-danger-50 transition-colors font-medium"
+            className="flex items-center space-x-1.5 text-xs text-danger-500 hover:text-danger-600 px-3 py-2 rounded-lg border border-danger-100 hover:bg-danger-50 transition-colors font-medium"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Logout</span>
@@ -128,8 +128,8 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
       {/* Main Body with Sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-surface-border p-4 space-y-1">
-          <div className="px-3 py-2 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+        <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 p-4 space-y-1">
+          <div className="px-3 py-2 text-[11px] font-bold text-textSecondary uppercase tracking-wider">
             Workspace
           </div>
           {navigationItems.map((item) => {
@@ -139,13 +139,13 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-all ${
+                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-primary-500 text-white shadow-btn font-semibold'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
+                    ? 'bg-brand-500 text-white shadow-btn font-semibold'
+                    : 'text-textSecondary hover:text-textPrimary hover:bg-gray-50'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-text-secondary'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-textSecondary'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -159,12 +159,12 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
               className="fixed inset-0 bg-black/30"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="relative flex-1 max-w-xs w-full bg-white border-r border-surface-border p-4 flex flex-col space-y-2 z-10">
-              <div className="flex items-center justify-between pb-3 border-b border-surface-border mb-2">
-                <div className="text-xs font-bold text-text-primary uppercase tracking-wider">Sales Menu</div>
+            <div className="relative flex-1 max-w-xs w-full bg-white border-r border-gray-200 p-4 flex flex-col space-y-2 z-10">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-2">
+                <div className="text-xs font-bold text-textPrimary uppercase tracking-wider">Sales Menu</div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 rounded-btn text-text-secondary hover:text-text-primary"
+                  className="p-1 rounded-lg text-textSecondary hover:text-textPrimary"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -176,13 +176,13 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-all ${
+                    className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-primary-500 text-white shadow-btn font-semibold'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-gray-50'
+                        ? 'bg-brand-500 text-white shadow-btn font-semibold'
+                        : 'text-textSecondary hover:text-textPrimary hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-text-secondary'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-textSecondary'}`} />
                     <span>{item.label}</span>
                   </button>
                 );

@@ -8,8 +8,8 @@ export default function FulfillmentTimeline({ timeline }) {
   const sortedTimeline = [...timeline].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
-    <div className="bg-white border border-surface-border rounded-card p-6 shadow-card">
-      <h3 className="text-lg font-bold text-text-primary mb-6">Fulfillment Timeline</h3>
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md">
+      <h3 className="text-lg font-bold text-textPrimary mb-6">Fulfillment Timeline</h3>
       
       <div className="relative border-l-2 border-gray-100 ml-3">
         {sortedTimeline.map((event, idx) => {
@@ -22,16 +22,16 @@ export default function FulfillmentTimeline({ timeline }) {
               
               <div className="flex flex-col sm:flex-row sm:items-start justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-text-primary">{event.status}</h4>
-                  <p className="text-sm text-text-secondary mt-0.5">{event.description}</p>
+                  <h4 className="text-sm font-bold text-textPrimary">{event.status}</h4>
+                  <p className="text-sm text-textSecondary mt-0.5">{event.description}</p>
                 </div>
                 <div className="mt-2 sm:mt-0 sm:text-right">
-                  <div className="text-xs font-medium text-text-secondary flex items-center sm:justify-end">
+                  <div className="text-xs font-medium text-textSecondary flex items-center sm:justify-end">
                     <Clock className="w-3 h-3 mr-1" />
                     {new Date(event.date).toLocaleString()}
                   </div>
                   {event.actor && (
-                    <div className="text-[10px] font-bold text-primary-600 uppercase tracking-wider mt-1">
+                    <div className="text-[10px] font-bold text-brand-600 uppercase tracking-wider mt-1">
                       {event.actor}
                     </div>
                   )}

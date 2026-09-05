@@ -67,20 +67,20 @@ export default function BillingDetail({ billingId = 'BIL-2045', onBack }) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-pulse">
         <div className="h-6 w-48 bg-slate-200 rounded-md"></div>
-        <div className="h-28 bg-white border border-slate-200 rounded-card"></div>
+        <div className="h-28 bg-white border border-slate-200 rounded-2xl"></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-28 bg-white border border-slate-200 rounded-card"></div>
+            <div key={i} className="h-28 bg-white border border-slate-200 rounded-2xl"></div>
           ))}
         </div>
-        <div className="h-72 bg-white border border-slate-200 rounded-card"></div>
+        <div className="h-72 bg-white border border-slate-200 rounded-2xl"></div>
       </div>
     );
   }
 
   if (error || !billing) {
     return (
-      <div className="max-w-2xl mx-auto my-12 p-8 bg-white border border-rose-200 rounded-card text-center space-y-4 shadow-sm">
+      <div className="max-w-2xl mx-auto my-12 p-8 bg-white border border-rose-200 rounded-2xl text-center space-y-4 shadow-sm">
         <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
         <h2 className="text-xl font-bold text-textPrimary">Failed to Load Billing Record</h2>
         <p className="text-sm text-textSecondary">{error || 'Billing record could not be retrieved from the server.'}</p>

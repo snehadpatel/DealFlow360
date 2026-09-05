@@ -93,7 +93,7 @@ export default function BillingHeader({
       </div>
 
       {/* Main Header Card */}
-      <div className="bg-white border border-slate-200/80 rounded-card p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-3 mb-1.5">
             <h1 className="text-2xl font-bold text-textPrimary tracking-tight">Billing Detail</h1>

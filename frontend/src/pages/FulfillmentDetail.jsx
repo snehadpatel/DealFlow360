@@ -50,19 +50,19 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse max-w-7xl mx-auto pb-12">
-        <div className="h-12 bg-white rounded-card w-1/4"></div>
-        <div className="h-48 bg-white rounded-card"></div>
-        <div className="h-64 bg-white rounded-card"></div>
+        <div className="h-12 bg-white rounded-2xl w-1/4"></div>
+        <div className="h-48 bg-white rounded-2xl"></div>
+        <div className="h-64 bg-white rounded-2xl"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto bg-white border border-surface-border p-12 text-center rounded-card shadow-card">
-        <h2 className="text-xl font-bold text-text-primary mb-2">Error</h2>
-        <p className="text-sm text-text-secondary mb-4">{error}</p>
-        <button onClick={onBack} className="px-4 py-2 bg-gray-100 rounded-btn">Go Back</button>
+      <div className="max-w-7xl mx-auto bg-white border border-gray-200 p-12 text-center rounded-2xl shadow-md">
+        <h2 className="text-xl font-bold text-textPrimary mb-2">Error</h2>
+        <p className="text-sm text-textSecondary mb-4">{error}</p>
+        <button onClick={onBack} className="px-4 py-2 bg-gray-100 rounded-lg">Go Back</button>
       </div>
     );
   }
@@ -76,25 +76,25 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
         <div className="flex items-center space-x-4">
           <button 
             onClick={onBack}
-            className="p-2 border border-surface-border rounded-btn bg-white text-text-secondary hover:text-primary-600 hover:border-primary-200 transition"
+            className="p-2 border border-gray-200 rounded-lg bg-white text-textSecondary hover:text-brand-600 hover:border-brand-200 transition"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <div className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1 flex items-center space-x-2">
+            <div className="text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1 flex items-center space-x-2">
               <span>Fulfillment & Stock</span>
               <span>&rarr;</span>
-              <span className="text-primary-600">{fulfillment.id}</span>
+              <span className="text-brand-600">{fulfillment.id}</span>
             </div>
-            <h1 className="text-2xl font-bold text-text-primary">Fulfillment #{fulfillment.id}</h1>
+            <h1 className="text-2xl font-bold text-textPrimary">Fulfillment #{fulfillment.id}</h1>
           </div>
         </div>
         <button 
           onClick={() => loadData(true)}
           disabled={refreshing}
-          className="flex items-center px-4 py-2 bg-white border border-surface-border text-text-secondary rounded-btn hover:text-primary-600 hover:border-primary-200 text-sm font-semibold transition shadow-sm"
+          className="flex items-center px-4 py-2 bg-white border border-gray-200 text-textSecondary rounded-lg hover:text-brand-600 hover:border-brand-200 text-sm font-semibold transition shadow-sm"
         >
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin text-primary-500' : ''}`} />
+          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin text-brand-500' : ''}`} />
           Refresh
         </button>
       </div>
@@ -118,12 +118,12 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-surface-border p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-7xl mx-auto flex items-center justify-end space-x-3">
           {fulfillment.permissions?.can_allocate && (
             <button 
               onClick={() => setModalConfig({ isOpen: true, type: 'allocate' })}
-              className="px-6 py-2.5 bg-white border border-primary-500 text-primary-600 hover:bg-primary-50 rounded-pill text-sm font-bold transition"
+              className="px-6 py-2.5 bg-white border border-primary-500 text-brand-600 hover:bg-brand-50 rounded-full text-sm font-bold transition"
             >
               Allocate Stock
             </button>
@@ -131,13 +131,13 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
           {fulfillment.permissions?.can_create_shipment && (
             <button 
               onClick={() => setModalConfig({ isOpen: true, type: 'shipment' })}
-              className="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-bold shadow-btn transition"
+              className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-full text-sm font-bold shadow-btn transition"
             >
               Create Shipment
             </button>
           )}
           {!fulfillment.permissions?.can_allocate && !fulfillment.permissions?.can_create_shipment && (
-            <span className="text-sm font-medium text-text-secondary italic">
+            <span className="text-sm font-medium text-textSecondary italic">
               No further actions available for this fulfillment.
             </span>
           )}

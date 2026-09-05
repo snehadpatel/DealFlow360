@@ -40,37 +40,37 @@ export default function MyQuotations({ onNewQuote }) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-text-primary">My Quotations</h1>
-          <p className="text-sm text-text-secondary mt-1">Manage and track the status of your sales quotes.</p>
+          <h1 className="text-2xl font-extrabold text-textPrimary">My Quotations</h1>
+          <p className="text-sm text-textSecondary mt-1">Manage and track the status of your sales quotes.</p>
         </div>
         <button
           onClick={onNewQuote}
-          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-semibold shadow-btn transition"
+          className="inline-flex items-center space-x-2 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-full text-sm font-semibold shadow-btn transition"
         >
           <Plus className="w-4 h-4" />
           <span>New Quote</span>
         </button>
       </div>
 
-      <div className="bg-white border border-surface-border p-4 rounded-card space-y-4 shadow-card">
+      <div className="bg-white border border-gray-200 p-4 rounded-2xl space-y-4 shadow-md">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-text-secondary" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-textSecondary" />
             <input 
               type="text" 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
               placeholder="Search Quote ID or Customer..." 
-              className="w-full bg-gray-50 border border-surface-border rounded-btn pl-9 pr-4 py-2 text-sm text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-500 transition" 
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm text-textPrimary placeholder-text-secondary focus:outline-none focus:border-primary-500 transition" 
             />
           </div>
-          <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 bg-gray-100 p-1 rounded-pill">
+          <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 bg-gray-100 p-1 rounded-full">
             {filterTabs.map((tab) => (
               <button 
                 key={tab.id} 
                 onClick={() => setActiveFilter(tab.id)} 
-                className={`px-3 py-1.5 text-xs font-semibold rounded-pill whitespace-nowrap transition-all ${
-                  activeFilter === tab.id ? 'bg-primary-500 text-white shadow-btn' : 'text-text-secondary hover:text-text-primary'
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap transition-all ${
+                  activeFilter === tab.id ? 'bg-brand-500 text-white shadow-btn' : 'text-textSecondary hover:text-textPrimary'
                 }`}
               >
                 {tab.label}
@@ -80,15 +80,15 @@ export default function MyQuotations({ onNewQuote }) {
         </div>
       </div>
 
-      <div className="bg-white border border-surface-border rounded-card shadow-card overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">
         {loading ? (
           <div className="space-y-4 p-4 animate-pulse">
-            {[1, 2, 3, 4].map((i) => (<div key={i} className="h-12 bg-gray-50 rounded-btn" />))}
+            {[1, 2, 3, 4].map((i) => (<div key={i} className="h-12 bg-gray-50 rounded-lg" />))}
           </div>
         ) : quotations.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-text-secondary">
-              <thead className="bg-gray-50 text-text-secondary text-xs font-bold uppercase tracking-wider border-b border-surface-border">
+            <table className="w-full text-left text-sm text-textSecondary">
+              <thead className="bg-gray-50 text-textSecondary text-xs font-bold uppercase tracking-wider border-b border-gray-200">
                 <tr>
                   <th className="py-3.5 px-4">Quote ID</th>
                   <th className="py-3.5 px-4">Customer</th>
@@ -102,9 +102,9 @@ export default function MyQuotations({ onNewQuote }) {
               <tbody className="divide-y divide-surface-border">
                 {quotations.map((quote) => (
                   <tr key={quote.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-bold text-text-primary">{quote.id}</td>
-                    <td className="py-4 px-4 font-semibold text-text-primary">{quote.customer}</td>
-                    <td className="py-4 px-4 text-right font-bold text-primary-500">{formatCurrency(quote.amount)}</td>
+                    <td className="py-4 px-4 font-bold text-textPrimary">{quote.id}</td>
+                    <td className="py-4 px-4 font-semibold text-textPrimary">{quote.customer}</td>
+                    <td className="py-4 px-4 text-right font-bold text-brand-500">{formatCurrency(quote.amount)}</td>
                     <td className="py-4 px-4 text-center font-bold text-warning-600">{quote.discount}%</td>
                     <td className="py-4 px-4 text-center">
                       <span className={`font-bold ${quote.margin >= 20 ? 'text-success-600' : quote.margin >= 15 ? 'text-warning-600' : 'text-danger-600'}`}>
@@ -115,7 +115,7 @@ export default function MyQuotations({ onNewQuote }) {
                       <StatusBadge status={quote.status} />
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-text-primary rounded-btn text-xs font-medium transition">
+                      <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg text-xs font-medium transition">
                         View
                       </button>
                     </td>
@@ -125,7 +125,7 @@ export default function MyQuotations({ onNewQuote }) {
             </table>
           </div>
         ) : (
-          <div className="text-center p-12 text-text-secondary text-sm">
+          <div className="text-center p-12 text-textSecondary text-sm">
             No quotations found matching your criteria.
           </div>
         )}

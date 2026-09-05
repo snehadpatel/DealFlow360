@@ -6,24 +6,24 @@ export function ApprovalHeader({ approval, onBack, onRefresh, isRefreshing }) {
   if (!approval) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
       <div className="flex items-center space-x-4">
         <button 
           onClick={onBack}
-          className="p-2 border border-surface-border rounded-btn text-text-secondary hover:text-text-primary hover:bg-gray-50 transition"
+          className="p-2 border border-gray-200 rounded-lg text-textSecondary hover:text-textPrimary hover:bg-gray-50 transition"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <div className="flex items-center space-x-3">
-            <h1 className="text-xl font-extrabold text-text-primary">Approval Detail</h1>
-            <span className="text-sm font-bold text-text-secondary bg-gray-100 px-2 py-0.5 rounded">
+            <h1 className="text-xl font-extrabold text-textPrimary">Approval Detail</h1>
+            <span className="text-sm font-bold text-textSecondary bg-gray-100 px-2 py-0.5 rounded">
               {approval.id}
             </span>
             <StatusBadge status={approval.status} />
           </div>
-          <p className="text-sm text-text-secondary mt-1">
-            Quotation <span className="font-bold text-primary-600">{approval.quotation?.id}</span>
+          <p className="text-sm text-textSecondary mt-1">
+            Quotation <span className="font-bold text-brand-600">{approval.quotation?.id}</span>
           </p>
         </div>
       </div>
@@ -31,7 +31,7 @@ export function ApprovalHeader({ approval, onBack, onRefresh, isRefreshing }) {
       <button 
         onClick={onRefresh}
         disabled={isRefreshing}
-        className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white border border-surface-border hover:bg-gray-50 text-text-secondary rounded-btn text-xs font-semibold transition disabled:opacity-50"
+        className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-textSecondary rounded-lg text-xs font-semibold transition disabled:opacity-50"
       >
         <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
         <span>Refresh</span>
@@ -78,7 +78,7 @@ export function ApprovalStatusBanner({ approval }) {
 
   // Pending State Banner
   return (
-    <div className="bg-warning-50 border border-warning-200 p-5 rounded-card shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+    <div className="bg-warning-50 border border-warning-200 p-5 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
       <div className="space-y-1">
         <div className="flex items-center space-x-2">
           <span className="text-warning-600">⚠</span>
@@ -90,16 +90,16 @@ export function ApprovalStatusBanner({ approval }) {
       </div>
       
       <div className="flex flex-wrap gap-3">
-        <div className="bg-white border border-warning-100 rounded-btn px-3 py-1.5 shadow-sm">
-          <span className="block text-[10px] font-bold text-text-secondary uppercase">Type</span>
-          <span className="block text-xs font-bold text-text-primary mt-0.5">{approval.approval_type.replace('_', ' ')}</span>
+        <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
+          <span className="block text-[10px] font-bold text-textSecondary uppercase">Type</span>
+          <span className="block text-xs font-bold text-textPrimary mt-0.5">{approval.approval_type.replace('_', ' ')}</span>
         </div>
-        <div className="bg-white border border-warning-100 rounded-btn px-3 py-1.5 shadow-sm">
-          <span className="block text-[10px] font-bold text-text-secondary uppercase">Current Disc</span>
-          <span className="block text-xs font-bold text-text-primary mt-0.5">{approval.current_discount}%</span>
+        <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
+          <span className="block text-[10px] font-bold text-textSecondary uppercase">Current Disc</span>
+          <span className="block text-xs font-bold text-textPrimary mt-0.5">{approval.current_discount}%</span>
         </div>
-        <div className="bg-white border border-warning-100 rounded-btn px-3 py-1.5 shadow-sm">
-          <span className="block text-[10px] font-bold text-text-secondary uppercase">Req Disc</span>
+        <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
+          <span className="block text-[10px] font-bold text-textSecondary uppercase">Req Disc</span>
           <span className="block text-xs font-bold text-danger-500 mt-0.5">{approval.requested_discount}%</span>
         </div>
       </div>

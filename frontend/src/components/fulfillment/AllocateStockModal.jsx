@@ -79,11 +79,11 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-card shadow-card w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-5 border-b border-surface-border flex items-center justify-between bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-md w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
           <div className="flex items-center space-x-2">
-            <PackageSearch className="w-5 h-5 text-primary-500" />
-            <h2 className="text-xl font-bold text-text-primary">Allocate Stock</h2>
+            <PackageSearch className="w-5 h-5 text-brand-500" />
+            <h2 className="text-xl font-bold text-textPrimary">Allocate Stock</h2>
           </div>
           <button onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
             <X className="w-5 h-5" />
@@ -92,13 +92,13 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
 
         <div className="p-6 overflow-y-auto flex-1">
           {error && (
-            <div className="mb-4 p-3 bg-danger-50 border border-danger-200 text-danger-700 text-sm font-semibold rounded-btn">
+            <div className="mb-4 p-3 bg-danger-50 border border-danger-200 text-danger-700 text-sm font-semibold rounded-lg">
               {error}
             </div>
           )}
 
           {productsNeedingAllocation.length === 0 ? (
-            <div className="text-center text-text-secondary py-8">
+            <div className="text-center text-textSecondary py-8">
               All items are fully allocated or no allocation options are available.
             </div>
           ) : (
@@ -113,15 +113,15 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
                 }
 
                 return (
-                  <div key={item.productId} className="border border-surface-border rounded-btn p-4">
-                    <div className="flex justify-between items-center border-b border-surface-border pb-2 mb-4">
+                  <div key={item.productId} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
                       <div>
-                        <h4 className="font-bold text-text-primary">{item.productName}</h4>
-                        <p className="text-xs text-text-secondary">SKU: {item.sku}</p>
+                        <h4 className="font-bold text-textPrimary">{item.productName}</h4>
+                        <p className="text-xs text-textSecondary">SKU: {item.sku}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold text-text-primary">Need: {remainingToAllocate}</div>
-                        <div className={`text-xs font-semibold mt-0.5 ${currentAllocationSum > remainingToAllocate ? 'text-danger-600' : 'text-primary-600'}`}>
+                        <div className="text-sm font-bold text-textPrimary">Need: {remainingToAllocate}</div>
+                        <div className={`text-xs font-semibold mt-0.5 ${currentAllocationSum > remainingToAllocate ? 'text-danger-600' : 'text-brand-600'}`}>
                           Total Selected: {currentAllocationSum}
                         </div>
                       </div>
@@ -137,20 +137,20 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
                           const currentVal = allocations[item.productId]?.[wh.warehouseId] || '';
                           
                           return (
-                            <div key={wh.warehouseId} className="flex items-center justify-between bg-gray-50 p-2 rounded-btn border border-gray-100">
+                            <div key={wh.warehouseId} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-100">
                               <div>
-                                <div className="text-sm font-bold text-text-primary">{wh.warehouseName}</div>
-                                <div className="text-[10px] text-text-secondary">Available: {available}</div>
+                                <div className="text-sm font-bold text-textPrimary">{wh.warehouseName}</div>
+                                <div className="text-[10px] text-textSecondary">Available: {available}</div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <label className="text-xs font-semibold text-text-secondary">Allocate:</label>
+                                <label className="text-xs font-semibold text-textSecondary">Allocate:</label>
                                 <input 
                                   type="number"
                                   min="0"
                                   max={available}
                                   value={currentVal}
                                   onChange={(e) => handleAllocationChange(item.productId, wh.warehouseId, e.target.value)}
-                                  className="w-20 px-2 py-1 border border-surface-border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                  className="w-20 px-2 py-1 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
                                 />
                               </div>
                             </div>
@@ -165,18 +165,18 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
           )}
         </div>
 
-        <div className="p-5 border-t border-surface-border bg-gray-50 flex justify-end space-x-3">
+        <div className="p-5 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
           <button 
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 border border-surface-border text-text-secondary font-bold hover:bg-gray-100 rounded-pill transition"
+            className="px-4 py-2 border border-gray-200 text-textSecondary font-bold hover:bg-gray-100 rounded-full transition"
           >
             Cancel
           </button>
           <button 
             onClick={handleSubmit}
             disabled={isSubmitting || productsNeedingAllocation.length === 0}
-            className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-pill shadow-btn transition flex items-center"
+            className="px-6 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-full shadow-btn transition flex items-center"
           >
             {isSubmitting ? (
               <>

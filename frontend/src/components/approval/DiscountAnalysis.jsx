@@ -5,13 +5,13 @@ export default function DiscountAnalysis({ analysis }) {
   if (!analysis || analysis.length === 0) return null;
 
   return (
-    <div className="bg-white border border-surface-border rounded-card shadow-card p-5">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary border-b border-surface-border pb-3 mb-4">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md p-5">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-textSecondary border-b border-gray-200 pb-3 mb-4">
         Discount Analysis
       </h3>
       
       <div className="space-y-3">
-        <div className="flex text-xs font-bold uppercase tracking-wider text-text-secondary px-2">
+        <div className="flex text-xs font-bold uppercase tracking-wider text-textSecondary px-2">
           <div className="w-1/3">Category</div>
           <div className="w-1/4 text-center">Allowed</div>
           <div className="w-1/4 text-center">Requested</div>
@@ -24,13 +24,13 @@ export default function DiscountAnalysis({ analysis }) {
             return (
               <div 
                 key={idx} 
-                className={`flex items-center px-3 py-2.5 rounded-btn border ${
-                  isExceeded ? 'bg-danger-50 border-danger-200' : 'bg-gray-50 border-surface-border'
+                className={`flex items-center px-3 py-2.5 rounded-lg border ${
+                  isExceeded ? 'bg-danger-50 border-danger-200' : 'bg-gray-50 border-gray-200'
                 }`}
               >
-                <div className="w-1/3 font-bold text-text-primary text-sm">{item.category}</div>
-                <div className="w-1/4 text-center font-medium text-text-secondary text-sm">{item.allowed}%</div>
-                <div className={`w-1/4 text-center font-extrabold text-sm ${isExceeded ? 'text-danger-600' : 'text-text-primary'}`}>
+                <div className="w-1/3 font-bold text-textPrimary text-sm">{item.category}</div>
+                <div className="w-1/4 text-center font-medium text-textSecondary text-sm">{item.allowed}%</div>
+                <div className={`w-1/4 text-center font-extrabold text-sm ${isExceeded ? 'text-danger-600' : 'text-textPrimary'}`}>
                   {item.requested}%
                 </div>
                 <div className="flex-1 flex justify-end">

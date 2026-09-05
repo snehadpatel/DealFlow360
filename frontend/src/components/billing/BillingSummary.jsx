@@ -77,7 +77,7 @@ export default function BillingSummary({ billing }) {
         return (
           <div
             key={card.id}
-            className="bg-white border border-slate-200/80 rounded-card p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors"
           >
             <div className="flex items-start justify-between mb-2">
               <div className={`p-2.5 rounded-xl ${card.bgColor}`}>

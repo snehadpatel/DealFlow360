@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function ApprovalSummaryCards({ summary = {}, loading = false }) {
-  if (loading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">{[1, 2, 3, 4].map((i) => (<div key={i} className="h-24 bg-white border border-surface-border rounded-card p-4" />))}</div>;
+  if (loading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">{[1, 2, 3, 4].map((i) => (<div key={i} className="h-24 bg-white border border-gray-200 rounded-2xl p-4" />))}</div>;
 
   const cards = [
     { title: 'Pending Approvals', count: summary.pending ?? 0, icon: Clock, color: 'text-warning-500', bgColor: 'bg-warning-50 border-warning-100' },
@@ -14,9 +14,9 @@ export default function ApprovalSummaryCards({ summary = {}, loading = false }) 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card, idx) => { const Icon = card.icon; return (
-        <div key={idx} className="bg-white border border-surface-border rounded-card p-5 shadow-card flex items-center justify-between transition hover:shadow-card-hover">
-          <div><div className="text-xs font-medium text-text-secondary">{card.title}</div><div className="text-3xl font-extrabold text-text-primary mt-1.5">{card.count}</div></div>
-          <div className={`p-3 rounded-card border ${card.bgColor} ${card.color}`}><Icon className="w-6 h-6" /></div>
+        <div key={idx} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-md flex items-center justify-between transition hover:shadow-md-hover">
+          <div><div className="text-xs font-medium text-textSecondary">{card.title}</div><div className="text-3xl font-extrabold text-textPrimary mt-1.5">{card.count}</div></div>
+          <div className={`p-3 rounded-2xl border ${card.bgColor} ${card.color}`}><Icon className="w-6 h-6" /></div>
         </div>
       ); })}
     </div>
