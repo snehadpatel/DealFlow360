@@ -40,33 +40,35 @@ export default function CustomerLayout({ activeTab, onTabChange, children }) {
   ];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-md flex flex-col md:flex-row overflow-hidden min-h-[75vh]">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-md flex flex-col overflow-hidden min-h-[75vh]">
       {/* Top Customer Header - Removed because App.jsx provides the global header */}
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-gray-50 border-r border-gray-200 p-4 space-y-1">
-          <div className="px-3 py-2 text-[11px] font-bold text-textSecondary uppercase tracking-wider">
+      {/* Desktop Horizontal Navigation */}
+      <nav className="hidden lg:flex items-center space-x-2 bg-gray-50 border-b border-gray-200 px-6 py-4 overflow-x-auto">
+          <div className="pr-6 border-r border-gray-200 mr-4 text-[11px] font-bold text-textSecondary uppercase tracking-wider whitespace-nowrap">
             Customer Menu
           </div>
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-brand-500 text-white shadow-btn font-semibold'
-                    : 'text-textSecondary hover:text-textPrimary hover:bg-gray-50'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-textSecondary'}`} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </aside>
+          <div className="flex items-center space-x-2">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                    isActive
+                      ? 'bg-brand-500 text-white shadow-md font-semibold'
+                      : 'text-textSecondary hover:text-textPrimary hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-textSecondary'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
 
         {/* Mobile Slide-over Sidebar Drawer */}
         {mobileMenuOpen && (
