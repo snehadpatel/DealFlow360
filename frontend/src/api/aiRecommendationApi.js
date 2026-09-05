@@ -123,24 +123,11 @@ const getFallbackRecommendations = (cartNames = []) => {
   };
 };
 
-/**
- * Accept a recommendation and track conversion
- */
-export const acceptRecommendation = async (recommendationId, quotationId) => {
-  try {
-    return await apiClient.post(`/ai/recommendations/${recommendationId}/accept`, { quotationId });
-  } catch {
-    return { success: true, message: 'Recommendation accepted' };
-  }
-};
+// Accept / dismiss are UI-local intents. The backend deliberately has no
+// conversion-tracking endpoint (it would be state the glass-box demo can't
+// hand-verify), and "accept" is realised by adding the product to the quote
+// via the real /quotes flow — so these are local no-ops rather than firing a
+// request that would 404 and clutter the network tab.
+export const acceptRecommendation = async () => ({ success: true, message: 'Recommendation accepted' });
 
-/**
- * Dismiss a recommendation
- */
-export const dismissRecommendation = async (recommendationId) => {
-  try {
-    return await apiClient.post(`/ai/recommendations/${recommendationId}/dismiss`);
-  } catch {
-    return { success: true, message: 'Recommendation dismissed' };
-  }
-};
+export const dismissRecommendation = async () => ({ success: true, message: 'Recommendation dismissed' });
