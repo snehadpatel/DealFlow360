@@ -112,7 +112,7 @@ export default function ApprovalDetail({ approvalId, onBack }) {
         </div>
 
         {/* Right Column (Risk & Approvals) */}
-        <div className="space-y-6">
+        <div className="space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto pr-1 pb-4 custom-scrollbar">
           <RiskScoreCard risk={approval.risk} />
           <AIRiskInsight riskLevel={approval.risk?.level} />
           <ApprovalChain chain={approval.approval_chain} />

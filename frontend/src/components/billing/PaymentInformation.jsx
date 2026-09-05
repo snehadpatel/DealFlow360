@@ -48,8 +48,8 @@ export default function PaymentInformation({ payment, currency = 'USD' }) {
           <CreditCard className="w-4 h-4 text-primary" />
           <h2 className="text-base font-bold text-textPrimary tracking-tight">Payment Information</h2>
         </div>
-        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(payment.status)}`}>
-          {payment.status.replace('_', ' ')}
+        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(payment.status || 'PENDING')}`}>
+          {(payment.status || 'PENDING').replace('_', ' ')}
         </span>
       </div>
 

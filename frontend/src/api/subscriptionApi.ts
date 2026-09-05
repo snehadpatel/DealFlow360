@@ -1,183 +1,137 @@
-import {
-  Subscription,
-  SubscriptionSummary,
-  SubscriptionBillingPeriod,
-  SubscriptionTimelineEvent
-} from '../types/subscription';
+import apiClient from './client';
 
-/**
- * Mock Data
- */
-let mockSubscriptions: Subscription[] = [
-  {
-    id: "SUB-8091",
-    customerId: "CUST-0012",
-    customerName: "ABC Industries",
-    quotationId: "QT-2026-0184",
-    planName: "Enterprise Platform License",
-    quantity: 50,
-    recurringAmount: 12500,
-    billingCycle: "MONTHLY",
-    startDate: "2026-01-15T00:00:00Z",
-    nextBillingDate: "2026-10-15T00:00:00Z",
-    status: "ACTIVE",
-    paymentStatus: "PAID",
-    permissions: { canPause: true, canResume: false, canCancel: true }
-  },
-  {
-    id: "SUB-8092",
-    customerId: "CUST-0099",
-    customerName: "TechCorp Solutions",
-    quotationId: "QT-2026-0185",
-    planName: "Pro Analytics Add-on",
-    quantity: 1,
-    recurringAmount: 45000,
-    billingCycle: "YEARLY",
-    startDate: "2025-11-01T00:00:00Z",
-    nextBillingDate: "2026-11-01T00:00:00Z",
-    status: "ACTIVE",
-    paymentStatus: "PENDING",
-    permissions: { canPause: true, canResume: false, canCancel: true }
-  },
-  {
-    id: "SUB-8093",
-    customerId: "CUST-0044",
-    customerName: "Global Retail",
-    quotationId: "QT-2026-0170",
-    planName: "Basic SaaS Tier",
-    quantity: 10,
-    recurringAmount: 1500,
-    billingCycle: "MONTHLY",
-    startDate: "2026-06-01T00:00:00Z",
-    nextBillingDate: "2026-09-01T00:00:00Z",
-    status: "SUSPENDED",
-    paymentStatus: "FAILED",
-    permissions: { canPause: false, canResume: true, canCancel: true }
-  },
-  {
-    id: "SUB-8094",
-    customerId: "CUST-0105",
-    customerName: "NextGen Logistics",
-    quotationId: "QT-2026-0190",
-    planName: "Standard CRM Access",
-    quantity: 25,
-    recurringAmount: 5000,
-    billingCycle: "QUARTERLY",
-    startDate: "2026-08-15T00:00:00Z",
-    nextBillingDate: "2026-11-15T00:00:00Z",
-    status: "TRIAL",
-    paymentStatus: "UPCOMING",
-    permissions: { canPause: false, canResume: false, canCancel: true }
-  }
-];
+export interface Subscription {
+  id: string;
+  customerId?: string;
+  customerName?: string;
+  quotationId?: string;
+  planName?: string;
+  quantity?: number;
+  recurringAmount?: number;
+  billingCycle?: string;
+  startDate?: string;
+  nextBillingDate?: string;
+  status?: string;
+  paymentStatus?: string;
+  permissions?: { canPause: boolean; canResume: boolean; canCancel: boolean };
+}
 
-const mockBillingSchedules: Record<string, SubscriptionBillingPeriod[]> = {
-  "SUB-8091": [
-    { id: "BS-1", billingPeriod: "July 2026", billingDate: "15 Jul 2026", amount: 12500, invoiceId: "INV-2010", paymentStatus: "PAID" },
-    { id: "BS-2", billingPeriod: "August 2026", billingDate: "15 Aug 2026", amount: 12500, invoiceId: "INV-2045", paymentStatus: "PAID" },
-    { id: "BS-3", billingPeriod: "September 2026", billingDate: "15 Sep 2026", amount: 12500, invoiceId: "INV-2090", paymentStatus: "PAID" },
-    { id: "BS-4", billingPeriod: "October 2026", billingDate: "15 Oct 2026", amount: 12500, paymentStatus: "UPCOMING" }
-  ]
-};
+export interface SubscriptionSummary {
+  activeSubscriptions: number;
+  expiringSoon: number;
+  suspendedSubscriptions: number;
+  monthlyRecurringRevenue: number;
+}
 
-const mockTimelines: Record<string, SubscriptionTimelineEvent[]> = {
-  "SUB-8091": [
-    { id: "TE-1", status: "Subscription Created", date: "2026-01-14T10:00:00Z", description: "Created from Quotation QT-2026-0184" },
-    { id: "TE-2", status: "Activated", date: "2026-01-15T00:00:00Z", description: "First payment received, subscription active" },
-    { id: "TE-3", status: "Billing Started", date: "2026-01-15T00:00:00Z", description: "Monthly billing cycle initiated" },
-    { id: "TE-4", status: "Renewed", date: "2026-09-15T00:00:00Z", description: "Automatically renewed for current month" },
-    { id: "TE-5", status: "Next Billing", date: "2026-10-15T00:00:00Z", description: "Upcoming invoice generation" }
-  ]
-};
+export interface SubscriptionBillingPeriod {
+  id: string;
+  billingPeriod: string;
+  billingDate: string;
+  amount: number;
+  invoiceId?: string;
+  paymentStatus: string;
+}
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export interface SubscriptionTimelineEvent {
+  id: string;
+  status: string;
+  date: string;
+  description: string;
+}
 
 export const getSubscriptions = async (filters?: { search?: string; status?: string; billingCycle?: string }): Promise<Subscription[]> => {
-  await delay(700);
-  let results = [...mockSubscriptions];
+  try {
+    const data = await apiClient.get('/subscriptions');
+    let results: any[] = Array.isArray(data) ? data : [];
 
-  if (filters) {
-    if (filters.status && filters.status !== 'All') {
-      results = results.filter(s => s.status === filters.status);
+    // Map backend format to frontend format
+    results = results.map((s: any) => ({
+      id: s.id,
+      customerId: s.customer_id,
+      customerName: s.customer_name || 'Customer',
+      planName: s.plan_name || 'Subscription Plan',
+      quantity: s.quantity || 1,
+      recurringAmount: s.total_amount || s.plan_price || 0,
+      billingCycle: s.billing_cycle || s.plan_billing_cycle || 'MONTHLY',
+      startDate: s.start_date || '',
+      nextBillingDate: s.next_billing_date || '',
+      status: s.status || 'ACTIVE',
+      paymentStatus: s.status === 'ACTIVE' ? 'PAID' : 'PENDING',
+      permissions: { canPause: s.status === 'ACTIVE', canResume: s.status === 'PAUSED' || s.status === 'SUSPENDED', canCancel: s.status !== 'CANCELLED' },
+    }));
+
+    if (filters) {
+      if (filters.status && filters.status !== 'All') {
+        results = results.filter((s: Subscription) => s.status === filters.status);
+      }
+      if (filters.billingCycle && filters.billingCycle !== 'All') {
+        results = results.filter((s: Subscription) => s.billingCycle === filters.billingCycle);
+      }
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        results = results.filter((s: Subscription) =>
+          String(s.id).toLowerCase().includes(q) ||
+          (s.customerName || '').toLowerCase().includes(q) ||
+          (s.planName || '').toLowerCase().includes(q)
+        );
+      }
     }
-    if (filters.billingCycle && filters.billingCycle !== 'All') {
-      results = results.filter(s => s.billingCycle === filters.billingCycle);
-    }
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      results = results.filter(s => 
-        s.id.toLowerCase().includes(q) || 
-        s.customerName.toLowerCase().includes(q) || 
-        s.planName.toLowerCase().includes(q)
-      );
-    }
+
+    return results;
+  } catch (err) {
+    console.error('Failed to fetch subscriptions:', err);
+    return [];
   }
-
-  return results;
 };
 
 export const getSubscriptionSummary = async (): Promise<SubscriptionSummary> => {
-  await delay(500);
-  return {
-    activeSubscriptions: 142,
-    expiringSoon: 18,
-    suspendedSubscriptions: 4,
-    monthlyRecurringRevenue: 485000
-  };
+  try {
+    const data = await apiClient.get('/subscriptions');
+    const list: any[] = Array.isArray(data) ? data : [];
+    const active = list.filter((s: any) => s.status === 'ACTIVE').length;
+    const suspended = list.filter((s: any) => s.status === 'SUSPENDED' || s.status === 'PAUSED').length;
+    const mrr = list
+      .filter((s: any) => s.status === 'ACTIVE')
+      .reduce((acc: number, s: any) => acc + (s.total_amount || s.plan_price || 0), 0);
+
+    return {
+      activeSubscriptions: active,
+      expiringSoon: 0,
+      suspendedSubscriptions: suspended,
+      monthlyRecurringRevenue: mrr,
+    };
+  } catch (err) {
+    console.error('Failed to fetch subscription summary:', err);
+    return { activeSubscriptions: 0, expiringSoon: 0, suspendedSubscriptions: 0, monthlyRecurringRevenue: 0 };
+  }
 };
 
 export const getSubscriptionById = async (id: string): Promise<Subscription> => {
-  await delay(600);
-  const sub = mockSubscriptions.find(s => s.id === id);
+  const subs = await getSubscriptions();
+  const sub = subs.find((s: Subscription) => String(s.id) === String(id));
   if (!sub) throw new Error("Subscription not found");
   return sub;
 };
 
-export const getBillingSchedule = async (id: string): Promise<SubscriptionBillingPeriod[]> => {
-  await delay(600);
-  return mockBillingSchedules[id] || [];
+export const getBillingSchedule = async (_id: string): Promise<SubscriptionBillingPeriod[]> => {
+  return [];
 };
 
-export const getSubscriptionTimeline = async (id: string): Promise<SubscriptionTimelineEvent[]> => {
-  await delay(600);
-  return mockTimelines[id] || [];
+export const getSubscriptionTimeline = async (_id: string): Promise<SubscriptionTimelineEvent[]> => {
+  return [];
 };
 
 export const pauseSubscription = async (id: string): Promise<Subscription> => {
-  await delay(800);
-  const index = mockSubscriptions.findIndex(s => s.id === id);
-  if (index === -1) throw new Error("Subscription not found");
-  
-  mockSubscriptions[index] = {
-    ...mockSubscriptions[index],
-    status: "PAUSED",
-    permissions: { canPause: false, canResume: true, canCancel: true }
-  };
-  return mockSubscriptions[index];
+  const res = await apiClient.put(`/subscriptions/${id}`, { status: 'PAUSED' });
+  return res as Subscription;
 };
 
 export const resumeSubscription = async (id: string): Promise<Subscription> => {
-  await delay(800);
-  const index = mockSubscriptions.findIndex(s => s.id === id);
-  if (index === -1) throw new Error("Subscription not found");
-  
-  mockSubscriptions[index] = {
-    ...mockSubscriptions[index],
-    status: "ACTIVE",
-    permissions: { canPause: true, canResume: false, canCancel: true }
-  };
-  return mockSubscriptions[index];
+  const res = await apiClient.put(`/subscriptions/${id}`, { status: 'ACTIVE' });
+  return res as Subscription;
 };
 
 export const cancelSubscription = async (id: string): Promise<Subscription> => {
-  await delay(1000);
-  const index = mockSubscriptions.findIndex(s => s.id === id);
-  if (index === -1) throw new Error("Subscription not found");
-  
-  mockSubscriptions[index] = {
-    ...mockSubscriptions[index],
-    status: "CANCELLED",
-    permissions: { canPause: false, canResume: false, canCancel: false }
-  };
-  return mockSubscriptions[index];
+  const res = await apiClient.post(`/subscriptions/${id}/cancel`);
+  return res as Subscription;
 };

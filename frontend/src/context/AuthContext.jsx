@@ -27,26 +27,25 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // Real API login with backend fallback
+  // Real API login — no mock fallback
   const login = async (email, password) => {
     setLoading(true);
     try {
       const res = await apiClient.post("/auth/login", { email, password });
       const jwtToken = res.access_token;
       const userData = res.user || {
+        id: res.id,
         name: res.name || email.split("@")[0],
         email: email,
         role: res.role || "REP",
+        customer_id: res.customer_id,
       };
       saveAuth(userData, jwtToken);
       return { user: userData, access_token: jwtToken };
     } catch (err) {
-      console.warn("Backend API auth error, checking fallback:", err);
-      // Fallback for mock personas if backend is unreachable
-      const role = Object.keys(DEMO_CREDENTIALS).find(r => DEMO_CREDENTIALS[r].email === email) || "REP";
-      const userData = { name: email.split('@')[0], role: role, email };
-      saveAuth(userData, "mock-jwt-token");
-      return { user: userData, access_token: "mock-jwt-token" };
+      console.error("Login failed:", err);
+      const detail = err?.response?.data?.detail || "Invalid email or password";
+      throw new Error(detail);
     } finally {
       setLoading(false);
     }
@@ -55,10 +54,15 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password, role = "REP") => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const userData = { name, role, email };
-      saveAuth(userData, "mock-jwt-token");
-      return { user: userData, access_token: "mock-jwt-token" };
+      const res = await apiClient.post("/auth/signup", { name, email, password, role });
+      const jwtToken = res.access_token;
+      const userData = res.user || { name, role, email };
+      saveAuth(userData, jwtToken);
+      return { user: userData, access_token: jwtToken };
+    } catch (err) {
+      console.error("Signup failed:", err);
+      const detail = err?.response?.data?.detail || "Signup failed";
+      throw new Error(detail);
     } finally {
       setLoading(false);
     }
@@ -67,15 +71,20 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async (credential) => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const userData = { name: "Google User", role: "REP", email: "google@dealflow360.com" };
-      saveAuth(userData, "mock-jwt-token");
-      return { user: userData, access_token: "mock-jwt-token" };
+      const res = await apiClient.post("/auth/google", { credential });
+      const jwtToken = res.access_token;
+      const userData = res.user || { name: "Google User", role: "REP", email: "google@dealflow360.com" };
+      saveAuth(userData, jwtToken);
+      return { user: userData, access_token: jwtToken };
+    } catch (err) {
+      console.error("Google login failed:", err);
+      throw new Error("Google authentication failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // Demo credentials matching seeded database users
   const DEMO_CREDENTIALS = {
     REP: { email: "alex.rep@dealflow360.com", password: "rep123" },
     MANAGER: { email: "maria.manager@dealflow360.com", password: "mgr123" },

@@ -92,15 +92,15 @@ export function ApprovalStatusBanner({ approval }) {
       <div className="flex flex-wrap gap-3">
         <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
           <span className="block text-[10px] font-bold text-textSecondary uppercase">Type</span>
-          <span className="block text-xs font-bold text-textPrimary mt-0.5">{approval.approval_type.replace('_', ' ')}</span>
+          <span className="block text-xs font-bold text-textPrimary mt-0.5">{(approval.approval_type || 'Discount').replace('_', ' ')}</span>
         </div>
         <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
           <span className="block text-[10px] font-bold text-textSecondary uppercase">Current Disc</span>
-          <span className="block text-xs font-bold text-textPrimary mt-0.5">{approval.current_discount}%</span>
+          <span className="block text-xs font-bold text-textPrimary mt-0.5">{approval.current_discount ?? 0}%</span>
         </div>
         <div className="bg-white border border-warning-100 rounded-lg px-3 py-1.5 shadow-sm">
           <span className="block text-[10px] font-bold text-textSecondary uppercase">Req Disc</span>
-          <span className="block text-xs font-bold text-danger-500 mt-0.5">{approval.requested_discount}%</span>
+          <span className="block text-xs font-bold text-danger-500 mt-0.5">{approval.requested_discount ?? 0}%</span>
         </div>
       </div>
     </div>

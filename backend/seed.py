@@ -1,18 +1,37 @@
 """
 DealFlow360 Enterprise Database Seeder
-Populates the database with 200+ enterprise records across all entities:
-- 10+ Enterprise Users & Roles
-- 200 Enterprise Customers (Gold/Silver/Bronze)
-- 200 Products & SKUs across Hardware, SaaS, Subscriptions, Services
-- 5 Warehouses & Multi-Product Inventory allocations
-- 200 Quotations with 500+ Quotation Line Items
-- 200 Orders with Real-time Delivery & Tracking
-- 200 Invoices, Payments, & Credit Notes
-- 200 Approvals, Notifications, & Audit Governance entries
-- 20 Subscription Plans & Customer Subscriptions
+Populates EVERY database table with 200+ enterprise records:
+- user: 200 records
+- customer: 200 records
+- product: 200 records
+- warehouse: 200 records
+- stockinventory: 400+ records
+- quotation: 200 records
+- quotationline: 500+ records
+- quotationversion: 200 records
+- approvalrequest: 200 records
+- order: 200 records
+- orderline: 500+ records
+- shipment: 200 records
+- backorder: 200 records
+- invoice: 200 records
+- payment: 200 records
+- creditnote: 200 records
+- subscriptionplan: 200 records
+- customersubscription: 200 records
+- discountrule: 200 records
+- upsellrule: 200 records
+- pricelist: 200 records
+- pricelistitem: 500+ records
+- negotiation: 200 records
+- negotiationmessage: 400+ records
+- portalnegotiation: 200 records
+- notification: 200 records
+- auditlog: 300+ records
 """
 import sys
 import os
+import json
 import random
 from uuid import uuid4
 from datetime import datetime, date, timedelta, timezone
@@ -28,85 +47,101 @@ from app.models.customer import Customer, Tier, CustomerStatus
 from app.models.product import Product
 from app.models.discount_rule import DiscountRule, UpsellRule
 from app.models.warehouse import Warehouse, StockInventory
-from app.models.quotation import Quotation, QuotationLine, QuoteStatus
+from app.models.quotation import Quotation, QuotationLine, QuotationVersion, QuoteStatus, RiskLevel
 from app.models.approval import ApprovalRequest, ApprovalStatus
-from app.models.order import Order, Shipment, OrderStatus, ShipmentStatus
+from app.models.order import Order, OrderLine, Shipment, Backorder, OrderStatus, ShipmentStatus, PaymentStatus
 from app.models.invoice import Invoice, Payment, CreditNote, InvoiceStatus, PaymentMethod
 from app.models.subscription import SubscriptionPlan, CustomerSubscription, BillingCycle, SubscriptionStatus
+from app.models.price_list import PriceList, PriceListItem
+from app.models.negotiation import Negotiation, NegotiationMessage, NegotiationStatus, SenderRole
+from app.models.portal import PortalNegotiation
 from app.models.notification import Notification
 from app.models.audit import AuditLog
 
 
 def seed(force: bool = False):
-    """Seed the database with 200+ realistic enterprise records per major category."""
+    """Seed every table in the database with 200+ realistic enterprise records."""
     init_db()
 
     with Session(engine) as session:
-        # Check if already seeded
-        existing_cust_count = len(session.exec(select(Customer)).all())
-        existing_quote_count = len(session.exec(select(Quotation)).all())
-        if not force and existing_cust_count >= 200 and existing_quote_count >= 200:
-            print(f"ℹ️ Database already populated with {existing_cust_count} customers & {existing_quote_count} quotes. Skipping.")
-            return
-
-        print("🔄 Resetting database tables for fresh 200+ per-entity enterprise seed...")
+        print("🔄 Resetting database tables for 200+ records in EVERY table...")
         SQLModel.metadata.drop_all(engine)
         SQLModel.metadata.create_all(engine)
 
-        print("🌱 Generating 200+ records for Customers, Products, Quotes, Orders, Invoices, Approvals...")
-        random.seed(42)  # Deterministic realistic seed
+        print("🌱 Seeding 200+ records across all 27 database tables...")
+        random.seed(42)
+        now = datetime.now(timezone.utc)
 
-        # ─── 1. USERS (10 Users) ──────────────────────────────────────────────
+        # ─── 1. USERS (200 Users) ─────────────────────────────────────────────
+        first_names = ["Alex", "Priya", "Rohan", "Ananya", "Vikram", "Neha", "Rahul", "Pooja", "Arjun", "Kavita",
+                       "Siddharth", "Meera", "Aditya", "Tanvi", "Karan", "Shreya", "Deepak", "Ritu", "Amit", "Sneha"]
+        last_names = ["Kumar", "Sharma", "Mehta", "Desai", "Patel", "Singh", "Verma", "Reddy", "Nair", "Chopra",
+                      "Joshi", "Bose", "Iyer", "Rao", "Gupta", "Malhotra", "Kapoor", "Bhat", "Saxena", "Sen"]
+
+        # Precalculate hashes once for blazing speed
+        admin_hash = get_password_hash("admin123")
+        rep_hash = get_password_hash("rep123")
+        cust_hash = get_password_hash("cust123")
+        mgr_hash = get_password_hash("mgr123")
+        fin_hash = get_password_hash("fin123")
+        ops_hash = get_password_hash("ops123")
+
+        users = []
+        # Core standard logins
         admin = User(id=uuid4(), name="Super Admin", email="admin@dealflow360.com",
-                     password_hash=get_password_hash("admin123"), role=Role.ADMIN)
-        rep1 = User(id=uuid4(), name="Alex Kumar", email="alex.rep@dealflow360.com",
-                    password_hash=get_password_hash("rep123"), role=Role.REP)
-        rep2 = User(id=uuid4(), name="Priya Sharma", email="priya.rep@dealflow360.com",
-                    password_hash=get_password_hash("rep123"), role=Role.REP)
-        rep3 = User(id=uuid4(), name="Rohan Mehta", email="rohan.rep@dealflow360.com",
-                    password_hash=get_password_hash("rep123"), role=Role.REP)
-        rep4 = User(id=uuid4(), name="Ananya Desai", email="ananya.rep@dealflow360.com",
-                    password_hash=get_password_hash("rep123"), role=Role.REP)
+                     password_hash=admin_hash, role=Role.ADMIN)
+        rep_alex = User(id=uuid4(), name="Alex Kumar", email="alex.rep@dealflow360.com",
+                        password_hash=rep_hash, role=Role.REP)
         manager = User(id=uuid4(), name="Maria Manager", email="maria.manager@dealflow360.com",
-                       password_hash=get_password_hash("mgr123"), role=Role.MANAGER)
+                       password_hash=mgr_hash, role=Role.MANAGER)
         finance = User(id=uuid4(), name="Felix Finance", email="felix.finance@dealflow360.com",
-                       password_hash=get_password_hash("fin123"), role=Role.FINANCE)
+                       password_hash=fin_hash, role=Role.FINANCE)
         ops = User(id=uuid4(), name="Ops Team Lead", email="ops@dealflow360.com",
-                   password_hash=get_password_hash("ops123"), role=Role.OPERATIONS)
+                   password_hash=ops_hash, role=Role.OPERATIONS)
         buyer1 = User(id=uuid4(), name="ABC Corp Buyer", email="buyer@abccorp.com",
-                      password_hash=get_password_hash("cust123"), role=Role.CUSTOMER)
+                      password_hash=cust_hash, role=Role.CUSTOMER)
         buyer2 = User(id=uuid4(), name="TechVision Lead", email="procurement@techvision.in",
-                      password_hash=get_password_hash("cust123"), role=Role.CUSTOMER)
+                      password_hash=cust_hash, role=Role.CUSTOMER)
+        
+        users.extend([admin, rep_alex, manager, finance, ops, buyer1, buyer2])
 
-        reps = [rep1, rep2, rep3, rep4]
-        all_users = [admin, rep1, rep2, rep3, rep4, manager, finance, ops, buyer1, buyer2]
-        for u in all_users:
+        roles_pool = [Role.REP, Role.CUSTOMER, Role.MANAGER, Role.FINANCE, Role.OPERATIONS]
+        role_weights = [0.45, 0.35, 0.08, 0.06, 0.06]
+
+        while len(users) < 200:
+            fn = random.choice(first_names)
+            ln = random.choice(last_names)
+            email_candidate = f"{fn.lower()}.{ln.lower()}.{len(users)+1}@dealflow360.com"
+            role = random.choices(roles_pool, weights=role_weights)[0]
+            phash = rep_hash if role == Role.REP else (cust_hash if role == Role.CUSTOMER else admin_hash)
+            u = User(
+                id=uuid4(), name=f"{fn} {ln}", email=email_candidate,
+                password_hash=phash, role=role, is_active=True
+            )
+            users.append(u)
+
+        for u in users:
             session.add(u)
         session.flush()
 
-        # ─── 2. CUSTOMERS (200 Enterprise Customers) ──────────────────────────
+        reps = [u for u in users if u.role == Role.REP]
+        if not reps:
+            reps = [users[1]]
+
+        # ─── 2. CUSTOMERS (200 Customers) ─────────────────────────────────────
         company_prefixes = [
             "Apex", "Nexus", "Quantum", "Vortex", "Titanium", "Beacon", "Zenith", "Horizon", "BlueWave", "Pulse",
             "Crestview", "Sterling", "Falcon", "Paramount", "Aura", "Metro", "Prime", "Vertex", "Summit", "Strata",
-            "Catalyst", "Hyperion", "Synapse", "Omni", "GlobalEdge", "InfiniTech", "Aero", "Starlight", "Novus", "Vanguard",
-            "CyberShield", "Optima", "Terra", "BioGen", "Solaris", "CloudMatrix", "Acuity", "Prism", "Kinetic", "Alpha"
+            "Catalyst", "Hyperion", "Synapse", "Omni", "GlobalEdge", "InfiniTech", "Aero", "Starlight", "Novus", "Vanguard"
         ]
         company_suffixes = [
             "Technologies", "Solutions", "Enterprises", "Corporation", "Systems", "Global", "Logistics", "Digital",
-            "Innovations", "Networks", "Industries", "Holdings", "Labs", "Analytics", "Pharma", "Capital", "Dynamics",
-            "Infra", "Services", "Cloud"
+            "Innovations", "Networks", "Industries", "Holdings", "Labs", "Analytics", "Pharma", "Capital", "Dynamics"
         ]
         cities = [
-            ("Mumbai", "27", "Maharashtra"),
-            ("Bengaluru", "29", "Karnataka"),
-            ("Hyderabad", "36", "Telangana"),
-            ("Delhi NCR", "07", "Delhi"),
-            ("Chennai", "33", "Tamil Nadu"),
-            ("Pune", "27", "Maharashtra"),
-            ("Ahmedabad", "24", "Gujarat"),
-            ("Kolkata", "19", "West Bengal"),
-            ("Gurugram", "06", "Haryana"),
-            ("Noida", "09", "Uttar Pradesh")
+            ("Mumbai", "27", "Maharashtra"), ("Bengaluru", "29", "Karnataka"), ("Hyderabad", "36", "Telangana"),
+            ("Delhi NCR", "07", "Delhi"), ("Chennai", "33", "Tamil Nadu"), ("Pune", "27", "Maharashtra"),
+            ("Ahmedabad", "24", "Gujarat"), ("Kolkata", "19", "West Bengal"), ("Gurugram", "06", "Haryana")
         ]
 
         customers = []
@@ -121,25 +156,25 @@ def seed(force: bool = False):
 
             tier = random.choices([Tier.GOLD, Tier.SILVER, Tier.BRONZE], weights=[0.3, 0.45, 0.25])[0]
             city, state_code, state_name = random.choice(cities)
-            slug = comp_name.lower().replace(" ", "").replace("#", "").replace(".", "")[:12]
-            email = f"procurement@{slug}.com"
+            slug = comp_name.lower().replace(" ", "").replace("#", "").replace(".", "")[:10]
+            email = f"procure@{slug}.com"
             phone = f"+91-{random.randint(7000000000, 9999999999)}"
-            addr = f"Unit {random.randint(101, 909)}, Cyber Tower {random.choice(['A', 'B', 'C'])}, {city}, {state_name}"
-            tax_id = f"GSTIN-{state_code}{slug[:5].upper()}{random.randint(1000, 9999)}{random.choice('ABCDEF')}{random.randint(1, 9)}Z{random.randint(1, 9)}"
+            addr = f"Tower {random.randint(1, 9)}, Suite {random.randint(100, 800)}, {city}, {state_name}"
+            tax_id = f"GSTIN-{state_code}{slug[:5].upper()}{random.randint(1000, 9999)}Z{random.randint(1, 9)}"
             
             credit_limit = {
-                Tier.GOLD: random.choice([4000000.0, 5000000.0, 6500000.0, 8000000.0, 10000000.0]),
-                Tier.SILVER: random.choice([1500000.0, 2000000.0, 2500000.0, 3000000.0]),
-                Tier.BRONZE: random.choice([300000.0, 500000.0, 750000.0, 1000000.0])
+                Tier.GOLD: random.choice([5000000.0, 7500000.0, 10000000.0]),
+                Tier.SILVER: random.choice([2000000.0, 3000000.0, 4000000.0]),
+                Tier.BRONZE: random.choice([500000.0, 800000.0, 1200000.0])
             }[tier]
-            terms = random.choice(["Net 15", "Net 30", "Net 45", "Net 60"])
 
             c = Customer(
                 id=uuid4(), name=comp_name, tier=tier, email=email, phone=phone,
-                address_billing=addr, address_shipping=f"{addr} - Warehouse Gate {random.randint(1, 4)}",
+                address_billing=addr, address_shipping=f"{addr} - Shipping Bay",
                 tax_id=tax_id, rep_id=reps[len(customers) % len(reps)].id,
-                credit_limit=credit_limit, payment_terms=terms, status=CustomerStatus.ACTIVE,
-                created_at=datetime.now(timezone.utc) - timedelta(days=random.randint(10, 365))
+                credit_limit=credit_limit, payment_terms=random.choice(["Net 15", "Net 30", "Net 45", "Net 60"]),
+                status=CustomerStatus.ACTIVE,
+                created_at=now - timedelta(days=random.randint(10, 365))
             )
             customers.append(c)
             session.add(c)
@@ -151,156 +186,150 @@ def seed(force: bool = False):
         session.add(buyer2)
         session.flush()
 
-        # ─── 3. PRODUCTS (200 Enterprise Products) ────────────────────────────
+        # ─── 3. PRODUCTS (200 Products) ───────────────────────────────────────
         categories = ["Hardware", "Subscription", "Services", "SaaS"]
-        hardware_templates = [
-            ("Enterprise Laptop Pro X{i}", "LAP-PRO-X{i}", 85000.0, 60000.0, 20.0, "unit", "16GB RAM, 512GB SSD, Core i7 Corporate Workstation"),
-            ("High Performance Workstation W{i}", "WRK-HP-W{i}", 145000.0, 105000.0, 15.0, "unit", "32GB RAM, 1TB NVMe, RTX GPU Engineering Station"),
-            ("Rack Server Node RS-{i}00", "SRV-RACK-{i}00", 380000.0, 270000.0, 15.0, "unit", "Dual Xeon 64-Core, 256GB ECC RAM, Redundant PSU"),
-            ("NextGen Firewall Gateway FW-{i}0", "NET-FW-{i}00", 150000.0, 100000.0, 15.0, "unit", "10Gbps Threat Inspection & IPsec VPN Gateway"),
-            ("SAN Storage Array {i}0TB NVMe", "SAN-NVME-{i}0T", 550000.0, 400000.0, 12.0, "unit", "All-Flash Enterprise SAN Storage Array"),
-            ("High Density L3 Switch SW-{i}8P", "NET-SW-{i}8P", 110000.0, 75000.0, 15.0, "unit", "48-Port 10G SFP+ Managed Core Switch"),
-            ("Industrial IoT Edge Gateway IG-{i}", "IOT-GATE-{i}", 28000.0, 18000.0, 15.0, "unit", "Ruggedized telemetry and edge inference gateway"),
-            ("Biometric Security Controller BC-{i}", "SEC-BIO-{i}", 18500.0, 11000.0, 10.0, "unit", "FIDO2 Multi-Factor Touch & Iris Access Hub"),
-            ("AI Vision Edge Accelerator AV-{i}", "AI-ACCEL-{i}", 92000.0, 62000.0, 15.0, "unit", "Dedicated Neural TPU for on-prem visual inference"),
-            ("Smart Power Distribution PDU-{i}K", "PWR-PDU-{i}K", 35000.0, 22000.0, 12.0, "unit", "IP-monitored rack PDU with surge telemetry")
-        ]
-        saas_templates = [
-            ("Cloud Governance & Security Suite v{i}", "SaaS-GOV-V{i}", 15000.0, 3500.0, 25.0, "license/yr", "Automated multi-cloud compliance and policy audit"),
-            ("Real-Time Business Intelligence BI-{i}", "SaaS-BI-{i}", 8500.0, 2000.0, 20.0, "user/mo", "Executive revenue forecasting & pipeline intelligence"),
-            ("Managed Kubernetes Orchestrator K8-{i}", "SaaS-K8S-{i}", 35000.0, 10000.0, 20.0, "cluster/mo", "Autoscaling zero-ops Kubernetes cloud cluster"),
-            ("AI Workflow Automation Hub Flow-{i}", "SaaS-FLOW-{i}", 45000.0, 12000.0, 25.0, "org/yr", "Autonomous sales flow routing & smart pricing triggers"),
-            ("Zero Trust Access Proxy ZT-{i}", "SaaS-ZT-{i}", 6500.0, 1500.0, 20.0, "user/yr", "Identity-aware cloud perimeter security proxy"),
-            ("Continuous Disaster Recovery DR-{i}", "SaaS-DR-{i}", 18000.0, 5000.0, 20.0, "node/mo", "Near-zero RPO/RTO database & disk replication"),
-            ("Microservice API Gateway APIGW-{i}", "SaaS-APIGW-{i}", 16000.0, 4000.0, 25.0, "instance/mo", "High throughput edge rate limiter & policy gateway"),
-            ("Salesforce SAP Integration Pack INT-{i}", "SaaS-CONN-{i}", 14000.0, 3500.0, 20.0, "connector", "Bi-directional ERP & CRM data synchronization")
-        ]
-        service_templates = [
-            ("Turnkey Deployment & Commissioning #{i}", "SRV-DEP-{i}0", 50000.0, 20000.0, 10.0, "engagement", "Certified on-premise hardware & network deployment"),
-            ("24/7 Dedicated TAM Support Tier {i}", "SUP-TAM-{i}", 24000.0, 8000.0, 15.0, "year", "24x7 Priority Support with 30-min SLA response"),
-            ("Cybersecurity Penetration Audit Phase {i}", "SRV-SEC-{i}", 120000.0, 50000.0, 10.0, "audit", "Comprehensive external & internal vulnerability audit"),
-            ("Database Migration & Architecture {i}", "SRV-DBM-{i}", 95000.0, 40000.0, 10.0, "project", "Zero-downtime PostgreSQL & Cloud database migration"),
-            ("Cloud Cost FinOps Optimization #{i}", "SRV-FINOPS-{i}", 65000.0, 25000.0, 10.0, "audit", "Infrastructure right-sizing & cloud spend reduction"),
-            ("ISO 27001 SOC2 Compliance Retainer #{i}", "SRV-COMPL-{i}", 180000.0, 75000.0, 10.0, "year", "Continuous compliance readiness and auditor sign-off")
-        ]
-
         products = []
         prod_idx = 1
-        # Generate 200 products evenly distributed across categories
         while len(products) < 200:
-            if len(products) < 80:
-                tmpl = random.choice(hardware_templates)
-                cat = "Hardware"
-            elif len(products) < 150:
-                tmpl = random.choice(saas_templates)
-                cat = "Subscription" if "mo" in tmpl[5] or "yr" in tmpl[5] else "SaaS"
+            cat = categories[len(products) % len(categories)]
+            if cat == "Hardware":
+                base_names = ["Enterprise Workstation", "Rack Server", "NextGen Firewall", "NVMe SAN Storage", "Core Switch", "IoT Edge Hub"]
+                price = random.choice([35000.0, 85000.0, 145000.0, 220000.0, 450000.0])
+                cost = price * random.uniform(0.65, 0.78)
+                unit = "unit"
+                ceiling = 15.0
+            elif cat == "Subscription":
+                base_names = ["Cloud Governance", "Real-Time BI Analytics", "Managed K8s Cluster", "AI Workflow Engine", "Disaster Recovery"]
+                price = random.choice([12000.0, 24000.0, 36000.0, 48000.0, 72000.0])
+                cost = price * random.uniform(0.20, 0.35)
+                unit = "license/yr"
+                ceiling = 25.0
+            elif cat == "SaaS":
+                base_names = ["API Rate Gateway", "Zero Trust Identity", "CRM Connector Suite", "Telemetry Ingestion", "Revenue AI Copilot"]
+                price = random.choice([6500.0, 14000.0, 18000.0, 25000.0, 32000.0])
+                cost = price * random.uniform(0.18, 0.30)
+                unit = "user/mo"
+                ceiling = 20.0
             else:
-                tmpl = random.choice(service_templates)
-                cat = "Services"
+                base_names = ["Turnkey Deployment", "24/7 TAM Support", "Security Pen Test Audit", "DB Migration Service", "FinOps Spend Audit"]
+                price = random.choice([50000.0, 75000.0, 95000.0, 120000.0, 180000.0])
+                cost = price * random.uniform(0.40, 0.55)
+                unit = "project"
+                ceiling = 10.0
 
-            name = tmpl[0].format(i=prod_idx)
-            sku = tmpl[1].format(i=prod_idx)
-            price = round(tmpl[2] * random.uniform(0.9, 1.25), -2)
-            cost = round(tmpl[3] * random.uniform(0.9, 1.15), -2)
-            ceiling = tmpl[4]
-            unit = tmpl[5]
-            desc = tmpl[6]
-
+            bname = random.choice(base_names)
             p = Product(
-                id=uuid4(), name=name, sku=sku, category=cat,
-                price=price, cost=cost, discount_ceiling=ceiling,
-                tax_rate=18.0, unit=unit, description=desc, is_archived=False
+                id=uuid4(), name=f"{bname} v{prod_idx}", sku=f"{cat[:3].upper()}-{prod_idx:04d}",
+                category=cat, price=round(price, 2), cost=round(cost, 2),
+                discount_ceiling=ceiling, tax_rate=18.0, unit=unit,
+                description=f"Enterprise grade {cat.lower()} module {prod_idx}", is_archived=False
             )
             products.append(p)
             session.add(p)
             prod_idx += 1
         session.flush()
 
-        # ─── 4. WAREHOUSES & INVENTORY (5 Hubs) ────────────────────────────────
-        warehouses_raw = [
-            ("Mumbai Central Logistics Hub", "Andheri East, Mumbai 400093", "Mumbai", 2500.0, 1),
-            ("Delhi NCR Tech Warehouse", "Sector 63, Noida 201301", "Delhi NCR", 3000.0, 2),
-            ("Bangalore South Distribution Hub", "Electronic City, Bangalore 560100", "Bangalore", 3500.0, 3),
-            ("Hyderabad HITEC Warehouse", "Gachibowli, Hyderabad 500032", "Hyderabad", 2800.0, 4),
-            ("Chennai Port Logistics Center", "Tidel Park Zone, Chennai 600113", "Chennai", 3200.0, 5),
-        ]
+        # ─── 4. WAREHOUSES (200 Logistics & Fulfillment Hubs) ─────────────────
         warehouses = []
-        for name, loc, city, cost, prio in warehouses_raw:
+        hub_cities = ["Mumbai", "Delhi NCR", "Bengaluru", "Hyderabad", "Chennai", "Pune", "Ahmedabad", "Kolkata", "Noida", "Gurugram", "Jaipur", "Kochi", "Chandigarh", "Indore"]
+        while len(warehouses) < 200:
+            cname = hub_cities[len(warehouses) % len(hub_cities)]
             w = Warehouse(
-                id=uuid4(), name=name, location=loc, city=city, is_active=True,
-                replenishment_threshold=20, shipping_cost=cost, priority=prio
+                id=uuid4(), name=f"{cname} Enterprise Logistics Node #{len(warehouses) + 1}",
+                location=f"Logistics Zone {len(warehouses) + 1}, {cname}",
+                city=cname, is_active=True, replenishment_threshold=20,
+                shipping_cost=random.choice([1500.0, 2200.0, 2800.0, 3500.0]),
+                priority=(len(warehouses) % 10) + 1
             )
             warehouses.append(w)
             session.add(w)
         session.flush()
 
-        for p in products:
-            if p.category == "Hardware":
-                for w in warehouses:
-                    avail = random.randint(20, 250)
-                    reserved = random.randint(0, 20)
-                    incoming = random.randint(15, 60)
-                    session.add(StockInventory(
-                        id=uuid4(), warehouse_id=w.id, product_id=p.id,
-                        available_units=avail, reserved_units=reserved,
-                        incoming_units=incoming, reorder_level=25
-                    ))
-        session.flush()
-
-        # ─── 5. DISCOUNT RULES & UPSELLS ──────────────────────────────────────
-        for tier, max_disc, min_mgn, mgr_thresh, fin_thresh in [
-            ("BRONZE", 10.0, 15.0, 7.0, 10.0),
-            ("SILVER", 15.0, 12.0, 12.0, 15.0),
-            ("GOLD", 20.0, 10.0, 15.0, 20.0),
-        ]:
-            session.add(DiscountRule(id=uuid4(), tier=tier, max_discount=max_disc,
-                                     min_margin=min_mgn, manager_approval_threshold=mgr_thresh,
-                                     finance_approval_threshold=fin_thresh))
-
-        for idx in range(15):
-            p1 = products[idx]
-            p2 = products[(idx + 5) % len(products)]
-            session.add(UpsellRule(
-                id=uuid4(), product_id=p1.id, recommended_product_id=p2.id,
-                promotion=f"Bundle {p2.name[:25]} with {p1.name[:25]} for enhanced ROI",
-                priority=1, min_margin_impact=round(random.uniform(2.0, 5.0), 1)
+        # Stock Inventory (400+ allocations)
+        for i in range(400):
+            p = products[i % len(products)]
+            w = warehouses[i % len(warehouses)]
+            session.add(StockInventory(
+                id=uuid4(), warehouse_id=w.id, product_id=p.id,
+                available_units=random.randint(20, 300),
+                reserved_units=random.randint(0, 25),
+                incoming_units=random.randint(10, 80),
+                reorder_level=20
             ))
         session.flush()
 
-        # ─── 6. SUBSCRIPTION PLANS & CUSTOMER SUBSCRIPTIONS ───────────────────
-        plans_raw = [
-            ("Starter Cloud", BillingCycle.MONTHLY, 5000.0, "Small teams up to 10 users"),
-            ("Business Pro", BillingCycle.YEARLY, 48000.0, "Up to 50 users with analytics suite"),
-            ("Enterprise Suite", BillingCycle.YEARLY, 120000.0, "Unlimited users with TAM support"),
-            ("CyberShield Managed", BillingCycle.MONTHLY, 25000.0, "24/7 SOC monitoring and threat mitigation"),
-            ("FinOps Optimizer", BillingCycle.YEARLY, 75000.0, "Continuous cloud spend governance"),
-            ("AI Revenue Copilot", BillingCycle.YEARLY, 90000.0, "Real-time deal risk & discount guidance"),
-            ("Global Multi-Region Sync", BillingCycle.MONTHLY, 35000.0, "Sub-second geo-distributed caching"),
-            ("Dedicated Edge Cluster", BillingCycle.YEARLY, 240000.0, "Isolated hardware & custom VPC endpoints")
-        ]
+        # ─── 5. DISCOUNT RULES & UPSELL RULES (200 Rules Each) ────────────────
+        for i in range(200):
+            t = random.choice(["BRONZE", "SILVER", "GOLD"])
+            session.add(DiscountRule(
+                id=uuid4(), tier=t, max_discount=random.choice([10.0, 15.0, 20.0, 25.0]),
+                min_margin=random.choice([10.0, 12.0, 15.0, 18.0]),
+                manager_approval_threshold=random.choice([8.0, 10.0, 12.0]),
+                finance_approval_threshold=random.choice([15.0, 18.0, 20.0])
+            ))
+            p1 = products[i % len(products)]
+            p2 = products[(i + 7) % len(products)]
+            session.add(UpsellRule(
+                id=uuid4(), product_id=p1.id, recommended_product_id=p2.id,
+                promotion=f"Cross-sell {p2.name[:25]} with {p1.name[:25]} for enhanced margin",
+                priority=(i % 5) + 1, min_margin_impact=round(random.uniform(2.0, 6.0), 1)
+            ))
+        session.flush()
+
+        # ─── 6. SUBSCRIPTION PLANS & CUSTOMER SUBSCRIPTIONS (200 Each) ────────
         sub_plans = []
-        for pname, cycle, pprice, pdesc in plans_raw:
-            sp = SubscriptionPlan(id=uuid4(), name=pname, billing_cycle=cycle, price=pprice, description=pdesc, is_active=True)
+        while len(sub_plans) < 200:
+            cycle = random.choice([BillingCycle.MONTHLY, BillingCycle.YEARLY])
+            plan_name = f"Enterprise Cloud Tier #{len(sub_plans) + 1} ({cycle.value})"
+            price = 45000.0 if cycle == BillingCycle.YEARLY else 5000.0
+            sp = SubscriptionPlan(
+                id=uuid4(), name=plan_name, billing_cycle=cycle,
+                price=price + (len(sub_plans) * 500),
+                description=f"Automated SaaS & Cloud SLA tier #{len(sub_plans) + 1}",
+                is_active=True
+            )
             sub_plans.append(sp)
             session.add(sp)
         session.flush()
 
-        for idx, c in enumerate(customers[:40]):
-            plan = sub_plans[idx % len(sub_plans)]
+        for i in range(200):
+            c = customers[i % len(customers)]
+            sp = sub_plans[i % len(sub_plans)]
             session.add(CustomerSubscription(
-                id=uuid4(), customer_id=c.id, plan_id=plan.id,
+                id=uuid4(), customer_id=c.id, plan_id=sp.id,
                 quantity=random.randint(1, 10), status=SubscriptionStatus.ACTIVE,
-                start_date=date(2026, 1, 1) + timedelta(days=idx * 5),
-                next_billing_date=date(2026, 10, 1) + timedelta(days=idx * 3)
+                start_date=date(2026, 1, 1) + timedelta(days=i),
+                next_billing_date=date(2026, 10, 1) + timedelta(days=i % 30)
             ))
         session.flush()
 
-        # ─── 7. QUOTATIONS & LINE ITEMS (200 Enterprise Deals) ────────────────
+        # ─── 7. PRICE LISTS & PRICE LIST ITEMS (200 Price Lists, 500+ Items) ──
+        price_lists = []
+        for i in range(200):
+            tier = random.choice(["BRONZE", "SILVER", "GOLD", None])
+            pl = PriceList(
+                id=uuid4(), name=f"Enterprise Tariff Card 2026-Q{(i%4)+1} #{i+1}",
+                tier=tier, currency="INR", effective_from=date(2026, 1, 1),
+                expires_at=date(2026, 12, 31), is_active=True
+            )
+            price_lists.append(pl)
+            session.add(pl)
+        session.flush()
+
+        for i in range(500):
+            pl = price_lists[i % len(price_lists)]
+            p = products[i % len(products)]
+            session.add(PriceListItem(
+                id=uuid4(), price_list_id=pl.id, product_id=p.id,
+                price=round(p.price * random.uniform(0.85, 0.98), 2)
+            ))
+        session.flush()
+
+        # ─── 8. QUOTATIONS, LINES, & VERSIONS (200 Quotes, 500+ Lines, 200 Versions)
         quotations = []
         status_pool = [QuoteStatus.CONFIRMED, QuoteStatus.APPROVED, QuoteStatus.PENDING_APPROVAL, QuoteStatus.DRAFT, QuoteStatus.REJECTED]
         status_weights = [0.45, 0.25, 0.15, 0.10, 0.05]
 
-        now = datetime.now(timezone.utc)
         for i in range(200):
             cust = customers[i % len(customers)]
             rep = reps[i % len(reps)]
@@ -316,8 +345,8 @@ def seed(force: bool = False):
             lines_to_add = []
 
             for p in chosen_prods:
-                qty = random.randint(2, 25) if p.category == "Hardware" else random.randint(1, 8)
-                disc_pct = random.choice([0.0, 5.0, 8.0, 10.0, 12.0, 15.0, 18.0, 20.0])
+                qty = random.randint(2, 20)
+                disc_pct = random.choice([0.0, 5.0, 8.0, 10.0, 15.0, 18.0])
                 line_sub = p.price * qty
                 disc_amt = line_sub * (disc_pct / 100.0)
                 taxable = line_sub - disc_amt
@@ -360,68 +389,83 @@ def seed(force: bool = False):
                 discount_total=round(discount_total, 2), tax_total=round(tax_total, 2),
                 total=round(total, 2), margin=round(margin, 2), margin_percent=round(margin_pct, 1),
                 currency="INR", blended_risk=blended_risk, risk_level=risk_level, version=1,
-                created_at=created_dt,
-                expires_at=created_dt + timedelta(days=30)
+                created_at=created_dt, expires_at=now + timedelta(days=random.randint(30, 90))
             )
             quotations.append((q, lines_to_add))
             session.add(q)
         session.flush()
 
-        # Insert quotation lines
         for q, lines in quotations:
             for l in lines:
                 session.add(QuotationLine(id=uuid4(), quotation_id=q.id, **l))
+            # Create QuotationVersion snapshot
+            session.add(QuotationVersion(
+                id=uuid4(), quotation_id=q.id, version=1, status=q.status.value,
+                subtotal=q.subtotal, discount_total=q.discount_total, tax_total=q.tax_total,
+                total=q.total, margin=q.margin, blended_risk=q.blended_risk, risk_level=q.risk_level,
+                snapshot=json.dumps({"lines_count": len(lines), "total": q.total}),
+                reason="Initial baseline quotation generation", created_by=q.rep_id, created_at=q.created_at
+            ))
         session.flush()
 
-        # ─── 8. APPROVALS & GOVERNANCE (200+ Multi-Level Approvals) ───────────
-        for q, _ in quotations:
-            if q.status in (QuoteStatus.PENDING_APPROVAL, QuoteStatus.APPROVED, QuoteStatus.REJECTED):
-                appr_status = ApprovalStatus.PENDING if q.status == QuoteStatus.PENDING_APPROVAL else (
-                    ApprovalStatus.APPROVED if q.status == QuoteStatus.APPROVED else ApprovalStatus.REJECTED
-                )
-                session.add(ApprovalRequest(
-                    id=uuid4(), quotation_id=q.id, approver_id=manager.id,
-                    approver_role=Role.MANAGER.value, approval_level=1,
-                    status=appr_status, quote_version=q.version,
-                    comments="Evaluation against commercial discount ceiling" if q.blended_risk > 45 else "Standard sales manager tier review"
-                ))
-                if q.blended_risk >= 40.0:
-                    session.add(ApprovalRequest(
-                        id=uuid4(), quotation_id=q.id, approver_id=finance.id,
-                        approver_role=Role.FINANCE.value, approval_level=2,
-                        status=appr_status, quote_version=q.version,
-                        comments="Finance threshold sign-off on Gross Margin"
-                    ))
+        # ─── 9. APPROVAL REQUESTS (200 Approval Requests) ─────────────────────
+        pending_quotes = [q for q, _ in quotations if q.status == QuoteStatus.PENDING_APPROVAL]
+        other_quotes = [q for q, _ in quotations if q.status != QuoteStatus.PENDING_APPROVAL]
+
+        for i in range(200):
+            if i < len(pending_quotes):
+                q = pending_quotes[i]
+                appr_status = ApprovalStatus.PENDING
+                app_role = Role.MANAGER.value
+                app_lvl = 1
+                approver_user = manager
+            else:
+                q = other_quotes[i % len(other_quotes)]
+                appr_status = ApprovalStatus.APPROVED if i % 2 == 0 else ApprovalStatus.REJECTED
+                app_role = Role.MANAGER.value if i % 2 == 0 else Role.FINANCE.value
+                app_lvl = 1 if i % 2 == 0 else 2
+                approver_user = manager if i % 2 == 0 else finance
+
+            session.add(ApprovalRequest(
+                id=uuid4(), quotation_id=q.id, approver_id=approver_user.id,
+                approver_role=app_role, approval_level=app_lvl,
+                status=appr_status, quote_version=q.version,
+                comments=f"Governance sign-off for deal #{str(q.id)[:8]} with margin {q.margin_percent}%"
+            ))
         session.flush()
 
-        # ─── 9. ORDERS & SHIPMENTS (200 Enterprise Orders) ────────────────────
-        eligible_quotes = [q for q, _ in quotations if q.status in (QuoteStatus.CONFIRMED, QuoteStatus.APPROVED)]
+        # ─── 10. ORDERS, ORDER LINES, SHIPMENTS & BACKORDERS (200 Each) ───────
         orders = []
-        for idx in range(200):
-            q = eligible_quotes[idx % len(eligible_quotes)]
+        for i in range(200):
+            q, lines = quotations[i % len(quotations)]
             ord_status = random.choices(
                 [OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.PROCESSING],
                 weights=[0.6, 0.25, 0.15]
             )[0]
-            
             cust = next(c for c in customers if c.id == q.customer_id)
-            delivery_addr = cust.address_shipping or cust.address_billing
 
             o = Order(
                 id=uuid4(), quotation_id=q.id, customer_id=q.customer_id, rep_id=q.rep_id,
-                status=ord_status, total_amount=q.total,
-                delivery_address=delivery_addr,
+                status=ord_status, payment_status=PaymentStatus.PAID if ord_status == OrderStatus.DELIVERED else PaymentStatus.PARTIAL,
+                total_amount=q.total, delivery_address=cust.address_shipping or cust.address_billing,
                 promised_delivery_date=date.today() + timedelta(days=random.randint(2, 14)),
-                payment_status="PAID" if ord_status == OrderStatus.DELIVERED else "PARTIAL",
                 created_at=q.created_at + timedelta(days=1)
             )
-            orders.append(o)
+            orders.append((o, lines))
             session.add(o)
         session.flush()
 
         courier_list = ["Blue Dart Express", "Delhivery Logistics", "DHL Supply Chain", "FedEx Enterprise", "Gati KWE"]
-        for idx, o in enumerate(orders):
+        for idx, (o, lines) in enumerate(orders):
             wh = warehouses[idx % len(warehouses)]
+            # Add order lines
+            for l in lines:
+                session.add(OrderLine(
+                    id=uuid4(), order_id=o.id, product_id=l["product_id"],
+                    warehouse_id=wh.id, quantity=l["quantity"],
+                    unit_price=l["unit_price"], line_total=l["line_total"]
+                ))
+            # Add shipment
             courier = random.choice(courier_list)
             ship_status = ShipmentStatus.DELIVERED if o.status == OrderStatus.DELIVERED else (
                 ShipmentStatus.IN_TRANSIT if o.status == OrderStatus.SHIPPED else ShipmentStatus.CREATED
@@ -429,15 +473,23 @@ def seed(force: bool = False):
             session.add(Shipment(
                 id=uuid4(), order_id=o.id, warehouse_id=wh.id,
                 courier=courier, tracking_number=f"{courier[:3].upper()}-2026-{random.randint(1000000, 9999999)}",
-                shipping_cost=wh.shipping_cost,
-                estimated_delivery=date.today() + timedelta(days=random.randint(1, 5)),
+                shipping_cost=wh.shipping_cost, estimated_delivery=date.today() + timedelta(days=random.randint(1, 5)),
                 status=ship_status
+            ))
+            # Add backorder
+            p_back = products[idx % len(products)]
+            session.add(Backorder(
+                id=uuid4(), order_id=o.id, product_id=p_back.id,
+                required_qty=random.randint(10, 50), available_qty=random.randint(0, 5),
+                backorder_qty=random.randint(5, 45),
+                expected_restock_date=date.today() + timedelta(days=random.randint(3, 20)),
+                is_resolved=(idx % 2 == 0)
             ))
         session.flush()
 
-        # ─── 10. INVOICES, PAYMENTS & CREDIT NOTES (200 Invoices) ─────────────
+        # ─── 11. INVOICES, PAYMENTS & CREDIT NOTES (200 Each) ─────────────────
         invoices = []
-        for idx, o in enumerate(orders):
+        for idx, (o, _) in enumerate(orders):
             inv_num = f"INV-2026-{10001 + idx}"
             paid_ratio = 1.0 if o.status == OrderStatus.DELIVERED else (0.5 if idx % 2 == 0 else 0.0)
             amt_paid = round(o.total_amount * paid_ratio, 2)
@@ -456,23 +508,56 @@ def seed(force: bool = False):
         session.flush()
 
         pay_methods = [PaymentMethod.BANK_TRANSFER, PaymentMethod.CREDIT_CARD, PaymentMethod.ACH, PaymentMethod.NET_30]
-        for inv in invoices:
-            if inv.amount_paid > 0:
-                session.add(Payment(
-                    id=uuid4(), invoice_id=inv.id, amount=inv.amount_paid,
-                    method=random.choice(pay_methods),
-                    transaction_id=f"TXN-2026-{random.randint(1000000, 9999999)}",
-                    status="COMPLETED"
-                ))
-            if inv.status == InvoiceStatus.PARTIALLY_PAID and random.random() < 0.25:
-                session.add(CreditNote(
-                    id=uuid4(), credit_note_number=f"CN-2026-{random.randint(1000, 9999)}",
-                    customer_id=inv.customer_id, invoice_id=inv.id,
-                    amount=round(inv.amount * 0.05, 2), reason="Enterprise volume pricing adjustment rebate"
-                ))
+        for idx, inv in enumerate(invoices):
+            session.add(Payment(
+                id=uuid4(), invoice_id=inv.id,
+                amount=inv.amount_paid if inv.amount_paid > 0 else round(inv.amount * 0.25, 2),
+                method=random.choice(pay_methods),
+                transaction_id=f"TXN-2026-{random.randint(1000000, 9999999)}",
+                status="COMPLETED"
+            ))
+            session.add(CreditNote(
+                id=uuid4(), credit_note_number=f"CN-2026-{1000 + idx}",
+                customer_id=inv.customer_id, invoice_id=inv.id,
+                amount=round(inv.amount * 0.05, 2),
+                reason="Enterprise SLA & volume incentive commercial credit adjustment"
+            ))
         session.flush()
 
-        # ─── 11. NOTIFICATIONS & AUDIT LOGS (200 Entries) ─────────────────────
+        # ─── 12. NEGOTIATIONS, MESSAGES & PORTAL NEGOTIATIONS (200 Each) ──────
+        for idx in range(200):
+            q, _ = quotations[idx % len(quotations)]
+            neg = Negotiation(
+                id=uuid4(), quotation_id=q.id, customer_id=q.customer_id, rep_id=q.rep_id,
+                status=random.choice([NegotiationStatus.OPEN, NegotiationStatus.ACCEPTED, NegotiationStatus.COUNTER_OFFERED]),
+                requested_discount=round(random.uniform(10.0, 20.0), 1),
+                counter_discount=round(random.uniform(5.0, 12.0), 1),
+                final_discount=round(random.uniform(5.0, 10.0), 1)
+            )
+            session.add(neg)
+            session.flush()
+
+            session.add(NegotiationMessage(
+                id=uuid4(), negotiation_id=neg.id, sender_id=buyer1.id,
+                sender_role=SenderRole.CUSTOMER,
+                message=f"Can we get a volume discount on this enterprise deployment package for quote #{str(q.id)[:8]}?",
+                discount_proposed=neg.requested_discount
+            ))
+            session.add(NegotiationMessage(
+                id=uuid4(), negotiation_id=neg.id, sender_id=q.rep_id,
+                sender_role=SenderRole.REP,
+                message=f"We can offer {neg.counter_discount}% provided payment terms are Net 30 with 24/7 TAM support.",
+                discount_proposed=neg.counter_discount
+            ))
+
+            session.add(PortalNegotiation(
+                id=uuid4(), quotation_id=q.id,
+                customer_note=f"Customer submitted commercial counter proposal via customer portal for #{str(q.id)[:8]}",
+                counter_discount=neg.counter_discount
+            ))
+        session.flush()
+
+        # ─── 13. NOTIFICATIONS & AUDIT LOGS (200 Notifications, 300+ Logs) ────
         for idx, (q, _) in enumerate(quotations):
             session.add(Notification(
                 id=uuid4(), user_id=q.rep_id,
@@ -486,18 +571,16 @@ def seed(force: bool = False):
                 new_value=f"₹{q.total:,.0f}",
                 reason=f"System evaluated margin of {q.margin_percent}% and blended risk score of {q.blended_risk}%"
             ))
+            if idx < 100:
+                session.add(AuditLog(
+                    id=uuid4(), quotation_id=q.id, user_id=manager.id,
+                    action="GOVERNANCE_RULE_EVAL", old_value="Pending",
+                    new_value=q.status.value,
+                    reason="Automated policy check on discount ceilings and gross margin thresholds"
+                ))
 
         session.commit()
-        print("🎉 200+ Enterprise Database Seed Complete across ALL Categories!")
-        print(f"   👤 Users: {len(all_users)}")
-        print(f"   🏢 Customers: {len(customers)} (200 records)")
-        print(f"   📦 Products: {len(products)} (200 records)")
-        print(f"   🏭 Warehouses: {len(warehouses)} with multi-product stock")
-        print(f"   📄 Quotations: {len(quotations)} (200 records with 500+ lines)")
-        print(f"   📋 Orders & Shipments: {len(orders)} (200 records)")
-        print(f"   🧾 Invoices: {len(invoices)} (200 records)")
-        print(f"   📜 Subscriptions: {len(sub_plans)} plans")
-        print(f"   🛡️ Approvals & Audit Trail: 200+ entries")
+        print("🎉 Successfully seeded 200+ records in EVERY table across the entire database!")
 
 
 if __name__ == "__main__":

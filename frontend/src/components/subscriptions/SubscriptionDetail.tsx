@@ -134,10 +134,14 @@ export default function SubscriptionDetail({ subscriptionId, onBack }: Props) {
             Back to Subscriptions
           </button>
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-slate-900">{sub.id}</h1>
-            {getStatusBadge(sub.status)}
+            <h1 className="text-2xl font-bold text-slate-900 font-mono">
+              {sub.id.startsWith('SUB-') ? sub.id : `SUB-${sub.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`}
+            </h1>
+            {getStatusBadge(sub.status || 'ACTIVE')}
           </div>
-          <p className="text-sm text-slate-500 mt-1">Managed via Quotation: <span className="font-semibold text-primary-600">{sub.quotationId}</span></p>
+          <p className="text-sm text-slate-500 mt-1">
+            Customer: <strong className="text-slate-800">{sub.customerName}</strong> • Plan: <span className="font-semibold text-primary-600">{sub.planName}</span>
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

@@ -1,22 +1,27 @@
 import apiClient from './client';
 
-// Real backend-backed sales API for the Quotation Builder. These hit the
-// FastAPI endpoints (products/customers/quotes) so every number the builder
-// shows after Save/Submit is computed by the backend (spec-compliant margin +
-// blended-risk routing), not faked in the browser.
+export const getProducts = async () => {
+  const data = await apiClient.get('/products?include_archived=false');
+  return Array.isArray(data) ? data : [];
+};
 
-export const getProducts = (includeArchived = false) =>
-  apiClient.get(`/products${includeArchived ? '?include_archived=true' : ''}`);
+export const getCustomers = async () => {
+  const data = await apiClient.get('/customers');
+  return Array.isArray(data) ? data : [];
+};
 
-export const getCustomers = () => apiClient.get('/customers');
+export const createQuote = async (payload) => {
+  return await apiClient.post('/quotes', payload);
+};
 
-// Create a DRAFT quote. `items` = [{ product_id, quantity, discount_percent }].
-export const createQuote = (payload) => apiClient.post('/quotes', payload);
+export const getQuote = async (quoteId) => {
+  return await apiClient.get(`/quotes/${quoteId}`);
+};
 
-export const getQuote = (quoteId) => apiClient.get(`/quotes/${quoteId}`);
+export const updateQuote = async (quoteId, payload) => {
+  return await apiClient.put(`/quotes/${quoteId}`, payload);
+};
 
-export const updateQuote = (quoteId, payload) => apiClient.put(`/quotes/${quoteId}`, payload);
-
-// Submit a draft for approval — the backend routes it through the spec blended
-// risk model and either auto-approves or creates the Manager/Finance chain.
-export const submitQuote = (quoteId) => apiClient.post(`/quotes/${quoteId}/submit`, {});
+export const submitQuote = async (quoteId) => {
+  return await apiClient.post(`/quotes/${quoteId}/submit`);
+};

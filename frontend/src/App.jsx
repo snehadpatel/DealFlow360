@@ -28,6 +28,8 @@ export default function App() {
       setActiveTab('approval');
     } else if (user?.role === 'ADMIN') {
       setActiveTab('admin');
+    } else if (user?.role === 'REP') {
+      setActiveTab('sales_workspace');
     } else {
       setActiveTab('quotation');
     }
@@ -51,9 +53,10 @@ export default function App() {
   }
 
   const baseTabs = [
+    { id: "sales_workspace", label: "Sales Dashboard", roles: ["REP", "ADMIN"] },
     { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
     { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
-    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN"] },
+    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN", "OPERATIONS"] },
     { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
     { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
@@ -76,7 +79,7 @@ export default function App() {
     ? customerTabs 
     : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
-  if (activeTab === "admin" || user?.role === "ADMIN") {
+  if (activeTab === "admin") {
     return (
       <>
         <AdminDashboard />
@@ -99,14 +102,14 @@ export default function App() {
         </div>
 
         {/* Revalo Premium Nav Pills */}
-        <nav className="premium-navbar-container overflow-x-auto max-w-2xl bg-[#F4F5F7] border border-slate-200/80 p-1">
+        <nav className="premium-navbar-container overflow-x-auto custom-scrollbar max-w-full mx-4 bg-[#F4F5F7] border border-slate-200/80 p-1">
           {allowedTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`nav-item-wave px-4 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
+                className={`nav-item-wave flex-shrink-0 px-4 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
                   isActive ? "active" : "text-[#6B7280]"
                 }`}
               >
@@ -143,6 +146,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        {activeTab === "sales_workspace" && <SalesWorkspace />}
         {activeTab === "quotation" && <QuotationBuilder />}
         {activeTab === "approval" && <ApprovalScreen />}
         {activeTab === "fulfillment" && <FulfillmentScreen />}

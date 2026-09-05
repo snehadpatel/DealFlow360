@@ -49,6 +49,8 @@ class QuoteLineResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     product_id: UUID
+    product_name: Optional[str] = None
+    category: Optional[str] = None
     quantity: int
     unit_price: float
     unit_cost: float
@@ -72,6 +74,19 @@ class ApprovalResponse(BaseModel):
     reason: Optional[str] = None
     created_at: datetime
     resolved_at: Optional[datetime] = None
+    customer_name: Optional[str] = None
+    customer_tier: Optional[str] = None
+    rep_name: Optional[str] = None
+    quote_total: Optional[float] = None
+    quote_subtotal: Optional[float] = None
+    quote_discount: Optional[float] = None
+    quote_margin: Optional[float] = None
+    quote_margin_percent: Optional[float] = None
+    discount_percent: Optional[float] = None
+    risk_level: Optional[str] = None
+    blended_risk: Optional[float] = None
+    risk_score: Optional[float] = None
+
 
 
 class QuoteResponse(BaseModel):
@@ -79,7 +94,9 @@ class QuoteResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     customer_id: UUID
+    customer_name: Optional[str] = None
     rep_id: UUID
+    rep_name: Optional[str] = None
     status: str
     subtotal: float
     discount_total: float

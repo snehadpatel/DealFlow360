@@ -61,6 +61,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Custom Scrollbar for inner components */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
 /* ════════════════════════════════════════════════════════════════════
    Auth Page Layout (Revalo Style)
    ════════════════════════════════════════════════════════════════════ */

@@ -8,6 +8,9 @@ from app.db import get_session
 from app.core.security import get_current_user, require_roles
 from app.models.user import Role, User
 from app.models.quotation import Quotation
+from app.models.customer import Customer
+from app.models.product import Product
+from sqlmodel import select
 from app.schemas.quote_schemas import (
     QuoteCreate,
     QuoteUpdate,
@@ -46,16 +49,49 @@ def _load_visible(session: Session, quote_id: UUID, user: User) -> Quotation:
 
 def _build_detail(session: Session, quotation: Quotation) -> QuoteDetailResponse:
     detail = QuoteDetailResponse.model_validate(quotation)
-    detail.lines = [QuoteLineResponse.model_validate(l) for l in quote_service.list_lines(session, quotation.id)]
+    cust = session.get(Customer, quotation.customer_id)
+    if cust:
+        detail.customer_name = cust.name
+    rep = session.get(User, quotation.rep_id)
+    if rep:
+        detail.rep_name = rep.name or rep.email
+
+    raw_lines = quote_service.list_lines(session, quotation.id)
+    p_ids = [l.product_id for l in raw_lines]
+    prods = {p.id: p for p in session.exec(select(Product).where(Product.id.in_(p_ids))).all()} if p_ids else {}
+
+    lines_res = []
+    for l in raw_lines:
+        line_resp = QuoteLineResponse.model_validate(l)
+        p = prods.get(l.product_id)
+        if p:
+            line_resp.product_name = p.name
+            line_resp.category = p.category
+        lines_res.append(line_resp)
+
+    detail.lines = lines_res
     detail.approvals = [ApprovalResponse.model_validate(a) for a in approval_service.list_for_quote(session, quotation.id)]
     return detail
+
 
 
 # --- endpoints -------------------------------------------------------------
 
 @router.get("", response_model=List[QuoteResponse])
 def list_quotes(session: Session = Depends(get_session), user: User = Depends(get_current_user)):
-    return quote_service.list_quotes(session, user)
+    quotes = quote_service.list_quotes(session, user)
+    cust_ids = {q.customer_id for q in quotes}
+    rep_ids = {q.rep_id for q in quotes}
+    customers = {c.id: c.name for c in session.exec(select(Customer).where(Customer.id.in_(cust_ids))).all()} if cust_ids else {}
+    reps = {u.id: (u.name or u.email) for u in session.exec(select(User).where(User.id.in_(rep_ids))).all()} if rep_ids else {}
+
+    res = []
+    for q in quotes:
+        qr = QuoteResponse.model_validate(q)
+        qr.customer_name = customers.get(q.customer_id, "Customer")
+        qr.rep_name = reps.get(q.rep_id, "Sales Rep")
+        res.append(qr)
+    return res
 
 
 @router.get("/{quote_id}", response_model=QuoteDetailResponse)
