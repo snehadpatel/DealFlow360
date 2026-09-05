@@ -500,6 +500,17 @@ def confirm_quote(session: Session, quotation: Quotation, *, user_id: UUID) -> Q
     )
     session.commit()
     session.refresh(quotation)
+
+    # A confirmed quote becomes a fulfillable Order so operations can split it
+    # across warehouses / raise backorders. Idempotent (returns the existing
+    # order on repeat) and best-effort — a fulfillment hiccup must not undo the
+    # confirmation the customer already saw succeed.
+    try:
+        from app.services import order_service
+        order_service.create_order_from_quote(session, quotation)
+    except Exception:
+        session.rollback()
+
     return quotation
 
 

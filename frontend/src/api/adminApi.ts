@@ -68,9 +68,13 @@ export interface ApiAuditLog {
 
 // ─── ADMIN API FUNCTIONS ───────────────────────────────────────────────────
 
+// NOTE: the backend serves these routers at root prefixes (e.g. /customers),
+// with NO `/v1` prefix and NO trailing slash on collection routes. Paths below
+// match that exactly so calls hit the real API instead of 404-ing to fallback.
+
 export async function fetchDashboardStats() {
   try {
-    return await apiClient.get("/v1/dashboard/stats");
+    return await apiClient.get("/dashboard/stats");
   } catch (e) {
     console.warn("Falling back to seeded dashboard metrics", e);
     return null;
@@ -79,7 +83,7 @@ export async function fetchDashboardStats() {
 
 export async function fetchCustomersList(): Promise<ApiCustomer[]> {
   try {
-    return await apiClient.get("/v1/customers/");
+    return await apiClient.get("/customers");
   } catch (e) {
     console.warn("Using local customer state fallback", e);
     return [];
@@ -87,20 +91,20 @@ export async function fetchCustomersList(): Promise<ApiCustomer[]> {
 }
 
 export async function createCustomerApi(data: Partial<ApiCustomer>): Promise<ApiCustomer> {
-  return await apiClient.post("/v1/customers/", data);
+  return await apiClient.post("/customers", data);
 }
 
 export async function updateCustomerApi(id: string, data: Partial<ApiCustomer>): Promise<ApiCustomer> {
-  return await apiClient.put(`/v1/customers/${id}`, data);
+  return await apiClient.put(`/customers/${id}`, data);
 }
 
 export async function deleteCustomerApi(id: string): Promise<void> {
-  return await apiClient.delete(`/v1/customers/${id}`);
+  return await apiClient.delete(`/customers/${id}`);
 }
 
 export async function fetchProductsList(): Promise<ApiProduct[]> {
   try {
-    return await apiClient.get("/v1/products/");
+    return await apiClient.get("/products");
   } catch (e) {
     console.warn("Using local product state fallback", e);
     return [];
@@ -108,20 +112,20 @@ export async function fetchProductsList(): Promise<ApiProduct[]> {
 }
 
 export async function createProductApi(data: Partial<ApiProduct>): Promise<ApiProduct> {
-  return await apiClient.post("/v1/products/", data);
+  return await apiClient.post("/products", data);
 }
 
 export async function updateProductApi(id: string, data: Partial<ApiProduct>): Promise<ApiProduct> {
-  return await apiClient.put(`/v1/products/${id}`, data);
+  return await apiClient.put(`/products/${id}`, data);
 }
 
 export async function deleteProductApi(id: string): Promise<void> {
-  return await apiClient.delete(`/v1/products/${id}`);
+  return await apiClient.delete(`/products/${id}`);
 }
 
 export async function fetchWarehousesList(): Promise<ApiWarehouse[]> {
   try {
-    return await apiClient.get("/v1/warehouses/");
+    return await apiClient.get("/warehouses");
   } catch (e) {
     console.warn("Using local warehouse state fallback", e);
     return [];
@@ -129,12 +133,12 @@ export async function fetchWarehousesList(): Promise<ApiWarehouse[]> {
 }
 
 export async function createWarehouseApi(data: Partial<ApiWarehouse>): Promise<ApiWarehouse> {
-  return await apiClient.post("/v1/warehouses/", data);
+  return await apiClient.post("/warehouses", data);
 }
 
 export async function fetchUsersList(): Promise<ApiUser[]> {
   try {
-    return await apiClient.get("/v1/users/");
+    return await apiClient.get("/users");
   } catch (e) {
     console.warn("Using local users state fallback", e);
     return [];
@@ -142,12 +146,12 @@ export async function fetchUsersList(): Promise<ApiUser[]> {
 }
 
 export async function createUserApi(data: Partial<ApiUser>): Promise<ApiUser> {
-  return await apiClient.post("/v1/users/", data);
+  return await apiClient.post("/users", data);
 }
 
 export async function fetchSubscriptionPlansList(): Promise<ApiSubscriptionPlan[]> {
   try {
-    return await apiClient.get("/v1/subscriptions/plans");
+    return await apiClient.get("/subscriptions/plans");
   } catch (e) {
     console.warn("Using local subscription plans fallback", e);
     return [];
@@ -156,7 +160,7 @@ export async function fetchSubscriptionPlansList(): Promise<ApiSubscriptionPlan[
 
 export async function fetchAuditLogsList(): Promise<ApiAuditLog[]> {
   try {
-    return await apiClient.get("/v1/audit-logs/");
+    return await apiClient.get("/audit-logs");
   } catch (e) {
     console.warn("Using local audit log state fallback", e);
     return [];
@@ -165,7 +169,7 @@ export async function fetchAuditLogsList(): Promise<ApiAuditLog[]> {
 
 export async function fetchNotificationsList() {
   try {
-    return await apiClient.get("/v1/notifications/");
+    return await apiClient.get("/notifications");
   } catch (e) {
     return [];
   }

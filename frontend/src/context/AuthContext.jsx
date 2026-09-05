@@ -27,29 +27,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
+  // Real login only. On failure we surface the error so the UI shows that the
+  // backend isn't connected — we do NOT fabricate a user (that would hide a
+  // broken integration during the demo, and the whole pitch is "real logic").
   const login = async (email, password) => {
     setLoading(true);
     try {
       const data = await apiClient.post("/auth/login", { email, password });
       saveAuth(data.user || { name: data.name, role: data.role, email }, data.access_token);
       return data;
-    } catch (err) {
-      // Fallback for offline/mock development
-      const mockRole = email.includes("manager")
-        ? "MANAGER"
-        : email.includes("finance")
-        ? "FINANCE"
-        : email.includes("customer") || email.includes("buyer")
-        ? "CUSTOMER"
-        : "REP";
-      const fallbackUser = {
-        id: "mock-" + Math.random().toString(36).substring(2, 9),
-        name: email.split("@")[0],
-        email,
-        role: mockRole,
-      };
-      saveAuth(fallbackUser, "mock-jwt-token-" + mockRole.toLowerCase());
-      return { user: fallbackUser };
     } finally {
       setLoading(false);
     }
@@ -61,15 +47,6 @@ export const AuthProvider = ({ children }) => {
       const data = await apiClient.post("/auth/signup", { name, email, password, role });
       saveAuth(data.user || { name, role, email }, data.access_token);
       return data;
-    } catch (err) {
-      const fallbackUser = {
-        id: "mock-" + Math.random().toString(36).substring(2, 9),
-        name,
-        email,
-        role,
-      };
-      saveAuth(fallbackUser, "mock-jwt-token-" + role.toLowerCase());
-      return { user: fallbackUser };
     } finally {
       setLoading(false);
     }
@@ -81,31 +58,25 @@ export const AuthProvider = ({ children }) => {
       const data = await apiClient.post("/auth/google", { token: credential });
       saveAuth(data.user, data.access_token);
       return data;
-    } catch (err) {
-      const fallbackUser = {
-        id: "google-" + Math.random().toString(36).substring(2, 9),
-        name: "Google User",
-        email: "google.user@example.com",
-        role: "REP",
-        picture: "https://ui-avatars.com/api/?name=Google+User&background=10b981&color=fff",
-      };
-      saveAuth(fallbackUser, "mock-google-token");
-      return { user: fallbackUser };
     } finally {
       setLoading(false);
     }
   };
 
-  const loginDemoPersona = (role) => {
-    const personas = {
-      REP: { name: "Alex Rep (Sales)", email: "alex.rep@dealflow360.com", role: "REP" },
-      MANAGER: { name: "Maria Manager (Approver)", email: "maria.manager@dealflow360.com", role: "MANAGER" },
-      FINANCE: { name: "Felix Finance (Ops)", email: "felix.finance@dealflow360.com", role: "FINANCE" },
-      CUSTOMER: { name: "Acme Corp (Buyer Portal)", email: "buyer@acmecorp.com", role: "CUSTOMER" },
-      ADMIN: { name: "Super Admin", email: "admin@dealflow360.com", role: "ADMIN" },
-    };
-    const selected = personas[role] || personas.REP;
-    saveAuth(selected, `demo-token-${role.toLowerCase()}`);
+  // Demo personas log in through the REAL /auth/login endpoint using the
+  // credentials created by backend/seed.py, so a one-click demo still exercises
+  // the true auth + RBAC path (real JWT, real role scoping).
+  const DEMO_CREDENTIALS = {
+    REP: { email: "alex.rep@dealflow360.com", password: "rep123" },
+    MANAGER: { email: "maria.manager@dealflow360.com", password: "mgr123" },
+    FINANCE: { email: "felix.finance@dealflow360.com", password: "fin123" },
+    CUSTOMER: { email: "buyer@abccorp.com", password: "cust123" },
+    ADMIN: { email: "admin@dealflow360.com", password: "admin123" },
+  };
+
+  const loginDemoPersona = async (role) => {
+    const creds = DEMO_CREDENTIALS[role] || DEMO_CREDENTIALS.REP;
+    return login(creds.email, creds.password);
   };
 
   const logout = () => {

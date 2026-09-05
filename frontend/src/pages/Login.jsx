@@ -49,9 +49,20 @@ export default function Login({ onNavigateToSignup }) {
     { role: "ADMIN", title: "Admin", badge: "Dashboard" },
   ];
 
-  const handlePersonaClick = (role) => {
+  const handlePersonaClick = async (role) => {
     setSelectedPersona(role);
-    loginDemoPersona(role);
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await loginDemoPersona(role);
+    } catch (err) {
+      setError(
+        err.response?.data?.detail ||
+          "Could not reach the backend. Start it with `uvicorn app.main:app --reload` and seed the demo data."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

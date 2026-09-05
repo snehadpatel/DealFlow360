@@ -80,7 +80,7 @@ export default function App() {
     return (
       <>
         <AdminDashboard />
-        <ChatWidget />
+        <ChatWidget activeTab="admin" />
       </>
     );
   }
@@ -170,7 +170,7 @@ export default function App() {
       </main>
 
       {/* Floating AI Sales Assistant Chatbot */}
-      <ChatWidget />
+      <ChatWidget activeTab={activeTab} />
     </div>
   );
 }

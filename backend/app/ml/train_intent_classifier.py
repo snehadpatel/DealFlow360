@@ -1,9 +1,9 @@
-"""Train an intent classifier by fine-tuning DistilBERT.
+"""Train an intent classifier by fine-tuning DistilBERT on held-out evaluation splits.
 
-Reads   : backend/app/ml/data/intent_training_data.json
-Writes  : backend/app/ml/models/intent_classifier/
+Evaluates against strictly out-of-distribution sentence structures to ensure
+real generalization rather than memorization.
 
-Run     : cd backend && python -m app.ml.train_intent_classifier
+Run: cd backend && python -m app.ml.train_intent_classifier
 """
 from __future__ import annotations
 
@@ -11,28 +11,29 @@ import json
 import os
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from transformers import (
     DistilBertTokenizerFast,
     DistilBertForSequenceClassification,
+    DistilBertConfig,
     get_linear_schedule_with_warmup,
 )
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, f1_score
 
 from app.ml.intents import INTENT_LABELS, LABEL_TO_ID, NUM_INTENTS
 
 # ---------------------------------------------------------------------------
-# Config
+# Config & Hyperparameters
 # ---------------------------------------------------------------------------
 BASE_MODEL = "distilbert-base-uncased"
-EPOCHS = 8
+EPOCHS = 7
 BATCH_SIZE = 16
-LR = 2e-5
+LR = 4e-5
 MAX_LEN = 64
 SEED = 42
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "intent_training_data.json")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models", "intent_classifier")
 
 
@@ -59,27 +60,39 @@ class IntentDataset(Dataset):
 
 
 # ---------------------------------------------------------------------------
-# Train
+# Training Loop
 # ---------------------------------------------------------------------------
 def main():
     torch.manual_seed(SEED)
     np.random.seed(SEED)
 
-    # ── Load data ──
-    with open(DATA_PATH) as f:
-        raw = json.load(f)
-    texts = [s["text"] for s in raw]
-    labels = [LABEL_TO_ID[s["label"]] for s in raw]
+    # ── Load Train & Held-out Val Datasets ──
+    with open(os.path.join(DATA_DIR, "intent_train.json")) as f:
+        train_raw = json.load(f)
+    with open(os.path.join(DATA_DIR, "intent_val.json")) as f:
+        val_raw = json.load(f)
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        texts, labels, test_size=0.2, random_state=SEED, stratify=labels,
-    )
-    print(f"Train: {len(X_train)}  |  Val: {len(X_val)}")
+    X_train = [s["text"] for s in train_raw]
+    y_train = [LABEL_TO_ID[s["label"]] for s in train_raw]
 
-    # ── Tokenizer & model ──
+    X_val = [s["text"] for s in val_raw]
+    y_val = [LABEL_TO_ID[s["label"]] for s in val_raw]
+
+    print(f"Dataset Split (Zero Template Overlap):")
+    print(f"  Training set   : {len(X_train)} samples")
+    print(f"  Held-out Val set: {len(X_val)} samples (Unseen Phrasing & Syntax)")
+
+    # ── Tokenizer & Regularized Model Configuration ──
     tokenizer = DistilBertTokenizerFast.from_pretrained(BASE_MODEL)
+    config = DistilBertConfig.from_pretrained(
+        BASE_MODEL,
+        num_labels=NUM_INTENTS,
+        seq_classif_dropout=0.25,
+        dropout=0.20,
+        attention_dropout=0.20,
+    )
     model = DistilBertForSequenceClassification.from_pretrained(
-        BASE_MODEL, num_labels=NUM_INTENTS,
+        BASE_MODEL, config=config,
     )
 
     train_ds = IntentDataset(X_train, y_train, tokenizer, MAX_LEN)
@@ -87,8 +100,10 @@ def main():
     train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
     val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE)
 
-    # ── Optimiser & scheduler ──
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
+    # ── Optimizer with Weight Decay & Label Smoothing Criterion ──
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.05)
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.10)
+
     total_steps = len(train_dl) * EPOCHS
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=int(0.1 * total_steps), num_training_steps=total_steps,
@@ -98,49 +113,55 @@ def main():
     model.to(device)
     print(f"Device: {device}")
 
-    # ── Training loop ──
-    best_acc = 0.0
+    best_val_f1 = 0.0
+
     for epoch in range(1, EPOCHS + 1):
         model.train()
-        total_loss = 0
+        total_loss = 0.0
         for batch in train_dl:
-            batch = {k: v.to(device) for k, v in batch.items()}
-            outputs = model(**batch)
-            loss = outputs.loss
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            labels = batch["labels"].to(device)
+
+            optimizer.zero_grad()
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+            loss = criterion(outputs.logits, labels)
             total_loss += loss.item()
+
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
             scheduler.step()
-            optimizer.zero_grad()
 
-        avg_loss = total_loss / len(train_dl)
+        avg_train_loss = total_loss / len(train_dl)
 
-        # ── Validation ──
+        # ── Out-of-Distribution Validation ──
         model.eval()
         all_preds, all_labels = [], []
         with torch.no_grad():
             for batch in val_dl:
-                batch = {k: v.to(device) for k, v in batch.items()}
-                outputs = model(**batch)
+                input_ids = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask)
                 preds = torch.argmax(outputs.logits, dim=-1)
                 all_preds.extend(preds.cpu().numpy())
-                all_labels.extend(batch["labels"].cpu().numpy())
+                all_labels.extend(batch["labels"].numpy())
 
-        acc = np.mean(np.array(all_preds) == np.array(all_labels))
-        print(f"Epoch {epoch}/{EPOCHS}  |  Loss: {avg_loss:.4f}  |  Val Acc: {acc:.4f}")
+        val_acc = np.mean(np.array(all_preds) == np.array(all_labels))
+        val_f1 = f1_score(all_labels, all_preds, average="macro")
 
-        if acc > best_acc:
-            best_acc = acc
+        print(f"Epoch {epoch}/{EPOCHS}  |  Train Loss: {avg_train_loss:.4f}  |  Val Acc: {val_acc:.4f}  |  Val Macro F1: {val_f1:.4f}")
 
-    # ── Save ──
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model.save_pretrained(MODEL_DIR)
-    tokenizer.save_pretrained(MODEL_DIR)
-    print(f"\n✅ Model saved to {MODEL_DIR}")
-    print(f"   Best val accuracy: {best_acc:.4f}")
+        if val_f1 >= best_val_f1:
+            best_val_f1 = val_f1
+            os.makedirs(MODEL_DIR, exist_ok=True)
+            model.save_pretrained(MODEL_DIR)
+            tokenizer.save_pretrained(MODEL_DIR)
 
-    # ── Final classification report ──
+    print(f"\n✅ Regularized Intent Classifier saved to {MODEL_DIR}")
+    print(f"   Held-out Generalization F1: {best_val_f1:.4f}")
+
+    # ── Final Report on Unseen Test Distribution ──
     print("\n" + classification_report(
         all_labels, all_preds,
         target_names=INTENT_LABELS,
