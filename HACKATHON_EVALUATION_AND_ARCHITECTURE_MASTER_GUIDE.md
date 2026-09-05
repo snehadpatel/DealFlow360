@@ -163,21 +163,23 @@ Here is everything built, verified, and ready to demonstrate live:
 Judges love self-contained machine learning. Here is the technical breakdown:
 
 ### Model 1: Intent Classifier (Fine-Tuned DistilBERT)
-* **Architecture:** `DistilBertForSequenceClassification` with dropout and linear classification head.
-* **Dataset:** 677 domain-specific DealFlow360 samples across 8 sales operations categories.
-* **Hyperparameters:** AdamW ($lr=2\times 10^{-5}$), 8 Epochs, Batch Size 16, Linear Warmup Scheduler.
-* **Validation Results:**
+* **Architecture:** `DistilBertForSequenceClassification` with dropout ($0.25$), attention dropout ($0.20$), and cross-entropy label smoothing ($0.10$).
+* **Dataset:** 682 domain-specific samples split strictly by template (526 train, 156 held-out test with zero phrasing overlap).
+* **Hyperparameters:** AdamW ($lr=4\times 10^{-5}$, weight decay $0.05$), 7 Epochs, Batch Size 16, Linear Warmup Scheduler.
+* **Held-Out Evaluation Results (Real Generalization):**
 ```
                     precision    recall  f1-score   support
-     check_billing      1.000     1.000     1.000        17
-       deal_status      1.000     1.000     1.000        16
-            upsell      1.000     1.000     1.000        16
-subscription_query      1.000     1.000     1.000        17
-     anomaly_alert      1.000     1.000     1.000        18
-   approval_status      1.000     1.000     1.000        17
-     customer_info      1.000     1.000     1.000        18
-           general      1.000     1.000     1.000        17
-          accuracy                          1.000       136
+     check_billing      1.000     1.000     1.000        24
+       deal_status      0.875     1.000     0.933        21
+            upsell      0.586     0.944     0.723        18
+subscription_query      1.000     0.667     0.800        18
+     anomaly_alert      0.833     0.833     0.833        18
+   approval_status      0.750     0.667     0.706        18
+     customer_info      0.857     1.000     0.923        18
+           general      1.000     0.571     0.727        21
+          accuracy                          0.840       156
+         macro avg      0.863     0.835     0.831       156
+      weighted avg      0.871     0.840     0.837       156
 ```
 
 ### Model 2: Response Generator (Fine-Tuned DistilGPT-2)

@@ -121,17 +121,17 @@ flowchart LR
 ```
 
 ### 1. Intent Classifier (DistilBERT)
-* **Base Architecture:** `distilbert-base-uncased` with sequence classification head.
-* **Dataset:** 677 domain-specific DealFlow360 sales operations examples.
-* **Performance:** **100% Validation Accuracy, 1.000 Macro F1-Score** across 8 intents:
-  1. `check_billing` (Invoice & payment lookups)
-  2. `deal_status` (Pipeline & quote stage tracking)
-  3. `upsell` (Cross-sell recommendations)
-  4. `subscription_query` (MRR & recurring renewal schedules)
-  5. `anomaly_alert` (Outlier discount detection)
-  6. `approval_status` (Pending queue & escalation paths)
-  7. `customer_info` (Customer tier & transaction summaries)
-  8. `general` (System navigation & capabilities)
+* **Base Architecture:** `distilbert-base-uncased` with dropout ($0.25$), attention dropout ($0.20$), and label smoothing ($0.10$).
+* **Dataset:** 682 domain-specific samples split strictly by template (526 train, 156 held-out test with zero phrasing overlap).
+* **Performance:** **84.0% Overall Accuracy, 0.837 Weighted F1-Score** on completely unseen phrasing across 8 intents:
+  1. `check_billing` (1.000 F1)
+  2. `deal_status` (0.933 F1)
+  3. `customer_info` (0.923 F1)
+  4. `anomaly_alert` (0.833 F1)
+  5. `subscription_query` (0.800 F1)
+  6. `general` (0.727 F1)
+  7. `upsell` (0.723 F1)
+  8. `approval_status` (0.706 F1)
 
 ### 2. Response Generator (DistilGPT-2)
 * **Base Architecture:** `distilgpt2` with causal LM head and special domain tokens `[INTENT]`, `[CONTEXT]`, `[USER]`, `[RESPONSE]`.

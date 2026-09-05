@@ -1,0 +1,626 @@
+[
+  {
+    "text": "Could you What is the total lifetime value of ABC Industries please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Who is currently blocking the sign-off on QT-2025-0455?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Check expiration date for subscription SUB-0234",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Hey there assistant thanks",
+    "label": "general"
+  },
+  {
+    "text": "Did Acme Corp settle the payment for BIL-3201?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you Give me the latest progress report on deal QT-2026-0184 please",
+    "label": "deal_status"
+  },
+  {
+    "text": "Quick question: How close is QT-2026-0099 to closing?",
+    "label": "deal_status"
+  },
+  {
+    "text": "How do I get started?",
+    "label": "general"
+  },
+  {
+    "text": "Please Payment verification for bill BIL-4456 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Generate a PDF copy of bill BIL-4456 right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you What stage is quote QT-2025-0455 sitting in right now thanks",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Suggest cross-selling opportunities to improve deal value asap",
+    "label": "upsell"
+  },
+  {
+    "text": "Quick question: Who is the primary contact at Global Dynamics",
+    "label": "customer_info"
+  },
+  {
+    "text": "I want to Much appreciated, bye?",
+    "label": "general"
+  },
+  {
+    "text": "Please Is QT-2026-0312 currently stalled or active",
+    "label": "deal_status"
+  },
+  {
+    "text": "Is QT-2026-0184 currently stalled or active?",
+    "label": "deal_status"
+  },
+  {
+    "text": "What amount is currently uncollected on invoice INV-4456?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you What is our projected MRR for next month please",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Recommend complementary software packages",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Attach rate recommendations for this purchase please",
+    "label": "upsell"
+  },
+  {
+    "text": "Please Look up outstanding dues for BIL-4456 asap",
+    "label": "check_billing"
+  },
+  {
+    "text": "Did TechVision Ltd settle the payment for BIL-1987",
+    "label": "check_billing"
+  },
+  {
+    "text": "Please Generate a PDF copy of bill BIL-1122",
+    "label": "check_billing"
+  },
+  {
+    "text": "List all clients on recurring billing",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you Good evening asap",
+    "label": "general"
+  },
+  {
+    "text": "Generate a PDF copy of bill BIL-3201",
+    "label": "check_billing"
+  },
+  {
+    "text": "Quick question: Has the VP of sales reviewed my discount request asap",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you What amount is currently uncollected on invoice INV-4456 asap",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Customer phone number and email for CUST-0034 asap",
+    "label": "customer_info"
+  },
+  {
+    "text": "Quick question: How many accounts are currently subscribed to SUB-0234 right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can you List all clients on recurring billing thanks",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Can we pause the recurring charge on SUB-0301?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Could you I am looking for navigation assistance",
+    "label": "general"
+  },
+  {
+    "text": "What is the current health score of proposal QT-2026-0184 thanks",
+    "label": "deal_status"
+  },
+  {
+    "text": "Quick question: Show me all transactions with extreme Z-scores asap",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Attach rate recommendations for this purchase",
+    "label": "upsell"
+  },
+  {
+    "text": "How many accounts are currently subscribed to SUB-0234?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Give me the latest progress report on deal QT-2026-0099",
+    "label": "deal_status"
+  },
+  {
+    "text": "Could you Can you explain what this tool does please",
+    "label": "general"
+  },
+  {
+    "text": "What items should I pitch alongside this hardware order right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Is QT-2025-0455 currently stalled or active right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "I want to Give me the financial status of BIL-8890",
+    "label": "check_billing"
+  },
+  {
+    "text": "What items should I pitch alongside this hardware order?",
+    "label": "upsell"
+  },
+  {
+    "text": "Could you Give me an account overview of Global Dynamics",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Suggest cross-selling opportunities to improve deal value right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Please What do buyers typically bundle with these switches",
+    "label": "upsell"
+  },
+  {
+    "text": "Good evening",
+    "label": "general"
+  },
+  {
+    "text": "Please Attach rate recommendations for this purchase thanks",
+    "label": "upsell"
+  },
+  {
+    "text": "Find account records for Nexus Systems",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Check expiration date for subscription SUB-0301 right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What features do you offer for sales reps thanks",
+    "label": "general"
+  },
+  {
+    "text": "I want to Who is currently blocking the sign-off on QT-2026-0184 thanks",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you What features do you offer for sales reps right now",
+    "label": "general"
+  },
+  {
+    "text": "Did any sales rep exceed normal discount limits?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please Recommend complementary software packages?",
+    "label": "upsell"
+  },
+  {
+    "text": "What do buyers typically bundle with these switches?",
+    "label": "upsell"
+  },
+  {
+    "text": "Please Check expiration date for subscription SUB-0234 thanks",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What is the total lifetime value of Acme Corp?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you nudge the finance team for quote QT-2025-0455?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you What do buyers typically bundle with these switches?",
+    "label": "upsell"
+  },
+  {
+    "text": "Check if this 30% discount is considered high risk please",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you explain what this tool does?",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Why did the risk engine flag quote QT-2026-0501 right now",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Why did the risk engine flag quote QT-2026-0184?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Hey there assistant?",
+    "label": "general"
+  },
+  {
+    "text": "Give me an account overview of OmniCorp",
+    "label": "customer_info"
+  },
+  {
+    "text": "What amount is currently uncollected on invoice INV-8890 thanks",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Flag quotes that violate historical pricing variance thanks",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please When is Nexus Systems's next automated renewal date?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Is TechVision Ltd classified as Gold or Platinum tier?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you Check if quote QT-2025-0455 has been accepted by client right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Is there any overdue money on BIL-2045?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Approval bottleneck check for QT-2025-0455",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Check if payment was received for INV-8890 right now",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you What is the current health score of proposal QT-2026-0501 thanks",
+    "label": "deal_status"
+  },
+  {
+    "text": "How close is QT-2026-0184 to closing?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Recommend complementary software packages right now",
+    "label": "upsell"
+  },
+  {
+    "text": "Margin health breakdown for QT-2026-0501 asap",
+    "label": "deal_status"
+  },
+  {
+    "text": "What is the current health score of proposal QT-2026-0099?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you Payment verification for bill BIL-8890 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you Why did the risk engine flag quote QT-2025-0455",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please How many quotes are waiting in the management queue please",
+    "label": "approval_status"
+  },
+  {
+    "text": "I want to Did TechVision Ltd settle the payment for BIL-1122 asap",
+    "label": "check_billing"
+  },
+  {
+    "text": "Can you What items should I pitch alongside this hardware order right now",
+    "label": "upsell"
+  },
+  {
+    "text": "I want to When is Acme Corp's next automated renewal date asap",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Suggest cross-selling opportunities to improve deal value",
+    "label": "upsell"
+  },
+  {
+    "text": "Who is the primary contact at ABC Industries?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Hey there assistant",
+    "label": "general"
+  },
+  {
+    "text": "I want to Is there any overdue money on BIL-2045 please",
+    "label": "check_billing"
+  },
+  {
+    "text": "Quick question: List all clients on recurring billing",
+    "label": "subscription_query"
+  },
+  {
+    "text": "What features do you offer for sales reps?",
+    "label": "general"
+  },
+  {
+    "text": "How many quotes are waiting in the management queue?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Much appreciated, bye asap",
+    "label": "general"
+  },
+  {
+    "text": "Has the VP of sales reviewed my discount request?",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Show all returned quotes needing edits asap",
+    "label": "approval_status"
+  },
+  {
+    "text": "Quick question: How do I get started please",
+    "label": "general"
+  },
+  {
+    "text": "Can you suggest higher margin add-ons for this cart?",
+    "label": "upsell"
+  },
+  {
+    "text": "What is the total lifetime value of ABC Industries please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you How many quotes are waiting in the management queue right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Can you explain what this tool does please",
+    "label": "general"
+  },
+  {
+    "text": "Flag quotes that violate historical pricing variance",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Can we pause the recurring charge on SUB-0112 thanks",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Good evening asap",
+    "label": "general"
+  },
+  {
+    "text": "Hey, Can you suggest higher margin add-ons for this cart",
+    "label": "upsell"
+  },
+  {
+    "text": "Quick question: Can you nudge the finance team for quote QT-2026-0501 asap",
+    "label": "approval_status"
+  },
+  {
+    "text": "Could you Check if this 30% discount is considered high risk thanks",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Could you Did any sales rep exceed normal discount limits?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "What stage is quote QT-2026-0312 sitting in right now?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Much appreciated, bye",
+    "label": "general"
+  },
+  {
+    "text": "Look up outstanding dues for BIL-4456",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Give me an account overview of Acme Corp please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Quick question: What is our projected MRR for next month right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Quick question: I am looking for navigation assistance thanks",
+    "label": "general"
+  },
+  {
+    "text": "Margin health breakdown for QT-2026-0184",
+    "label": "deal_status"
+  },
+  {
+    "text": "Can you Look up outstanding dues for BIL-1122?",
+    "label": "check_billing"
+  },
+  {
+    "text": "Show all returned quotes needing edits",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Can we pause the recurring charge on SUB-0078 right now",
+    "label": "subscription_query"
+  },
+  {
+    "text": "I want to Approval bottleneck check for QT-2026-0312",
+    "label": "approval_status"
+  },
+  {
+    "text": "Can you Is Global Dynamics classified as Gold or Platinum tier please",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Can you nudge the finance team for quote QT-2026-0099",
+    "label": "approval_status"
+  },
+  {
+    "text": "Please Flag quotes that violate historical pricing variance asap",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Quick question: Give me the latest progress report on deal QT-2026-0501 thanks",
+    "label": "deal_status"
+  },
+  {
+    "text": "Check if quote QT-2026-0501 has been accepted by client",
+    "label": "deal_status"
+  },
+  {
+    "text": "Please Can you suggest higher margin add-ons for this cart",
+    "label": "upsell"
+  },
+  {
+    "text": "Hey, Customer phone number and email for CUST-0012?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Quick question: How many accounts are currently subscribed to SUB-0234",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Give me the financial status of BIL-2045",
+    "label": "check_billing"
+  },
+  {
+    "text": "Are there any statistical outliers in recent quotes?",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "I want to Check if payment was received for INV-1987",
+    "label": "check_billing"
+  },
+  {
+    "text": "I want to Are there any statistical outliers in recent quotes thanks",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, Give me the financial status of BIL-1122 asap",
+    "label": "check_billing"
+  },
+  {
+    "text": "Hey, Are there any statistical outliers in recent quotes thanks",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Hey, Has the VP of sales reviewed my discount request",
+    "label": "approval_status"
+  },
+  {
+    "text": "Who is currently blocking the sign-off on QT-2026-0184?",
+    "label": "approval_status"
+  },
+  {
+    "text": "What is our projected MRR for next month?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Hey, Show me all transactions with extreme Z-scores thanks",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Show me all transactions with extreme Z-scores",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Can you What stage is quote QT-2026-0312 sitting in right now right now",
+    "label": "deal_status"
+  },
+  {
+    "text": "Quick question: Find account records for Nexus Systems thanks",
+    "label": "customer_info"
+  },
+  {
+    "text": "Could you Find account records for Global Dynamics?",
+    "label": "customer_info"
+  },
+  {
+    "text": "I am looking for navigation assistance",
+    "label": "general"
+  },
+  {
+    "text": "Please Show all returned quotes needing edits please",
+    "label": "approval_status"
+  },
+  {
+    "text": "When is Acme Corp's next automated renewal date?",
+    "label": "subscription_query"
+  },
+  {
+    "text": "Please Is there any overdue money on BIL-3201 asap",
+    "label": "check_billing"
+  },
+  {
+    "text": "Quick question: Margin health breakdown for QT-2026-0312?",
+    "label": "deal_status"
+  },
+  {
+    "text": "Customer phone number and email for CUST-0078",
+    "label": "customer_info"
+  },
+  {
+    "text": "Payment verification for bill BIL-2045",
+    "label": "check_billing"
+  },
+  {
+    "text": "Check if this 30% discount is considered high risk",
+    "label": "anomaly_alert"
+  },
+  {
+    "text": "Please How close is QT-2025-0455 to closing asap",
+    "label": "deal_status"
+  },
+  {
+    "text": "Quick question: Approval bottleneck check for QT-2026-0184 right now",
+    "label": "approval_status"
+  },
+  {
+    "text": "Check if payment was received for INV-3201",
+    "label": "check_billing"
+  },
+  {
+    "text": "Could you Check if quote QT-2026-0184 has been accepted by client thanks",
+    "label": "deal_status"
+  },
+  {
+    "text": "Hey, Is Nexus Systems classified as Gold or Platinum tier?",
+    "label": "customer_info"
+  },
+  {
+    "text": "Quick question: Who is the primary contact at OmniCorp asap",
+    "label": "customer_info"
+  },
+  {
+    "text": "Can you How do I get started thanks",
+    "label": "general"
+  },
+  {
+    "text": "Quick question: Did any sales rep exceed normal discount limits?",
+    "label": "anomaly_alert"
+  }
+]
