@@ -47,7 +47,7 @@ export default function Customers() {
     setLoading(false);
   }
 
-  const perPage = 5;
+  const [perPage, setPerPage] = useState(10);
   const filtered = customers.filter((c) => {
     const cName = c.name || "";
     const cEmail = c.email || "";
@@ -348,8 +348,21 @@ export default function Customers() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-[#E5E7EB] text-xs text-[#6B7280]">
-          <span>Showing {rows.length} of {total} customers</span>
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-[#E5E7EB] text-xs text-[#6B7280] gap-2">
+          <div className="flex items-center gap-2">
+            <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> loaded database records</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
+            >
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
+              <option value={200}>All 200 per page</option>
+            </select>
+          </div>
           <div className="flex items-center gap-1">
             <button
               disabled={page === 1}

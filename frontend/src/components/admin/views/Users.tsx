@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, KeyRound, Ban, CheckCircle2, Trash2, Edit2 } from "lucide-react";
+import { Plus, Search, KeyRound, Ban, CheckCircle2, Trash2, Edit2, ChevronLeft, ChevronRight } from "lucide-react";
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
 import { fetchUsersList, createUserApi, updateUserApi, deleteUserApi, ApiUser } from "../../../api/adminApi";
@@ -10,6 +10,8 @@ export default function Users() {
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", role: "REP", department: "Sales" });
   const [toast, setToast] = useState("");
@@ -35,6 +37,10 @@ export default function Users() {
     const mRole = roleFilter === "all" || u.role === roleFilter;
     return mSearch && mRole;
   });
+
+  const total = filtered.length;
+  const pages = Math.ceil(total / perPage);
+  const rows = filtered.slice((page - 1) * perPage, page * perPage);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -170,7 +176,7 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F4F5F7] text-xs">
-                {filtered.map((u) => (
+                {rows.map((u) => (
                   <tr key={u.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
                     <td className="py-3 px-4 font-bold text-[#1F2937]">{u.name}</td>
                     <td className="py-3 px-4 font-medium text-[#4B5563]">{u.email}</td>
@@ -223,6 +229,41 @@ export default function Users() {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-[#E5E7EB] text-xs text-[#6B7280] gap-2">
+          <div className="flex items-center gap-2">
+            <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> loaded database records</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
+            >
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
+              <option value={200}>All 200 per page</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="px-2 font-bold text-[#1F2937]">{page} / {pages || 1}</span>
+            <button
+              disabled={page === pages || pages === 0}
+              onClick={() => setPage(p => p + 1)}
+              className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
