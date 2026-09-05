@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from datetime import datetime, date, timedelta
 from uuid import uuid4
-from sqlmodel import Session, select
+from sqlmodel import SQLModel, Session, select
 from app.db import engine
 import app.models  # register all tables
 
@@ -32,7 +32,6 @@ from app.core.security import get_password_hash
 
 
 def seed(force: bool = False):
-    from sqlmodel import SQLModel
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         existing_users = session.exec(select(User)).all()
