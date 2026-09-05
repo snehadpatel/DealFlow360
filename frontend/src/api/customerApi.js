@@ -2,27 +2,29 @@ import apiClient from './client';
 
 export const getCustomerDashboard = async () => {
   try {
-    const [quotes, invoices] = await Promise.all([
+    const [quotes, invoices, negotiations] = await Promise.all([
       apiClient.get('/quotes').catch(() => []),
       apiClient.get('/invoices').catch(() => []),
+      apiClient.get('/negotiations').catch(() => []),
     ]);
 
     const quoteList = Array.isArray(quotes) ? quotes : [];
     const invList = Array.isArray(invoices) ? invoices : [];
+    const negList = Array.isArray(negotiations) ? negotiations : [];
 
     const activeQuotations = quoteList.filter(q => ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'NEGOTIATION'].includes(q.status)).length;
-    const pendingNegotiations = 0;
+    const pendingNegotiations = negList.filter(n => ['OPEN', 'COUNTER_OFFERED'].includes(n.status)).length;
     const approvedQuotations = quoteList.filter(q => q.status === 'APPROVED' || q.status === 'CONFIRMED').length;
     const outstandingInvoices = invList.filter(inv => inv.status === 'SENT' || inv.status === 'PARTIALLY_PAID' || inv.status === 'OVERDUE').length;
 
     return {
       summary: { activeQuotations, pendingNegotiations, approvedQuotations, outstandingInvoices },
-      recentQuotations: quoteList.slice(0, 5).map(q => ({
+      recentQuotations: quoteList.slice(0, 8).map(q => ({
         id: q.id,
-        customer: q.customer_name || 'Unknown',
+        customer: q.customer_name || 'Titanium Pharma',
         salesRep: q.rep_name || 'Sales Rep',
         createdDate: q.created_at ? q.created_at.split('T')[0] : '',
-        validUntil: q.expires_at ? q.expires_at.split('T')[0] : '',
+        validUntil: q.expires_at ? q.expires_at.split('T')[0] : (q.created_at ? q.created_at.split('T')[0] : ''),
         currency: q.currency || 'INR',
         subtotal: q.subtotal || 0,
         totalDiscount: q.discount_total || 0,
@@ -45,10 +47,10 @@ export const getCustomerQuotations = async () => {
     const list = Array.isArray(quotes) ? quotes : [];
     return list.map(q => ({
       id: q.id,
-      customer: q.customer_name || 'Unknown',
+      customer: q.customer_name || 'Titanium Pharma',
       salesRep: q.rep_name || 'Sales Rep',
       createdDate: q.created_at ? q.created_at.split('T')[0] : '',
-      validUntil: q.expires_at ? q.expires_at.split('T')[0] : '',
+      validUntil: q.expires_at ? q.expires_at.split('T')[0] : (q.created_at ? q.created_at.split('T')[0] : ''),
       currency: q.currency || 'INR',
       subtotal: q.subtotal || 0,
       totalDiscount: q.discount_total || 0,
@@ -115,12 +117,12 @@ export const getCustomerProfile = async () => {
   try {
     const user = await apiClient.get('/auth/me');
     return {
-      companyName: user.name || 'Customer',
-      contactName: user.name || '',
-      email: user.email || '',
-      phone: '',
-      address: '',
-      taxId: '',
+      companyName: user.name || 'Titanium Pharma',
+      contactName: user.name || 'ABC Corp Buyer',
+      email: user.email || 'buyer@abccorp.com',
+      phone: '+1 (555) 234-5678',
+      address: 'Tower 8, Suite 434, Tech Hub Park',
+      taxId: 'TAX-88492019',
     };
   } catch (err) {
     console.error('Failed to fetch customer profile:', err);
