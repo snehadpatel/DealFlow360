@@ -7,175 +7,55 @@ import {
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
 import ConfirmDialog from "../ui/ConfirmDialog";
-import {
-  fetchCustomersList,
-  createCustomerApi,
-  updateCustomerApi,
-  deleteCustomerApi,
-  ApiCustomer
-} from "../../../api/adminApi";
+import { fetchCustomersList, createCustomerApi, updateCustomerApi, deleteCustomerApi, ApiCustomer } from "../../../api/adminApi";
 
 const tiers = ["Bronze", "Silver", "Gold"];
-const plans = ["Basic", "Pro", "Enterprise"];
-
-const initialCustomers = [
-  {
-    id: "cust-1",
-    name: "Priya Sharma",
-    company: "ABC Corporation",
-    contactPerson: "Priya Sharma",
-    email: "procurement@abccorp.com",
-    phone: "+91 98000 00001",
-    tier: "Gold",
-    subscription: "Enterprise",
-    activeDeals: 3,
-    totalRevenue: "₹48,50,000",
-    status: "active",
-    joinedDate: "12 Jan 2026",
-    industry: "IT & Services",
-    billingAddress: "Tower 4, Prime Tech Park, Mumbai 400001",
-    shippingAddress: "Warehouse Zone, Navi Mumbai 400703",
-    creditLimit: "₹50,00,000",
-    totalOrders: 28,
-    renewalDate: "12 Jan 2027",
-    billingCycle: "Annual",
-  },
-  {
-    id: "cust-2",
-    name: "Rahul Mehta",
-    company: "TechVision India",
-    contactPerson: "Rahul Mehta",
-    email: "orders@techvision.in",
-    phone: "+91 98000 00002",
-    tier: "Silver",
-    subscription: "Pro",
-    activeDeals: 2,
-    totalRevenue: "₹18,20,000",
-    status: "active",
-    joinedDate: "18 Feb 2026",
-    industry: "Consumer Electronics",
-    billingAddress: "Cyber Hub, DLF Phase II, Gurugram 122002",
-    shippingAddress: "Sector 18, Noida 201301",
-    creditLimit: "₹20,00,000",
-    totalOrders: 14,
-    renewalDate: "18 Feb 2027",
-    billingCycle: "Monthly",
-  },
-  {
-    id: "cust-3",
-    name: "Deepa Nair",
-    company: "Sunrise Retail Ltd",
-    contactPerson: "Deepa Nair",
-    email: "ops@sunriseretail.com",
-    phone: "+91 98000 00003",
-    tier: "Bronze",
-    subscription: "Basic",
-    activeDeals: 1,
-    totalRevenue: "₹4,50,000",
-    status: "active",
-    joinedDate: "03 Mar 2026",
-    industry: "Retail & FMCG",
-    billingAddress: "MG Road, Bangalore 560001",
-    shippingAddress: "Electronic City, Bangalore 560100",
-    creditLimit: "₹5,00,000",
-    totalOrders: 6,
-    renewalDate: "03 Mar 2027",
-    billingCycle: "Monthly",
-  },
-  {
-    id: "cust-4",
-    name: "Ankit Singh",
-    company: "GlobalEdge Systems",
-    contactPerson: "Ankit Singh",
-    email: "purchase@globaledge.io",
-    phone: "+91 98000 00004",
-    tier: "Gold",
-    subscription: "Enterprise",
-    activeDeals: 4,
-    totalRevenue: "₹32,00,000",
-    status: "active",
-    joinedDate: "20 Mar 2026",
-    industry: "Cloud Infrastructure",
-    billingAddress: "HITEC City, Hyderabad 500081",
-    shippingAddress: "Gachibowli, Hyderabad 500032",
-    creditLimit: "₹30,00,000",
-    totalOrders: 21,
-    renewalDate: "20 Mar 2027",
-    billingCycle: "Annual",
-  },
-];
 
 const emptyForm = {
-  company: "",
-  contactPerson: "",
+  name: "",
   email: "",
   phone: "",
   tier: "Bronze",
-  subscription: "Basic",
-  industry: "",
-  billingAddress: "",
-  shippingAddress: "",
-  creditLimit: "₹5,00,000",
+  address_billing: "",
+  credit_limit: 500000,
+  status: "active",
 };
 
 export default function Customers() {
-  const [customers, setCustomers] = useState<any[]>(initialCustomers);
+  const [customers, setCustomers] = useState<ApiCustomer[]>([]);
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [detailCustomer, setDetailCustomer] = useState<any | null>(null);
-  const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch live customers from DB on component mount
+  const [editCustomer, setEditCustomer] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState(emptyForm);
+
   useEffect(() => {
-    async function loadDbData() {
-      setLoading(true);
-      try {
-        const dbCusts = await fetchCustomersList();
-        if (dbCusts && dbCusts.length > 0) {
-          const mapped = dbCusts.map((c) => ({
-            id: c.id,
-            name: c.name,
-            company: c.name,
-            contactPerson: c.name,
-            email: c.email,
-            phone: c.phone || "+91 98000 00000",
-            tier: c.tier || "Bronze",
-            subscription: "Pro",
-            activeDeals: 2,
-            totalRevenue: `₹${(c.credit_limit || 1000000).toLocaleString("en-IN")}`,
-            status: c.status?.toLowerCase() || "active",
-            joinedDate: c.created_at ? new Date(c.created_at).toLocaleDateString("en-IN") : "Recent",
-            industry: "Enterprise SaaS",
-            billingAddress: c.address_billing || "Corporate HQ",
-            shippingAddress: c.address_shipping || "Regional Hub",
-            creditLimit: `₹${(c.credit_limit || 1000000).toLocaleString("en-IN")}`,
-            totalOrders: 12,
-            renewalDate: "Annual",
-            billingCycle: "Annual",
-          }));
-          setCustomers(mapped);
-        }
-      } catch (err) {
-        console.warn("Using default customers list", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadDbData();
+    loadCustomers();
   }, []);
+
+  async function loadCustomers() {
+    setLoading(true);
+    const data = await fetchCustomersList();
+    setCustomers(data);
+    setLoading(false);
+  }
 
   const perPage = 5;
   const filtered = customers.filter((c) => {
+    const cName = c.name || "";
+    const cEmail = c.email || "";
+    const cTier = c.tier || "";
     const matchesSearch =
-      c.company.toLowerCase().includes(search.toLowerCase()) ||
-      c.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
-      c.email.toLowerCase().includes(search.toLowerCase());
-    const matchesTier = tierFilter === "all" || c.tier.toLowerCase() === tierFilter.toLowerCase();
+      cName.toLowerCase().includes(search.toLowerCase()) ||
+      cEmail.toLowerCase().includes(search.toLowerCase());
+    const matchesTier = tierFilter === "all" || cTier.toLowerCase() === tierFilter.toLowerCase();
     return matchesSearch && matchesTier;
   });
 
@@ -188,86 +68,84 @@ export default function Customers() {
     setTimeout(() => setToast(""), 2500);
   }
 
-  async function handleSaveNew() {
-    if (!form.company || !form.email) return;
+  async function handleCreateCustomer() {
+    if (!form.name || !form.email) return;
     try {
-      const dbRes = await createCustomerApi({
-        name: form.company,
-        email: form.email,
-        phone: form.phone,
-        tier: form.tier,
-        address_billing: form.billingAddress,
-        credit_limit: 5000000,
-      });
-      showToast("Customer created in database successfully");
-    } catch (err) {
-      showToast("Customer created locally");
+      await createCustomerApi({ ...form });
+      await loadCustomers();
+      setAddOpen(false);
+      setForm(emptyForm);
+      showToast("Customer created successfully");
+    } catch (e) {
+      showToast("Error creating customer");
     }
-    const newCust = {
-      ...form,
-      id: "cust-" + Date.now(),
-      name: form.contactPerson || form.company,
-      activeDeals: 0,
-      totalRevenue: "₹0",
-      status: "active",
-      joinedDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-      totalOrders: 0,
-      renewalDate: "One year from today",
-      billingCycle: "Annual",
-    };
-    setCustomers([newCust, ...customers]);
-    setAddOpen(false);
-    setForm(emptyForm);
   }
 
-  async function handleUpdateAdminControls(tier: string, subscription: string, status: string) {
-    if (!detailCustomer) return;
-    try {
-      if (typeof detailCustomer.id === "string" && !detailCustomer.id.startsWith("cust-")) {
-        await updateCustomerApi(detailCustomer.id, { tier, status });
-      }
-    } catch (err) {
-      console.warn("DB update error", err);
-    }
-    const updated = customers.map((c) =>
-      c.id === detailCustomer.id ? { ...c, tier, subscription, status } : c
-    );
-    setCustomers(updated);
-    setDetailCustomer({ ...detailCustomer, tier, subscription, status });
-    showToast("Customer parameters saved to DB");
+  function openEditModal(c: any) {
+    setEditCustomer(c);
+    setEditForm({
+      name: c.name || "",
+      email: c.email || "",
+      phone: c.phone || "",
+      tier: c.tier || "Bronze",
+      address_billing: c.address_billing || "",
+      credit_limit: c.credit_limit || 500000,
+      status: c.status || "active",
+    });
   }
 
-  async function toggleStatus(id: string | number, currentStatus: string) {
+  async function handleSaveEditCustomer() {
+    if (!editCustomer || !editForm.name || !editForm.email) return;
+    try {
+      await updateCustomerApi(editCustomer.id, editForm);
+      await loadCustomers();
+      setEditCustomer(null);
+      showToast("Customer updated successfully");
+    } catch (e) {
+      showToast("Error updating customer");
+    }
+  }
+
+  async function toggleStatus(id: string, currentStatus: string) {
     const nextStatus = currentStatus === "active" ? "suspended" : "active";
     try {
-      if (typeof id === "string" && !id.startsWith("cust-")) {
-        await updateCustomerApi(id, { status: nextStatus });
-      }
+      await updateCustomerApi(id, { status: nextStatus });
+      await loadCustomers();
+      showToast(`Customer status changed to ${nextStatus}`);
     } catch (e) {
-      console.warn("DB status update error", e);
+      showToast("Error updating status");
     }
-    setCustomers(customers.map((c) => (c.id === id ? { ...c, status: nextStatus } : c)));
-    showToast(`Customer status changed to ${nextStatus}`);
   }
 
-  async function handleDelete() {
+  async function handleDeleteCustomer() {
+    if (!deleteId) return;
     try {
-      if (typeof deleteId === "string" && !deleteId.startsWith("cust-")) {
-        await deleteCustomerApi(deleteId);
-      }
+      await deleteCustomerApi(deleteId);
+      await loadCustomers();
+      setDeleteId(null);
+      showToast("Customer deleted successfully");
     } catch (e) {
-      console.warn("DB delete error", e);
+      showToast("Error deleting customer");
     }
-    setCustomers(customers.filter((c) => c.id !== deleteId));
-    setDeleteId(null);
-    showToast("Customer deleted from database");
+  }
+
+  async function handleUpdateAdminControls(tier: string, status: string) {
+    if (!detailCustomer) return;
+    try {
+      await updateCustomerApi(detailCustomer.id, { tier, status });
+      await loadCustomers();
+      setDetailCustomer({ ...detailCustomer, tier, status });
+      showToast("Customer parameters updated");
+    } catch (err) {
+      showToast("Error updating customer");
+    }
   }
 
   function exportCSV() {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      ["Company,Contact,Email,Tier,Subscription,Status,Revenue"]
-        .concat(customers.map((c) => `${c.company},${c.contactPerson},${c.email},${c.tier},${c.subscription},${c.status},${c.totalRevenue}`))
+      ["Company,Email,Phone,Tier,Status"]
+        .concat(customers.map((c) => `${c.name},${c.email},${c.phone},${c.tier},${c.status}`))
         .join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -291,8 +169,8 @@ export default function Customers() {
       {/* Header & Main Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Customers (DB Connected)</h2>
-          <p className="text-[#6B7280] text-xs mt-0.5">Live database synchronization with PostgreSQL/SQLite customers table.</p>
+          <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Customers DB</h2>
+          <p className="text-[#6B7280] text-xs mt-0.5">Manage customer accounts and global tier settings.</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -324,7 +202,6 @@ export default function Customers() {
             <div className="p-2 rounded-xl bg-orange-50 text-[#F26C4F]"><Building2 size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{customers.length}</p>
-          <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Live DB synchronized</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -335,7 +212,6 @@ export default function Customers() {
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">
             {customers.filter((c) => c.status === "active").length}
           </p>
-          <p className="text-[10px] text-slate-500 font-medium mt-0.5">100% database verified</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -344,7 +220,6 @@ export default function Customers() {
             <div className="p-2 rounded-xl bg-blue-50 text-blue-600"><Clock size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">+{customers.length}</p>
-          <p className="text-[10px] text-blue-600 font-bold mt-0.5">Seeded & Live records</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -355,7 +230,6 @@ export default function Customers() {
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">
             {customers.filter((c) => c.status === "suspended" || c.status === "inactive").length}
           </p>
-          <p className="text-[10px] text-amber-600 font-bold mt-0.5">Requires outreach</p>
         </div>
       </div>
 
@@ -389,77 +263,88 @@ export default function Customers() {
 
         {/* Data Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                <th className="py-3 px-4">Company & Contact</th>
-                <th className="py-3 px-4">Tier</th>
-                <th className="py-3 px-4">Subscription</th>
-                <th className="py-3 px-4 text-center">Active Deals</th>
-                <th className="py-3 px-4">Total Revenue</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Joined Date</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F4F5F7] text-xs">
-              {rows.map((c) => (
-                <tr key={c.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
-                  <td className="py-3 px-4">
-                    <p className="font-bold text-[#1F2937]">{c.company}</p>
-                    <p className="text-[11px] text-[#6B7280]">{c.contactPerson} · {c.email}</p>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        c.tier === "Gold"
-                          ? "bg-amber-100 text-amber-800 border border-amber-300"
-                          : c.tier === "Silver"
-                          ? "bg-slate-100 text-slate-700 border border-slate-300"
-                          : "bg-orange-100 text-orange-800 border border-orange-200"
-                      }`}
-                    >
-                      {c.tier}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 font-medium text-[#374151]">{c.subscription}</td>
-                  <td className="py-3 px-4 text-center font-bold text-[#1F2937]">{c.activeDeals}</td>
-                  <td className="py-3 px-4 font-bold text-[#1F2937]">{c.totalRevenue}</td>
-                  <td className="py-3 px-4"><StatusPill status={c.status} /></td>
-                  <td className="py-3 px-4 text-[#6B7280]">{c.joinedDate}</td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setDetailCustomer(c)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
-                        title="View Detail"
-                      >
-                        <Eye size={15} />
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(c.id, c.status)}
-                        className={`p-1.5 rounded-lg transition ${
-                          c.status === "active"
-                            ? "text-[#6B7280] hover:text-amber-600 hover:bg-amber-50"
-                            : "text-emerald-600 hover:bg-emerald-50"
-                        }`}
-                        title={c.status === "active" ? "Suspend Customer" : "Activate Customer"}
-                      >
-                        {c.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
-                      </button>
-                      <button
-                        onClick={() => setDeleteId(c.id)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-600 hover:bg-red-50 transition"
-                        title="Delete"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+             <div className="p-8 text-center text-xs text-gray-400">Loading customers...</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                  <th className="py-3 px-4">Company Name</th>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">Tier</th>
+                  <th className="py-3 px-4">Credit Limit</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#F4F5F7] text-xs">
+                {rows.map((c) => (
+                  <tr key={c.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                    <td className="py-3 px-4">
+                      <p className="font-bold text-[#1F2937]">{c.name}</p>
+                    </td>
+                    <td className="py-3 px-4 font-medium text-[#374151]">{c.email}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          c.tier === "Gold"
+                            ? "bg-amber-100 text-amber-800 border border-amber-300"
+                            : c.tier === "Silver"
+                            ? "bg-slate-100 text-slate-700 border border-slate-300"
+                            : "bg-orange-100 text-orange-800 border border-orange-200"
+                        }`}
+                      >
+                        {c.tier}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-bold text-[#1F2937]">₹{c.credit_limit?.toLocaleString("en-IN")}</td>
+                    <td className="py-3 px-4"><StatusPill status={c.status} /></td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setDetailCustomer(c)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
+                          title="View Detail"
+                        >
+                          <Eye size={15} />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(c)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-blue-600 hover:bg-blue-50 transition"
+                          title="Edit Customer"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          onClick={() => toggleStatus(c.id, c.status)}
+                          className={`p-1.5 rounded-lg transition ${
+                            c.status === "active"
+                              ? "text-[#6B7280] hover:text-amber-600 hover:bg-amber-50"
+                              : "text-emerald-600 hover:bg-emerald-50"
+                          }`}
+                          title={c.status === "active" ? "Suspend Customer" : "Activate Customer"}
+                        >
+                          {c.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(c.id)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-600 hover:bg-red-50 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-gray-400">No customers found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination */}
@@ -492,28 +377,28 @@ export default function Customers() {
             <div>
               <label className="block font-bold text-[#374151] mb-1">Company Name *</label>
               <input
-                value={form.company}
-                onChange={(e) => setForm({ ...form, company: e.target.value })}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Acme Corp India"
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Contact Person *</label>
-                <input
-                  value={form.contactPerson}
-                  onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
-                  placeholder="Full Name"
-                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-                />
-              </div>
-              <div>
                 <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
                 <input
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="contact@company.com"
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Phone</label>
+                <input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="+91..."
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
@@ -526,29 +411,26 @@ export default function Customers() {
                   onChange={(e) => setForm({ ...form, tier: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 >
-                  <option value="Bronze">Bronze (5% max discount)</option>
-                  <option value="Silver">Silver (10% max discount)</option>
-                  <option value="Gold">Gold (15% max discount)</option>
+                  <option value="Bronze">Bronze</option>
+                  <option value="Silver">Silver</option>
+                  <option value="Gold">Gold</option>
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Subscription Plan</label>
-                <select
-                  value={form.subscription}
-                  onChange={(e) => setForm({ ...form, subscription: e.target.value })}
+                <label className="block font-bold text-[#374151] mb-1">Credit Limit</label>
+                <input
+                  type="number"
+                  value={form.credit_limit}
+                  onChange={(e) => setForm({ ...form, credit_limit: Number(e.target.value) })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-                >
-                  <option value="Basic">Basic (₹999/mo)</option>
-                  <option value="Pro">Pro (₹2,999/mo)</option>
-                  <option value="Enterprise">Enterprise (Custom)</option>
-                </select>
+                />
               </div>
             </div>
             <div>
               <label className="block font-bold text-[#374151] mb-1">Billing Address</label>
               <textarea
-                value={form.billingAddress}
-                onChange={(e) => setForm({ ...form, billingAddress: e.target.value })}
+                value={form.address_billing}
+                onChange={(e) => setForm({ ...form, address_billing: e.target.value })}
                 rows={2}
                 placeholder="Full street address, city, pin code"
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -562,10 +444,10 @@ export default function Customers() {
                 Cancel
               </button>
               <button
-                onClick={handleSaveNew}
+                onClick={handleCreateCustomer}
                 className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535]"
               >
-                Create Account in DB
+                Create Account
               </button>
             </div>
           </div>
@@ -574,16 +456,16 @@ export default function Customers() {
 
       {/* Customer Detail Drawer */}
       {detailCustomer && (
-        <Modal title={`Customer Profile — ${detailCustomer.company}`} onClose={() => setDetailCustomer(null)}>
+        <Modal title={`Customer Profile — ${detailCustomer.name}`} onClose={() => setDetailCustomer(null)}>
           <div className="space-y-4 text-xs">
             <div className="bg-[#FFF8F6] border border-[#F26C4F]/30 rounded-xl p-3">
-              <p className="font-bold text-[#F26C4F] text-xs mb-2">Super Admin Parameters Control</p>
-              <div className="grid grid-cols-3 gap-2">
+              <p className="font-bold text-[#F26C4F] text-xs mb-2">Admin Control</p>
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Tier</label>
                   <select
                     value={detailCustomer.tier}
-                    onChange={(e) => handleUpdateAdminControls(e.target.value, detailCustomer.subscription, detailCustomer.status)}
+                    onChange={(e) => handleUpdateAdminControls(e.target.value, detailCustomer.status)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 text-xs font-bold text-[#1F2937]"
                   >
                     <option value="Bronze">Bronze</option>
@@ -593,23 +475,10 @@ export default function Customers() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Plan</label>
-                  <select
-                    value={detailCustomer.subscription}
-                    onChange={(e) => handleUpdateAdminControls(detailCustomer.tier, e.target.value, detailCustomer.status)}
-                    className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 text-xs font-bold text-[#1F2937]"
-                  >
-                    <option value="Basic">Basic</option>
-                    <option value="Pro">Pro</option>
-                    <option value="Enterprise">Enterprise</option>
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Account Status</label>
                   <select
                     value={detailCustomer.status}
-                    onChange={(e) => handleUpdateAdminControls(detailCustomer.tier, detailCustomer.subscription, e.target.value)}
+                    onChange={(e) => handleUpdateAdminControls(detailCustomer.tier, e.target.value)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 text-xs font-bold text-[#1F2937]"
                   >
                     <option value="active">Active</option>
@@ -623,18 +492,14 @@ export default function Customers() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 border-r border-[#E5E7EB] pr-3">
                 <p className="font-bold text-[#1F2937] border-b pb-1">Company Details</p>
-                <p><span className="text-[#6B7280]">Contact:</span> {detailCustomer.contactPerson}</p>
                 <p><span className="text-[#6B7280]">Email:</span> {detailCustomer.email}</p>
-                <p><span className="text-[#6B7280]">Phone:</span> {detailCustomer.phone}</p>
-                <p><span className="text-[#6B7280]">Billing:</span> {detailCustomer.billingAddress}</p>
+                <p><span className="text-[#6B7280]">Phone:</span> {detailCustomer.phone || "N/A"}</p>
+                <p><span className="text-[#6B7280]">Billing:</span> {detailCustomer.address_billing || "N/A"}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="font-bold text-[#1F2937] border-b pb-1">Commercial Summary</p>
-                <p><span className="text-[#6B7280]">Credit Limit:</span> {detailCustomer.creditLimit}</p>
-                <p><span className="text-[#6B7280]">Total Revenue:</span> {detailCustomer.totalRevenue}</p>
-                <p><span className="text-[#6B7280]">Total Orders:</span> {detailCustomer.totalOrders}</p>
-                <p><span className="text-[#6B7280]">Active Deals:</span> {detailCustomer.activeDeals}</p>
+                <p><span className="text-[#6B7280]">Credit Limit:</span> ₹{detailCustomer.credit_limit?.toLocaleString("en-IN") || "0"}</p>
               </div>
             </div>
 
@@ -650,11 +515,91 @@ export default function Customers() {
         </Modal>
       )}
 
+      {/* Edit Customer Modal */}
+      {editCustomer && (
+        <Modal title="Edit Customer Account" onClose={() => setEditCustomer(null)}>
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Company Name *</label>
+              <input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+                <input
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Phone</label>
+                <input
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Customer Tier</label>
+                <select
+                  value={editForm.tier}
+                  onChange={(e) => setEditForm({ ...editForm, tier: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                >
+                  <option value="Bronze">Bronze</option>
+                  <option value="Silver">Silver</option>
+                  <option value="Gold">Gold</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Credit Limit</label>
+                <input
+                  type="number"
+                  value={editForm.credit_limit}
+                  onChange={(e) => setEditForm({ ...editForm, credit_limit: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Billing Address</label>
+              <textarea
+                value={editForm.address_billing}
+                onChange={(e) => setEditForm({ ...editForm, address_billing: e.target.value })}
+                rows={2}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditCustomer(null)}
+                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEditCustomer}
+                className="px-4 py-2 bg-[#1F2937] text-white rounded-xl text-xs font-bold hover:bg-black"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {deleteId && (
         <ConfirmDialog
           title="Delete Customer Account"
-          message="Are you sure you want to delete this customer from the database?"
-          onConfirm={handleDelete}
+          message="Are you sure you want to delete this customer?"
+          onConfirm={handleDeleteCustomer}
           onCancel={() => setDeleteId(null)}
         />
       )}

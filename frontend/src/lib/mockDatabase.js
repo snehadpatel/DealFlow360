@@ -1,6 +1,5 @@
 // In-memory fallback dataset for mock database queries
-
-const dbState = {
+const initialDbState = {
   quotations: [
     {
       id: "QT-2026-0184",
@@ -91,13 +90,39 @@ const dbState = {
       date: "2026-09-05",
     },
   ],
+  users: [
+    { id: "U-1", name: "Admin User", email: "admin@dealflow360.com", role: "ADMIN", is_active: true }
+  ]
 };
+
+// Initialize from localStorage or use defaults
+let dbState = {};
+try {
+  const stored = localStorage.getItem("dealflow360_mockDb");
+  if (stored) {
+    dbState = JSON.parse(stored);
+  } else {
+    dbState = JSON.parse(JSON.stringify(initialDbState));
+    localStorage.setItem("dealflow360_mockDb", JSON.stringify(dbState));
+  }
+} catch (e) {
+  dbState = JSON.parse(JSON.stringify(initialDbState));
+}
+
+function persistState() {
+  try {
+    localStorage.setItem("dealflow360_mockDb", JSON.stringify(dbState));
+  } catch (e) {
+    console.warn("Could not persist to localStorage");
+  }
+}
 
 export const getDb = () => dbState;
 
 export const mockDb = {
   getAll: async (collection) => {
-    return dbState[collection] || [];
+    // Return a copy so React state sees a new array reference
+    return [...(dbState[collection] || [])];
   },
 
   getById: async (collection, id) => {
@@ -109,6 +134,7 @@ export const mockDb = {
     if (!dbState[collection]) dbState[collection] = [];
     const newRecord = { ...data, id: data.id || `${collection.toUpperCase().slice(0, 3)}-${Date.now()}` };
     dbState[collection].unshift(newRecord);
+    persistState();
     return newRecord;
   },
 
@@ -117,6 +143,7 @@ export const mockDb = {
     const index = dbState[collection].findIndex((item) => item.id === id);
     if (index !== -1) {
       dbState[collection][index] = { ...dbState[collection][index], ...data };
+      persistState();
       return dbState[collection][index];
     }
     return null;
@@ -125,6 +152,7 @@ export const mockDb = {
   remove: async (collection, id) => {
     if (!dbState[collection]) return { success: false };
     dbState[collection] = dbState[collection].filter((item) => item.id !== id);
+    persistState();
     return { success: true };
   },
 };

@@ -1,29 +1,37 @@
-import React, { useState } from "react";
-import { UserCog, Plus, Search, Filter, KeyRound, Ban, CheckCircle2, Trash2, Edit2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Search, KeyRound, Ban, CheckCircle2, Trash2, Edit2 } from "lucide-react";
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
+import { fetchUsersList, createUserApi, updateUserApi, deleteUserApi, ApiUser } from "../../../api/adminApi";
 
 const rolesList = ["ADMIN", "REP", "MANAGER", "FINANCE", "OPERATIONS"];
 
-const initialUsers = [
-  { id: 1, name: "Super Admin", email: "admin@dealflow360.com", role: "ADMIN", department: "Executive", status: "active", lastLogin: "10 mins ago", createdDate: "01 Jan 2026" },
-  { id: 2, name: "Alex Kumar", email: "alex.rep@dealflow360.com", role: "REP", department: "Sales", status: "active", lastLogin: "1 hour ago", createdDate: "10 Jan 2026" },
-  { id: 3, name: "Priya Sharma", email: "priya.rep@dealflow360.com", role: "REP", department: "Sales", status: "active", lastLogin: "35 mins ago", createdDate: "12 Jan 2026" },
-  { id: 4, name: "Maria Manager", email: "maria.manager@dealflow360.com", role: "MANAGER", department: "Sales Management", status: "active", lastLogin: "2 hours ago", createdDate: "05 Jan 2026" },
-  { id: 5, name: "Felix Finance", email: "felix.finance@dealflow360.com", role: "FINANCE", department: "Finance & Accounting", status: "active", lastLogin: "Yesterday", createdDate: "08 Jan 2026" },
-  { id: 6, name: "Ops Team Lead", email: "ops@dealflow360.com", role: "OPERATIONS", department: "Supply Chain & Fulfillment", status: "active", lastLogin: "3 hours ago", createdDate: "15 Jan 2026" },
-];
-
 export default function Users() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState<ApiUser[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", role: "REP", department: "Sales" });
   const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [editUser, setEditUser] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", email: "", role: "REP", department: "Sales" });
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  async function loadUsers() {
+    setLoading(true);
+    const data = await fetchUsersList();
+    setUsers(data);
+    setLoading(false);
+  }
 
   const filtered = users.filter((u) => {
-    const mSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const uName = u.name || "";
+    const uEmail = u.email || "";
+    const mSearch = uName.toLowerCase().includes(search.toLowerCase()) || uEmail.toLowerCase().includes(search.toLowerCase());
     const mRole = roleFilter === "all" || u.role === roleFilter;
     return mSearch && mRole;
   });
@@ -33,29 +41,70 @@ export default function Users() {
     setTimeout(() => setToast(""), 2500);
   }
 
-  function handleCreateUser() {
+  async function handleCreateUser() {
     if (!form.name || !form.email) return;
-    const newUser = {
-      ...form,
-      id: Date.now(),
-      status: "active",
-      lastLogin: "Never",
-      createdDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-    };
-    setUsers([newUser, ...users]);
-    setAddOpen(false);
-    showToast(`User ${form.name} created as ${form.role}`);
+    try {
+      await createUserApi({ ...form, is_active: true });
+      await loadUsers();
+      setAddOpen(false);
+      showToast(`User ${form.name} created successfully`);
+      setForm({ name: "", email: "", role: "REP", department: "Sales" });
+    } catch (e) {
+      showToast("Error creating user");
+    }
   }
 
-  function toggleStatus(id: number, currentStatus: string) {
-    const nextStatus = currentStatus === "active" ? "inactive" : "active";
-    setUsers(users.map((u) => (u.id === id ? { ...u, status: nextStatus } : u)));
-    showToast(`User status changed to ${nextStatus}`);
+  async function toggleStatus(id: string, currentStatus: boolean) {
+    try {
+      await updateUserApi(id, { is_active: !currentStatus });
+      await loadUsers();
+      showToast(`User status updated`);
+    } catch (e) {
+      showToast("Error updating status");
+    }
   }
 
-  function changeRole(id: number, newRole: string) {
-    setUsers(users.map((u) => (u.id === id ? { ...u, role: newRole } : u)));
-    showToast(`User role updated to ${newRole}`);
+  function openEditModal(u: any) {
+    setEditUser(u);
+    setEditForm({
+      name: u.name || "",
+      email: u.email || "",
+      role: u.role || "REP",
+      department: u.department || "Sales",
+    });
+  }
+
+  async function handleSaveEditUser() {
+    if (!editUser || !editForm.name || !editForm.email) return;
+    try {
+      await updateUserApi(editUser.id, editForm);
+      await loadUsers();
+      setEditUser(null);
+      showToast("User updated successfully");
+    } catch (e) {
+      showToast("Error updating user");
+    }
+  }
+
+  async function changeRole(id: string, newRole: string) {
+    try {
+      await updateUserApi(id, { role: newRole });
+      await loadUsers();
+      showToast(`User role updated to ${newRole}`);
+    } catch (e) {
+      showToast("Error updating role");
+    }
+  }
+
+  async function handleDeleteUser(id: string) {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await deleteUserApi(id);
+      await loadUsers();
+      showToast("User deleted successfully");
+    } catch (e) {
+      showToast("Error deleting user");
+    }
   }
 
   return (
@@ -107,59 +156,73 @@ export default function Users() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Last Login</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F4F5F7] text-xs">
-              {filtered.map((u) => (
-                <tr key={u.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
-                  <td className="py-3 px-4 font-bold text-[#1F2937]">{u.name}</td>
-                  <td className="py-3 px-4 font-medium text-[#4B5563]">{u.email}</td>
-                  <td className="py-3 px-4">
-                    <select
-                      value={u.role}
-                      onChange={(e) => changeRole(u.id, e.target.value)}
-                      className="bg-[#FAFBFD] border border-[#E5E7EB] rounded-lg px-2 py-0.5 text-xs font-bold text-[#F26C4F] outline-none"
-                    >
-                      {rolesList.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="py-3 px-4 text-[#6B7280]">{u.department}</td>
-                  <td className="py-3 px-4"><StatusPill status={u.status} /></td>
-                  <td className="py-3 px-4 text-[#6B7280]">{u.lastLogin}</td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => showToast(`Password reset link sent to ${u.email}`)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
-                        title="Reset Password"
-                      >
-                        <KeyRound size={15} />
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(u.id, u.status)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-amber-600 hover:bg-amber-50 transition"
-                        title={u.status === "active" ? "Disable User" : "Enable User"}
-                      >
-                        {u.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-8 text-center text-xs text-gray-400">Loading users...</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                  <th className="py-3 px-4">User</th>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">Role</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#F4F5F7] text-xs">
+                {filtered.map((u) => (
+                  <tr key={u.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                    <td className="py-3 px-4 font-bold text-[#1F2937]">{u.name}</td>
+                    <td className="py-3 px-4 font-medium text-[#4B5563]">{u.email}</td>
+                    <td className="py-3 px-4">
+                      <select
+                        value={u.role}
+                        onChange={(e) => changeRole(u.id, e.target.value)}
+                        className="bg-[#FAFBFD] border border-[#E5E7EB] rounded-lg px-2 py-0.5 text-xs font-bold text-[#F26C4F] outline-none"
+                      >
+                        {rolesList.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-3 px-4">
+                      <StatusPill status={u.is_active !== false ? "active" : "inactive"} />
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEditModal(u)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-blue-600 hover:bg-blue-50 transition"
+                          title="Edit User"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          onClick={() => toggleStatus(u.id, u.is_active !== false)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-amber-600 hover:bg-amber-50 transition"
+                          title={u.is_active !== false ? "Disable User" : "Enable User"}
+                        >
+                          {u.is_active !== false ? <Ban size={15} /> : <CheckCircle2 size={15} />}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-600 hover:bg-red-50 transition"
+                          title="Delete User"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-gray-400">No users found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -217,6 +280,63 @@ export default function Users() {
               </button>
               <button onClick={handleCreateUser} className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535]">
                 Create User
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit User Modal */}
+      {editUser && (
+        <Modal title="Edit Internal User Account" onClose={() => setEditUser(null)}>
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Full Name *</label>
+              <input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+              <input
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Assigned Role</label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                >
+                  <option value="ADMIN">Super Admin</option>
+                  <option value="REP">Sales Rep</option>
+                  <option value="MANAGER">Sales Manager</option>
+                  <option value="FINANCE">Finance</option>
+                  <option value="OPERATIONS">Operations</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Department</label>
+                <input
+                  value={editForm.department}
+                  onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setEditUser(null)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
+                Cancel
+              </button>
+              <button onClick={handleSaveEditUser} className="px-4 py-2 bg-[#1F2937] text-white rounded-xl text-xs font-bold hover:bg-black">
+                Save Changes
               </button>
             </div>
           </div>

@@ -19,7 +19,8 @@ type Props = {
 };
 
 export default function StatusPill({ status, label }: Props) {
-  const key = status.toLowerCase() as Variant;
+  const safeStatus = status || "active";
+  const key = safeStatus.toLowerCase() as Variant;
   const cls = variants[key] ?? "bg-gray-100 text-gray-500";
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize ${cls}`}>

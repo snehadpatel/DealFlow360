@@ -1,4 +1,4 @@
-import apiClient from "./client";
+import { mockDb, getDb } from "../lib/mockDatabase";
 
 export interface ApiCustomer {
   id: string;
@@ -26,15 +26,8 @@ export interface ApiProduct {
   tax_rate: number;
   unit: string;
   description?: string;
+  stock?: number;
   is_archived?: boolean;
-}
-
-export interface ApiWarehouse {
-  id: string;
-  name: string;
-  location: string;
-  manager_id?: string;
-  is_active: boolean;
 }
 
 export interface ApiUser {
@@ -45,132 +38,68 @@ export interface ApiUser {
   is_active?: boolean;
 }
 
-export interface ApiSubscriptionPlan {
-  id: string;
-  name: string;
-  price_monthly: number;
-  price_annual: number;
-  max_users: number;
-  features_json?: string;
-  is_active: boolean;
-}
-
-export interface ApiAuditLog {
-  id: string;
-  user_id?: string;
-  action: string;
-  entity: string;
-  entity_id: string;
-  details_json?: string;
-  ip_address?: string;
-  created_at: string;
-}
-
-// ─── ADMIN API FUNCTIONS ───────────────────────────────────────────────────
-
-// NOTE: the backend serves these routers at root prefixes (e.g. /customers),
-// with NO `/v1` prefix and NO trailing slash on collection routes. Paths below
-// match that exactly so calls hit the real API instead of 404-ing to fallback.
-
 export async function fetchDashboardStats() {
-  try {
-    return await apiClient.get("/dashboard/stats");
-  } catch (e) {
-    console.warn("Falling back to seeded dashboard metrics", e);
-    return null;
-  }
+  const users = await mockDb.getAll('users');
+  const customers = await mockDb.getAll('customers');
+  const products = await mockDb.getAll('products');
+  return {
+    users_count: users.length,
+    customers_count: customers.length,
+    products_count: products.length,
+  };
 }
 
 export async function fetchCustomersList(): Promise<ApiCustomer[]> {
-  try {
-    return await apiClient.get("/customers");
-  } catch (e) {
-    console.warn("Using local customer state fallback", e);
-    return [];
-  }
+  return (await mockDb.getAll('customers')) as ApiCustomer[];
 }
 
 export async function createCustomerApi(data: Partial<ApiCustomer>): Promise<ApiCustomer> {
-  return await apiClient.post("/customers", data);
+  return (await mockDb.create('customers', data)) as ApiCustomer;
 }
 
 export async function updateCustomerApi(id: string, data: Partial<ApiCustomer>): Promise<ApiCustomer> {
-  return await apiClient.put(`/customers/${id}`, data);
+  return (await mockDb.update('customers', id, data)) as ApiCustomer;
 }
 
 export async function deleteCustomerApi(id: string): Promise<void> {
-  return await apiClient.delete(`/customers/${id}`);
+  await mockDb.remove('customers', id);
 }
 
 export async function fetchProductsList(): Promise<ApiProduct[]> {
-  try {
-    return await apiClient.get("/products");
-  } catch (e) {
-    console.warn("Using local product state fallback", e);
-    return [];
-  }
+  return (await mockDb.getAll('products')) as ApiProduct[];
 }
 
 export async function createProductApi(data: Partial<ApiProduct>): Promise<ApiProduct> {
-  return await apiClient.post("/products", data);
+  return (await mockDb.create('products', data)) as ApiProduct;
 }
 
 export async function updateProductApi(id: string, data: Partial<ApiProduct>): Promise<ApiProduct> {
-  return await apiClient.put(`/products/${id}`, data);
+  return (await mockDb.update('products', id, data)) as ApiProduct;
 }
 
 export async function deleteProductApi(id: string): Promise<void> {
-  return await apiClient.delete(`/products/${id}`);
-}
-
-export async function fetchWarehousesList(): Promise<ApiWarehouse[]> {
-  try {
-    return await apiClient.get("/warehouses");
-  } catch (e) {
-    console.warn("Using local warehouse state fallback", e);
-    return [];
-  }
-}
-
-export async function createWarehouseApi(data: Partial<ApiWarehouse>): Promise<ApiWarehouse> {
-  return await apiClient.post("/warehouses", data);
+  await mockDb.remove('products', id);
 }
 
 export async function fetchUsersList(): Promise<ApiUser[]> {
-  try {
-    return await apiClient.get("/users");
-  } catch (e) {
-    console.warn("Using local users state fallback", e);
-    return [];
-  }
+  return (await mockDb.getAll('users')) as ApiUser[];
 }
 
 export async function createUserApi(data: Partial<ApiUser>): Promise<ApiUser> {
-  return await apiClient.post("/users", data);
+  return (await mockDb.create('users', data)) as ApiUser;
 }
 
-export async function fetchSubscriptionPlansList(): Promise<ApiSubscriptionPlan[]> {
-  try {
-    return await apiClient.get("/subscriptions/plans");
-  } catch (e) {
-    console.warn("Using local subscription plans fallback", e);
-    return [];
-  }
+export async function updateUserApi(id: string, data: Partial<ApiUser>): Promise<ApiUser> {
+  return (await mockDb.update('users', id, data)) as ApiUser;
 }
 
-export async function fetchAuditLogsList(): Promise<ApiAuditLog[]> {
-  try {
-    return await apiClient.get("/audit-logs");
-  } catch (e) {
-    console.warn("Using local audit log state fallback", e);
-    return [];
-  }
+export async function deleteUserApi(id: string): Promise<void> {
+  await mockDb.remove('users', id);
 }
 
-export async function fetchNotificationsList() {
-  try {
-    return await apiClient.get("/notifications");
-  } catch (e) {
-    return [];
-  }
-}
+// Stubs for remaining views
+export async function fetchWarehousesList(): Promise<any[]> { return []; }
+export async function createWarehouseApi(data: any): Promise<any> { return data; }
+export async function fetchSubscriptionPlansList(): Promise<any[]> { return []; }
+export async function fetchAuditLogsList(): Promise<any[]> { return []; }
+export async function fetchNotificationsList() { return []; }

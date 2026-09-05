@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search, Filter, Download, Upload, Plus, Eye, Edit2, Ban, CheckCircle2,
   Trash2, ChevronLeft, ChevronRight, Package, Tag, AlertTriangle, Layers
@@ -6,108 +6,16 @@ import {
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import { fetchProductsList, createProductApi, updateProductApi, deleteProductApi, ApiProduct } from "../../../api/adminApi";
 
 const categories = ["Hardware", "Subscription", "Services", "Software"];
-
-const initialProducts = [
-  {
-    id: 1,
-    name: "Enterprise Laptop Pro X1",
-    sku: "LAP-PRO-X1",
-    category: "Hardware",
-    price: 85000,
-    tax: 18,
-    stock: 3,
-    status: "active",
-    createdDate: "10 Jan 2026",
-    description: "High-performance enterprise laptop with 16GB RAM, 512GB SSD",
-    unit: "unit",
-    variants: "16GB/512GB, 32GB/1TB",
-    isSubscriptionEligible: false,
-  },
-  {
-    id: 2,
-    name: "Cloud Management Suite",
-    sku: "SaaS-CMS-ENT",
-    category: "Subscription",
-    price: 12000,
-    tax: 18,
-    stock: 999,
-    status: "active",
-    createdDate: "15 Jan 2026",
-    description: "Comprehensive cloud infrastructure management platform",
-    unit: "license",
-    variants: "Monthly, Annual",
-    isSubscriptionEligible: true,
-  },
-  {
-    id: 3,
-    name: "Network Security Firewall XG-500",
-    sku: "NET-FW-XG500",
-    category: "Hardware",
-    price: 150000,
-    tax: 18,
-    stock: 12,
-    status: "active",
-    createdDate: "01 Feb 2026",
-    description: "Enterprise-grade next-generation firewall with high throughput",
-    unit: "unit",
-    variants: "Standard, Dual PSU",
-    isSubscriptionEligible: false,
-  },
-  {
-    id: 4,
-    name: "On-Site Deployment Service",
-    sku: "SRV-DEPLOY-01",
-    category: "Services",
-    price: 50000,
-    tax: 18,
-    stock: 50,
-    status: "active",
-    createdDate: "10 Feb 2026",
-    description: "Professional on-site installation and configuration service",
-    unit: "project",
-    variants: "1-day, 3-day SLA",
-    isSubscriptionEligible: false,
-  },
-  {
-    id: 5,
-    name: "24/7 Premium Support Plan",
-    sku: "SUP-PREMIUM-YR",
-    category: "Subscription",
-    price: 36000,
-    tax: 18,
-    stock: 999,
-    status: "active",
-    createdDate: "01 Mar 2026",
-    description: "24/7 dedicated support with 1-hour SLA response guarantee",
-    unit: "year",
-    variants: "Standard, Priority",
-    isSubscriptionEligible: true,
-  },
-  {
-    id: 6,
-    name: "Legacy Workstation Tower",
-    sku: "WS-TOWER-OLD",
-    category: "Hardware",
-    price: 45000,
-    tax: 18,
-    stock: 0,
-    status: "inactive",
-    createdDate: "12 Nov 2025",
-    description: "Discontinued workstation tower model",
-    unit: "unit",
-    variants: "Base",
-    isSubscriptionEligible: false,
-  },
-];
 
 const emptyForm = {
   name: "",
   sku: "",
   category: "Hardware",
   price: 0,
-  tax: 18,
+  tax_rate: 18,
   stock: 10,
   unit: "unit",
   description: "",
@@ -116,23 +24,40 @@ const emptyForm = {
 };
 
 export default function Products() {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [detailProduct, setDetailProduct] = useState<any | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [editProduct, setEditProduct] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState(emptyForm);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  async function loadProducts() {
+    setLoading(true);
+    const data = await fetchProductsList();
+    setProducts(data);
+    setLoading(false);
+  }
 
   const perPage = 5;
   const filtered = products.filter((p) => {
+    const pName = p.name || "";
+    const pSku = p.sku || "";
+    const pCat = p.category || "";
     const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = categoryFilter === "all" || p.category.toLowerCase() === categoryFilter.toLowerCase();
+      pName.toLowerCase().includes(search.toLowerCase()) ||
+      pSku.toLowerCase().includes(search.toLowerCase()) ||
+      pCat.toLowerCase().includes(search.toLowerCase());
+    const matchesCat = categoryFilter === "all" || pCat.toLowerCase() === categoryFilter.toLowerCase();
     return matchesSearch && matchesCat;
   });
 
@@ -145,37 +70,79 @@ export default function Products() {
     setTimeout(() => setToast(""), 2500);
   }
 
-  function handleCreateProduct() {
+  async function handleCreateProduct() {
     if (!form.name || !form.sku) return;
-    const newProd = {
-      ...form,
-      id: Date.now(),
-      status: "active",
-      createdDate: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-    };
-    setProducts([newProd, ...products]);
-    setAddOpen(false);
-    setForm(emptyForm);
-    showToast("Product created successfully");
+    try {
+      await createProductApi({
+        ...form,
+        cost: form.price * 0.7,
+        discount_ceiling: 10,
+        is_archived: false,
+      });
+      await loadProducts();
+      setAddOpen(false);
+      setForm(emptyForm);
+      showToast("Product created successfully");
+    } catch (e) {
+      showToast("Error creating product");
+    }
   }
 
-  function toggleProductStatus(id: number, currentStatus: string) {
-    const nextStatus = currentStatus === "active" ? "inactive" : "active";
-    setProducts(products.map((p) => (p.id === id ? { ...p, status: nextStatus } : p)));
-    showToast(`Product set to ${nextStatus}`);
+  async function toggleProductStatus(id: string, currentStatus: boolean) {
+    try {
+      await updateProductApi(id, { is_archived: !currentStatus });
+      await loadProducts();
+      showToast(`Product status updated`);
+    } catch (e) {
+      showToast("Error updating product");
+    }
   }
 
-  function handleDeleteProduct() {
-    setProducts(products.filter((p) => p.id !== deleteId));
-    setDeleteId(null);
-    showToast("Product deleted from catalog");
+  function openEditModal(p: any) {
+    setEditProduct(p);
+    setEditForm({
+      name: p.name || "",
+      sku: p.sku || "",
+      category: p.category || "Hardware",
+      price: p.price || 0,
+      tax_rate: p.tax_rate || 18,
+      stock: p.stock || 0,
+      unit: p.unit || "unit",
+      description: p.description || "",
+      variants: p.variants || "Standard",
+      isSubscriptionEligible: p.isSubscriptionEligible || false,
+    });
+  }
+
+  async function handleSaveEditProduct() {
+    if (!editProduct || !editForm.name || !editForm.sku) return;
+    try {
+      await updateProductApi(editProduct.id, editForm);
+      await loadProducts();
+      setEditProduct(null);
+      showToast("Product updated successfully");
+    } catch (e) {
+      showToast("Error updating product");
+    }
+  }
+
+  async function handleDeleteProduct() {
+    if (!deleteId) return;
+    try {
+      await deleteProductApi(deleteId);
+      await loadProducts();
+      setDeleteId(null);
+      showToast("Product deleted from catalog");
+    } catch (e) {
+      showToast("Error deleting product");
+    }
   }
 
   function exportCSV() {
     const csvContent =
       "data:text/csv;charset=utf-8," +
       ["Product Name,SKU,Category,Price,Tax,Stock,Status"]
-        .concat(products.map((p) => `${p.name},${p.sku},${p.category},${p.price},${p.tax}%,${p.stock},${p.status}`))
+        .concat(products.map((p) => `${p.name},${p.sku},${p.category},${p.price},${p.tax_rate}%,${p.stock || 0},${p.is_archived ? "inactive" : "active"}`))
         .join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -232,7 +199,6 @@ export default function Products() {
             <div className="p-2 rounded-xl bg-orange-50 text-[#F26C4F]"><Package size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{products.length}</p>
-          <p className="text-[10px] text-emerald-600 font-bold mt-0.5">+5 SKUs added this quarter</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -241,9 +207,8 @@ export default function Products() {
             <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><Tag size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">
-            {products.filter((p) => p.status === "active").length}
+            {products.filter((p) => !p.is_archived).length}
           </p>
-          <p className="text-[10px] text-slate-500 font-medium mt-0.5">Available for quotes</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -252,9 +217,8 @@ export default function Products() {
             <div className="p-2 rounded-xl bg-amber-50 text-amber-600"><AlertTriangle size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">
-            {products.filter((p) => p.stock <= 3).length}
+            {products.filter((p) => (p.stock || 0) <= 3).length}
           </p>
-          <p className="text-[10px] text-amber-600 font-bold mt-0.5">Stock replenishment alert</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -263,7 +227,6 @@ export default function Products() {
             <div className="p-2 rounded-xl bg-blue-50 text-blue-600"><Layers size={16} /></div>
           </div>
           <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{categories.length}</p>
-          <p className="text-[10px] text-blue-600 font-bold mt-0.5">Hardware, SaaS, Services</p>
         </div>
       </div>
 
@@ -295,75 +258,89 @@ export default function Products() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                <th className="py-3 px-4">Product</th>
-                <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Price (₹)</th>
-                <th className="py-3 px-4">Tax %</th>
-                <th className="py-3 px-4 text-center">Stock</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Created Date</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F4F5F7] text-xs">
-              {rows.map((p) => (
-                <tr key={p.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
-                  <td className="py-3 px-4">
-                    <p className="font-bold text-[#1F2937]">{p.name}</p>
-                    <p className="text-[11px] text-[#6B7280] line-clamp-1">{p.description}</p>
-                  </td>
-                  <td className="py-3 px-4 font-mono font-bold text-[#374151]">{p.sku}</td>
-                  <td className="py-3 px-4 font-medium text-[#4B5563]">{p.category}</td>
-                  <td className="py-3 px-4 font-bold text-[#1F2937]">₹{p.price.toLocaleString("en-IN")}</td>
-                  <td className="py-3 px-4 font-semibold text-[#6B7280]">{p.tax}%</td>
-                  <td className="py-3 px-4 text-center">
-                    <span
-                      className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                        p.stock <= 3
-                          ? "bg-red-100 text-red-700"
-                          : p.stock > 100
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-emerald-50 text-emerald-700"
-                      }`}
-                    >
-                      {p.stock > 100 ? "Unlimited" : p.stock}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4"><StatusPill status={p.status} /></td>
-                  <td className="py-3 px-4 text-[#6B7280]">{p.createdDate}</td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setDetailProduct(p)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
-                        title="View Details"
-                      >
-                        <Eye size={15} />
-                      </button>
-                      <button
-                        onClick={() => toggleProductStatus(p.id, p.status)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-amber-600 hover:bg-amber-50 transition"
-                        title={p.status === "active" ? "Deactivate" : "Activate"}
-                      >
-                        {p.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
-                      </button>
-                      <button
-                        onClick={() => setDeleteId(p.id)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-600 hover:bg-red-50 transition"
-                        title="Delete SKU"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-8 text-center text-xs text-gray-400">Loading products...</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                  <th className="py-3 px-4">Product</th>
+                  <th className="py-3 px-4">SKU</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Price (₹)</th>
+                  <th className="py-3 px-4">Tax %</th>
+                  <th className="py-3 px-4 text-center">Stock</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#F4F5F7] text-xs">
+                {rows.map((p) => (
+                  <tr key={p.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                    <td className="py-3 px-4">
+                      <p className="font-bold text-[#1F2937]">{p.name}</p>
+                      <p className="text-[11px] text-[#6B7280] line-clamp-1">{p.description}</p>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold text-[#374151]">{p.sku}</td>
+                    <td className="py-3 px-4 font-medium text-[#4B5563]">{p.category}</td>
+                    <td className="py-3 px-4 font-bold text-[#1F2937]">₹{p.price?.toLocaleString("en-IN")}</td>
+                    <td className="py-3 px-4 font-semibold text-[#6B7280]">{p.tax_rate}%</td>
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
+                          (p.stock || 0) <= 3
+                            ? "bg-red-100 text-red-700"
+                            : (p.stock || 0) > 100
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {(p.stock || 0) > 100 ? "Unlimited" : (p.stock || 0)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4"><StatusPill status={p.is_archived ? "inactive" : "active"} /></td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setDetailProduct(p)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#F26C4F] hover:bg-orange-50 transition"
+                          title="View Details"
+                        >
+                          <Eye size={15} />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-blue-600 hover:bg-blue-50 transition"
+                          title="Edit Product"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          onClick={() => toggleProductStatus(p.id, !!p.is_archived)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-amber-600 hover:bg-amber-50 transition"
+                          title={!p.is_archived ? "Deactivate" : "Activate"}
+                        >
+                          {!p.is_archived ? <Ban size={15} /> : <CheckCircle2 size={15} />}
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(p.id)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-600 hover:bg-red-50 transition"
+                          title="Delete SKU"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-gray-400">No products found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination */}
@@ -438,8 +415,8 @@ export default function Products() {
                 <label className="block font-bold text-[#374151] mb-1">GST Tax %</label>
                 <input
                   type="number"
-                  value={form.tax}
-                  onChange={(e) => setForm({ ...form, tax: Number(e.target.value) })}
+                  value={form.tax_rate}
+                  onChange={(e) => setForm({ ...form, tax_rate: Number(e.target.value) })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
@@ -477,19 +454,6 @@ export default function Products() {
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="checkbox"
-                id="subEligible"
-                checked={form.isSubscriptionEligible}
-                onChange={(e) => setForm({ ...form, isSubscriptionEligible: e.target.checked })}
-                className="rounded text-[#F26C4F] focus:ring-[#F26C4F]"
-              />
-              <label htmlFor="subEligible" className="font-semibold text-[#374151]">
-                Eligible for Subscription Recurring Billing
-              </label>
-            </div>
-
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setAddOpen(false)}
@@ -508,6 +472,108 @@ export default function Products() {
         </Modal>
       )}
 
+      {/* Edit Product Modal */}
+      {editProduct && (
+        <Modal title="Edit Product SKU" onClose={() => setEditProduct(null)}>
+          <div className="space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Product Name *</label>
+                <input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">SKU Code *</label>
+                <input
+                  value={editForm.sku}
+                  onChange={(e) => setEditForm({ ...editForm, sku: e.target.value.toUpperCase() })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F] font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Category</label>
+                <select
+                  value={editForm.category}
+                  onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                >
+                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Base Price (₹) *</label>
+                <input
+                  type="number"
+                  value={editForm.price}
+                  onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">GST Tax %</label>
+                <input
+                  type="number"
+                  value={editForm.tax_rate}
+                  onChange={(e) => setEditForm({ ...editForm, tax_rate: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Stock Qty</label>
+                <input
+                  type="number"
+                  value={editForm.stock}
+                  onChange={(e) => setEditForm({ ...editForm, stock: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Unit Type</label>
+                <input
+                  value={editForm.unit}
+                  onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Description</label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                rows={2}
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditProduct(null)}
+                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEditProduct}
+                className="px-4 py-2 bg-[#1F2937] text-white rounded-xl text-xs font-bold hover:bg-black"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Product Detail Modal */}
       {detailProduct && (
         <Modal title={`Product Detail — ${detailProduct.name}`} onClose={() => setDetailProduct(null)}>
@@ -515,18 +581,13 @@ export default function Products() {
             <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#E5E7EB] grid grid-cols-2 gap-3">
               <div><span className="text-[#6B7280]">SKU:</span> <strong className="font-mono text-[#1F2937]">{detailProduct.sku}</strong></div>
               <div><span className="text-[#6B7280]">Category:</span> <strong className="text-[#1F2937]">{detailProduct.category}</strong></div>
-              <div><span className="text-[#6B7280]">Base Price:</span> <strong className="text-[#1F2937]">₹{detailProduct.price.toLocaleString("en-IN")}</strong></div>
-              <div><span className="text-[#6B7280]">Tax Rate:</span> <strong className="text-[#1F2937]">{detailProduct.tax}% GST</strong></div>
+              <div><span className="text-[#6B7280]">Base Price:</span> <strong className="text-[#1F2937]">₹{detailProduct.price?.toLocaleString("en-IN")}</strong></div>
+              <div><span className="text-[#6B7280]">Tax Rate:</span> <strong className="text-[#1F2937]">{detailProduct.tax_rate}% GST</strong></div>
               <div><span className="text-[#6B7280]">Available Stock:</span> <strong className="text-[#1F2937]">{detailProduct.stock} {detailProduct.unit}s</strong></div>
-              <div><span className="text-[#6B7280]">Subscription:</span> <strong className="text-[#1F2937]">{detailProduct.isSubscriptionEligible ? "Eligible" : "One-time"}</strong></div>
             </div>
             <div>
               <p className="font-bold text-[#1F2937] mb-1">Description & Attributes</p>
               <p className="text-[#4B5563] bg-white p-2.5 rounded-xl border border-[#E5E7EB]">{detailProduct.description}</p>
-            </div>
-            <div>
-              <p className="font-bold text-[#1F2937] mb-1">Variants & Configuration Options</p>
-              <p className="text-[#4B5563] bg-white p-2 rounded-xl border border-[#E5E7EB] font-mono">{detailProduct.variants}</p>
             </div>
             <div className="flex justify-end pt-2">
               <button onClick={() => setDetailProduct(null)} className="px-4 py-1.5 bg-[#1F2937] text-white text-xs font-bold rounded-xl">
@@ -540,7 +601,7 @@ export default function Products() {
       {deleteId && (
         <ConfirmDialog
           title="Delete Product SKU"
-          message="Are you sure you want to delete this product? Active quotations referencing this product will retain past pricing snapshots."
+          message="Are you sure you want to delete this product?"
           onConfirm={handleDeleteProduct}
           onCancel={() => setDeleteId(null)}
         />
