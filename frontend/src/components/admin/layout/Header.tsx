@@ -58,7 +58,7 @@ export default function Header({ activeView, onMenuToggle, onExitAdmin }: Props)
 
       <div className="flex-1 min-w-0">
         <p className="text-[11px] text-[#6B7280]">
-          Revalo / <span className="text-[#F26C4F]">{page.breadcrumb}</span>
+          DealFlow360 / <span className="text-[#F26C4F]">{page.breadcrumb}</span>
         </p>
         <h1 className="text-[#1F2937] font-semibold text-[15px] leading-tight truncate">{page.title}</h1>
       </div>

@@ -90,10 +90,12 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
       >
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#F26C4F] flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
+            <div className="h-8 w-8 rounded-xl bg-[#FEECE8] border border-[#F26C4F]/30 flex items-center justify-center font-bold text-[#F26C4F] text-xs">
+              DF
             </div>
-            <span className="text-[#1F2937] font-semibold text-base tracking-tight">Revalo</span>
+            <span className="text-[#1F2937] font-bold text-base tracking-tight">
+              DealFlow<span className="text-[#F26C4F]">360</span>
+            </span>
           </div>
           <button onClick={onClose} className="lg:hidden text-[#6B7280] hover:text-[#1F2937]">
             <X size={18} />
@@ -139,7 +141,7 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
         </nav>
 
         <div className="px-5 py-4 border-t border-[#E5E7EB]">
-          <p className="text-[11px] text-[#9CA3AF]">Revalo Admin v2.4.1</p>
+          <p className="text-[11px] text-[#9CA3AF]">DealFlow360 Admin</p>
         </div>
       </aside>
     </>
