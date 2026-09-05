@@ -31,11 +31,21 @@ from app.models.notification import Notification
 from app.core.security import get_password_hash
 
 
-def seed():
+def seed(force: bool = False):
     from sqlmodel import SQLModel
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
-        print("🌱 Seeding DealFlow360 database...")
+        existing_users = session.exec(select(User)).all()
+        if existing_users and not force:
+            print("ℹ️ Database already contains data. Skipping seed to prevent duplicates.")
+            return
+
+        if force and existing_users:
+            print("🔄 Resetting database tables for fresh seed...")
+            SQLModel.metadata.drop_all(engine)
+            SQLModel.metadata.create_all(engine)
+
+        print("🌱 Seeding DealFlow360 database with unique demo records...")
         existing_users = session.exec(select(User)).all()
         user_by_email = {u.email: u for u in existing_users}
 
@@ -396,4 +406,5 @@ def seed():
 
 
 if __name__ == "__main__":
-    seed()
+    force_reset = "--force" in sys.argv or "--reset" in sys.argv
+    seed(force=force_reset)

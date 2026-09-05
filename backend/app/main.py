@@ -1,6 +1,8 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.db import init_db
 from app.routers import (
     auth,
     quotes,
@@ -37,10 +39,24 @@ from app.routers.finance import (
     credit_notes_router,
 )
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Ensure tables exist and database is seeded idempotently once
+    init_db()
+    try:
+        from seed import seed
+        seed(force=False)
+    except Exception as e:
+        print(f"⚠️ Auto-seed check notice: {e}")
+    yield
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Self-governing B2B sales operations platform API",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
