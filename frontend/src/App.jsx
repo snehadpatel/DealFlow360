@@ -98,21 +98,20 @@ export default function App() {
           </span>
         </div>
 
-        {/* Revalo Nav Pills */}
-        <nav className="flex items-center space-x-1 bg-[#F4F5F7] p-1 rounded-full border border-slate-200/80 overflow-x-auto max-w-2xl">
+        {/* Revalo Premium Nav Pills */}
+        <nav className="premium-navbar-container overflow-x-auto max-w-2xl bg-[#F4F5F7] border border-slate-200/80 p-1">
           {allowedTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-150 whitespace-nowrap ${
-                  isActive
-                    ? "bg-[#F26C4F] text-white shadow-xs"
-                    : "text-[#6B7280] hover:text-[#1F2937] hover:bg-white/60"
+                className={`nav-item-wave px-4 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
+                  isActive ? "active" : "text-[#6B7280]"
                 }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                <i></i>
               </button>
             );
           })}
