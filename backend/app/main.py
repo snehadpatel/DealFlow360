@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
         from seed import seed
         seed(force=False)
     except Exception as e:
-        print(f"⚠️ Auto-seed check notice: {e}")
+        print(f"Auto-seed check notice: {e}")
     yield
 
 

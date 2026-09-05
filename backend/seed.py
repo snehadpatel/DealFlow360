@@ -1,4 +1,4 @@
-"""
+﻿"""
 DealFlow360 Enterprise Database Seeder
 Populates EVERY database table with 200+ enterprise records:
 - user: 200 records
@@ -64,11 +64,11 @@ def seed(force: bool = False):
     init_db()
 
     with Session(engine) as session:
-        print("🔄 Resetting database tables for 200+ records in EVERY table...")
+        print(" Resetting database tables for 200+ records in EVERY table...")
         SQLModel.metadata.drop_all(engine)
         SQLModel.metadata.create_all(engine)
 
-        print("🌱 Seeding 200+ records across all 27 database tables...")
+        print(" Seeding 200+ records across all 27 database tables...")
         random.seed(42)
         now = datetime.now(timezone.utc)
 
@@ -580,7 +580,7 @@ def seed(force: bool = False):
                 ))
 
         session.commit()
-        print("🎉 Successfully seeded 200+ records in EVERY table across the entire database!")
+        print(" Successfully seeded 200+ records in EVERY table across the entire database!")
 
 
 if __name__ == "__main__":
