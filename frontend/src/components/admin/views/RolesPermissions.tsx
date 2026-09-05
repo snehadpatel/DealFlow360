@@ -98,7 +98,7 @@ export default function RolesPermissions() {
                       <td key={r.id} className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => togglePermission(permKey, r.id)}
-                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-all ${
+                          className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-colors ${
                             isAllowed
                               ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
                               : "bg-[#F4F5F7] text-[#9CA3AF] hover:bg-gray-200"

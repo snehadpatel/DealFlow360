@@ -93,16 +93,31 @@ def download_invoice_pdf(
     from app.models.product import Product
     from sqlmodel import select
 
-    invoice = session.get(Invoice, invoice_id)
+    # SQLAlchemy's UUID column type calls .hex on the lookup value, which
+    # crashes when given a plain str. Parse to uuid.UUID first.
+    import uuid as _uuid
+    try:
+        invoice_uuid = _uuid.UUID(invoice_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid invoice ID format")
+
+    invoice = session.get(Invoice, invoice_uuid)
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
-        
-    customer = session.get(Customer, invoice.customer_id)
+
+    customer_uuid = _uuid.UUID(str(invoice.customer_id))
+    customer = session.get(Customer, customer_uuid)
     customer_name = customer.name if customer else "Corporate Customer"
     customer_address = customer.address_billing or "Address Not Provided"
     tax_id = customer.tax_id or "Not Provided"
 
-    order = session.get(Order, invoice.order_id) if invoice.order_id else None
+    order = None
+    if invoice.order_id:
+        try:
+            order_uuid = _uuid.UUID(str(invoice.order_id))
+            order = session.get(Order, order_uuid)
+        except (ValueError, Exception):
+            order = None
     
     lines_html = ""
     subtotal = invoice.amount
