@@ -46,6 +46,7 @@ export default function Login({ onNavigateToSignup }) {
     { role: "MANAGER", title: "Manager", badge: "Approver" },
     { role: "FINANCE", title: "Finance/Ops", badge: "Fulfillment" },
     { role: "CUSTOMER", title: "Customer", badge: "Portal" },
+    { role: "ADMIN", title: "Admin", badge: "Dashboard" },
   ];
 
   const handlePersonaClick = (role) => {
@@ -89,7 +90,7 @@ export default function Login({ onNavigateToSignup }) {
                     isSelected
                       ? "bg-[#FEECE8] border-[#F26C4F] text-[#F26C4F] font-semibold shadow-xs"
                       : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
+                  } ${acc.role === "ADMIN" ? "col-span-2" : ""}`}
                 >
                   <div className="font-semibold text-xs leading-tight">{acc.title}</div>
                   <div className="text-[10px] text-slate-400 font-normal">{acc.badge}</div>

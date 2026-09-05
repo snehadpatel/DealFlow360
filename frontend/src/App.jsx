@@ -9,11 +9,24 @@ import WarehouseSplitScreen from "./pages/WarehouseSplitScreen";
 import SubscriptionBillingScreen from "./pages/SubscriptionBillingScreen";
 import CustomerPortal from "./pages/CustomerPortal";
 import DealHealthDashboard from "./pages/DealHealthDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
   const [activeTab, setActiveTab] = useState("quotation");
+
+  React.useEffect(() => {
+    if (user?.role === 'CUSTOMER') {
+      setActiveTab('portal');
+    } else if (user?.role === 'MANAGER' || user?.role === 'FINANCE') {
+      setActiveTab('approval');
+    } else if (user?.role === 'ADMIN') {
+      setActiveTab('admin');
+    } else {
+      setActiveTab('quotation');
+    }
+  }, [user]);
 
   // Google OAuth client ID (fallback mock client id if not configured in env)
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1083921839128-mockclientid.apps.googleusercontent.com";
@@ -40,6 +53,10 @@ export default function App() {
   ];
 
   const allowedTabs = tabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
+
+  if (activeTab === "admin") {
+    return <AdminDashboard onExitAdmin={() => setActiveTab("quotation")} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans">
@@ -81,6 +98,14 @@ export default function App() {
               {user?.role || "REP"}
             </span>
           </div>
+          {user?.role === "ADMIN" && (
+            <button
+              onClick={() => setActiveTab("admin")}
+              className="text-xs text-white bg-[#F26C4F] hover:bg-[#E05535] px-3 py-1 rounded-full font-medium transition"
+            >
+              Admin Dashboard
+            </button>
+          )}
           <button
             onClick={logout}
             className="text-xs text-[#EF4444] hover:text-[#DC2626] px-3 py-1 rounded-full border border-[#EF4444]/30 hover:bg-[#FEE2E2]/50 transition font-medium"
