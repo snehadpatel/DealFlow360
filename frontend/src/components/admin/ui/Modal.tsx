@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { ReactNode } from "react";
 
 type Props = {
-  open: boolean;
+  open?: boolean;
   onClose: () => void;
   title: string;
   description?: string;
@@ -12,7 +12,7 @@ type Props = {
   size?: "sm" | "md" | "lg";
 };
 
-export default function Modal({ open, onClose, title, description, children, onSave, saveLabel = "Save", size = "md" }: Props) {
+export default function Modal({ open = true, onClose, title, description, children, onSave, saveLabel = "Save", size = "md" }: Props) {
   if (!open) return null;
   const widths = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
   return (

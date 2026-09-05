@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 
 type Props = {
-  open: boolean;
+  open?: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
@@ -10,7 +10,7 @@ type Props = {
   onCancel: () => void;
 };
 
-export default function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", danger = true, onConfirm, onCancel }: Props) {
+export default function ConfirmDialog({ open = true, title, message, confirmLabel = "Confirm", danger = true, onConfirm, onCancel }: Props) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
