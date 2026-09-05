@@ -389,7 +389,7 @@ def seed(force: bool = False):
                 discount_total=round(discount_total, 2), tax_total=round(tax_total, 2),
                 total=round(total, 2), margin=round(margin, 2), margin_percent=round(margin_pct, 1),
                 currency="INR", blended_risk=blended_risk, risk_level=risk_level, version=1,
-                created_at=created_dt, expires_at=created_dt + timedelta(days=30)
+                created_at=created_dt, expires_at=now + timedelta(days=random.randint(30, 90))
             )
             quotations.append((q, lines_to_add))
             session.add(q)
@@ -409,13 +409,26 @@ def seed(force: bool = False):
         session.flush()
 
         # ─── 9. APPROVAL REQUESTS (200 Approval Requests) ─────────────────────
+        pending_quotes = [q for q, _ in quotations if q.status == QuoteStatus.PENDING_APPROVAL]
+        other_quotes = [q for q, _ in quotations if q.status != QuoteStatus.PENDING_APPROVAL]
+
         for i in range(200):
-            q, _ = quotations[i % len(quotations)]
-            appr_status = ApprovalStatus.PENDING if i % 3 == 0 else (ApprovalStatus.APPROVED if i % 3 == 1 else ApprovalStatus.REJECTED)
+            if i < len(pending_quotes):
+                q = pending_quotes[i]
+                appr_status = ApprovalStatus.PENDING
+                app_role = Role.MANAGER.value
+                app_lvl = 1
+                approver_user = manager
+            else:
+                q = other_quotes[i % len(other_quotes)]
+                appr_status = ApprovalStatus.APPROVED if i % 2 == 0 else ApprovalStatus.REJECTED
+                app_role = Role.MANAGER.value if i % 2 == 0 else Role.FINANCE.value
+                app_lvl = 1 if i % 2 == 0 else 2
+                approver_user = manager if i % 2 == 0 else finance
+
             session.add(ApprovalRequest(
-                id=uuid4(), quotation_id=q.id, approver_id=manager.id if i % 2 == 0 else finance.id,
-                approver_role=Role.MANAGER.value if i % 2 == 0 else Role.FINANCE.value,
-                approval_level=1 if i % 2 == 0 else 2,
+                id=uuid4(), quotation_id=q.id, approver_id=approver_user.id,
+                approver_role=app_role, approval_level=app_lvl,
                 status=appr_status, quote_version=q.version,
                 comments=f"Governance sign-off for deal #{str(q.id)[:8]} with margin {q.margin_percent}%"
             ))
