@@ -4,6 +4,7 @@ import {
   getInvoiceById,
   downloadInvoicePdf,
   sendInvoice,
+  recordInvoicePayment,
 } from '../api/invoiceApi';
 import InvoiceHeader from '../components/invoice/InvoiceHeader';
 import CustomerInformation from '../components/invoice/CustomerInformation';
@@ -62,6 +63,21 @@ export default function InvoiceDetail({
       showToast(`Invoice ${invoiceId} downloaded successfully.`);
     } catch {
       showToast(`Failed to download invoice ${invoiceId}`, 'error');
+    }
+  };
+
+  const handleRecordPayment = async () => {
+    const amountToPay = invoice.totals?.outstanding > 0 ? invoice.totals.outstanding : invoice.totals?.grandTotal || 1000;
+    try {
+      await recordInvoicePayment(invoiceId, {
+        amount: amountToPay,
+        method: 'ONLINE',
+        notes: 'Full settlement recorded via operations platform',
+      });
+      showToast(`Payment of ₹${amountToPay.toLocaleString('en-IN')} recorded successfully.`);
+      fetchInvoice(true);
+    } catch (err) {
+      showToast(err.message || 'Failed to record payment', 'error');
     }
   };
 
@@ -137,6 +153,7 @@ export default function InvoiceDetail({
         onBack={onBack}
         onDownload={handleDownload}
         onSend={() => setIsSendModalOpen(true)}
+        onRecordPayment={handleRecordPayment}
         onViewBilling={onViewBilling}
         onViewQuotation={onViewQuotation}
         onRefresh={() => fetchInvoice(true)}

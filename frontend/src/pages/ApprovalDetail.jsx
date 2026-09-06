@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getApprovalById, approveApproval, rejectApproval, requestApprovalChanges } from '../api/approvalApi';
 import { ApprovalHeader, ApprovalStatusBanner } from '../components/approval/ApprovalHeader';
 import QuotationSummary from '../components/approval/QuotationSummary';
@@ -11,6 +12,7 @@ import ApprovalChain from '../components/approval/ApprovalChain';
 import ApprovalConfirmationModal from '../components/approval/ApprovalConfirmationModal';
 
 export default function ApprovalDetail({ approvalId, onBack }) {
+  const queryClient = useQueryClient();
   const [approval, setApproval] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +47,10 @@ export default function ApprovalDetail({ approvalId, onBack }) {
         await requestApprovalChanges(approvalId, { comment });
       }
       setModalConfig({ isOpen: false, type: null });
-      fetchApproval(true); // Refresh after action
+      await fetchApproval(true); // Refresh after action
+      try {
+        queryClient.invalidateQueries();
+      } catch {}
     } catch (err) {
       alert(err.message || 'Action failed');
       throw err; // Let modal catch it

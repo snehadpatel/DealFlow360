@@ -34,7 +34,7 @@ DEFAULT_TARGET_MARGIN_PCT = 20.0
 # Any positive overage needs a manager; a large blended overage also needs
 # finance. (0 overage => everything was within ceilings => auto-approve.)
 APPROVAL_EPSILON = 0.01          # float-noise guard around "zero overage"
-FINANCE_OVERAGE_THRESHOLD = 15.0  # summed overage-pp above this also needs Finance
+FINANCE_OVERAGE_THRESHOLD = 10.0  # summed overage-pp above this (>20% discount total) also needs Finance
 
 
 @dataclass

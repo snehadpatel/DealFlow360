@@ -1,6 +1,6 @@
 """Invoices, Payments, Credit Notes routers — Finance module."""
 from typing import List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
@@ -25,9 +25,19 @@ def list_invoices(
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user)
 ):
+    from app.models.customer import Customer
+    from sqlmodel import select
     filter_customer = user.customer_id if user.role == Role.CUSTOMER else customer_id
     filter_rep = user.id if user.role == Role.REP else None
-    return invoice_service.list_invoices(session, customer_id=filter_customer, status=status, rep_id=filter_rep)
+    invoices = invoice_service.list_invoices(session, customer_id=filter_customer, status=status, rep_id=filter_rep)
+    cust_ids = {inv.customer_id for inv in invoices}
+    customers = {c.id: c.name for c in session.exec(select(Customer).where(Customer.id.in_(cust_ids))).all()} if cust_ids else {}
+    results = []
+    for inv in invoices:
+        resp = InvoiceResponse.model_validate(inv)
+        resp.customer_name = customers.get(inv.customer_id, "Customer")
+        results.append(resp)
+    return results
 
 @invoices_router.get("/summary")
 def invoice_summary(session: Session = Depends(get_session), _: User = Depends(get_current_user)):
@@ -43,7 +53,13 @@ def invoice_summary(session: Session = Depends(get_session), _: User = Depends(g
 
 @invoices_router.get("/{invoice_id}", response_model=InvoiceResponse)
 def get_invoice(invoice_id: UUID, session: Session = Depends(get_session), _: User = Depends(get_current_user)):
-    return invoice_service.get_invoice_or_404(session, invoice_id)
+    from app.models.customer import Customer
+    inv = invoice_service.get_invoice_or_404(session, invoice_id)
+    resp = InvoiceResponse.model_validate(inv)
+    cust = session.get(Customer, inv.customer_id)
+    if cust:
+        resp.customer_name = cust.name
+    return resp
 
 @invoices_router.post("", response_model=InvoiceResponse, status_code=201)
 def create_invoice(
@@ -66,17 +82,22 @@ def update_status(
 @invoices_router.post("/{invoice_id}/pay", response_model=InvoiceResponse)
 def pay_invoice_endpoint(
     invoice_id: UUID,
-    payload: PaymentCreate,
+    payload: Optional[PaymentCreate] = None,
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user)
 ):
+    inv = invoice_service.get_invoice_or_404(session, invoice_id)
+    pay_amount = payload.amount if (payload and payload.amount) else inv.outstanding_amount
+    method = payload.method if (payload and payload.method) else "BANK_TRANSFER"
+    transaction_id = payload.transaction_id if (payload and payload.transaction_id) else f"TXN-{uuid4().hex[:8].upper()}"
+    notes = payload.notes if (payload and payload.notes) else "Full settlement via DealFlow360"
     invoice_service.record_payment(
         session,
         invoice_id=invoice_id,
-        amount=payload.amount,
-        method=payload.method,
-        transaction_id=payload.transaction_id,
-        notes=payload.notes
+        amount=pay_amount,
+        method=method,
+        transaction_id=transaction_id,
+        notes=notes
     )
     return invoice_service.get_invoice_or_404(session, invoice_id)
 

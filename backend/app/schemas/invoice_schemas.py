@@ -32,6 +32,7 @@ class InvoiceResponse(BaseModel):
     invoice_date: datetime
     notes: Optional[str]
     created_at: datetime
+    customer_name: Optional[str] = None
     class Config: from_attributes = True
 
 class PaymentCreate(BaseModel):

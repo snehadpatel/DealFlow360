@@ -1,47 +1,124 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Percent, Shield, Plus, Edit2, CheckCircle2, ShieldCheck, Layers, GitMerge } from "lucide-react";
 import Modal from "../ui/Modal";
-
-const initialTiers = [
-  { id: 1, name: "Bronze Tier", maxDiscount: 5, status: "active", priority: "Standard" },
-  { id: 2, name: "Silver Tier", maxDiscount: 10, status: "active", priority: "Priority" },
-  { id: 3, name: "Gold Tier", maxDiscount: 15, status: "active", priority: "VIP" },
-];
-
-const initialCategories = [
-  { category: "Hardware", maxDiscount: 15, rule: "Requires stock check above 10%" },
-  { category: "Software", maxDiscount: 10, rule: "Ceiling enforced at checkout" },
-  { category: "Services", maxDiscount: 10, rule: "Consulting rate protection" },
-];
-
-const initialChain = [
-  { range: "0% – 5%", requiredRole: "Auto Approved", color: "bg-emerald-100 text-emerald-800" },
-  { range: "5% – 10%", requiredRole: "Sales Manager", color: "bg-blue-100 text-blue-800" },
-  { range: "10% – 15%", requiredRole: "Finance Department", color: "bg-purple-100 text-purple-800" },
-  { range: "15%+", requiredRole: "Senior Management / Admin", color: "bg-red-100 text-red-800" },
-];
+import { fetchDiscountRulesList, createDiscountRuleApi, updateDiscountRuleApi } from "../../../api/adminApi";
 
 export default function Discounts() {
-  const [tiersList, setTiersList] = useState(initialTiers);
-  const [categoryRules, setCategoryRules] = useState(initialCategories);
-  const [approvalChain, setApprovalChain] = useState(initialChain);
+  const [dbRules, setDbRules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingTier, setEditingTier] = useState<any | null>(null);
   const [toast, setToast] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Default tiers state
+  const [tiersList, setTiersList] = useState([
+    { id: 'GOLD', tier: 'GOLD', name: "Gold Tier", maxDiscount: 15, status: "active", priority: "VIP" },
+    { id: 'SILVER', tier: 'SILVER', name: "Silver Tier", maxDiscount: 12, status: "active", priority: "Priority" },
+    { id: 'BRONZE', tier: 'BRONZE', name: "Bronze Tier", maxDiscount: 8, status: "active", priority: "Standard" },
+  ]);
+
+  const [categoryRules, setCategoryRules] = useState([
+    { category: "Hardware", maxDiscount: 15, rule: "Requires stock check above 10%" },
+    { category: "Software", maxDiscount: 10, rule: "Ceiling enforced at checkout" },
+    { category: "Services", maxDiscount: 10, rule: "Consulting rate protection" },
+  ]);
+
+  const approvalChain = [
+    { range: "0% – 5%", requiredRole: "Auto Approved", color: "bg-emerald-100 text-emerald-800" },
+    { range: "5% – 15%", requiredRole: "Sales Manager", color: "bg-blue-100 text-blue-800" },
+    { range: "15%+", requiredRole: "Finance Department & Manager", color: "bg-purple-100 text-purple-800" },
+    { range: "Margin < 15%", requiredRole: "Finance Floor Override", color: "bg-rose-100 text-rose-800" },
+  ];
+
+  useEffect(() => {
+    loadDiscountRules();
+  }, []);
+
+  async function loadDiscountRules() {
+    setLoading(true);
+    try {
+      const rules = await fetchDiscountRulesList();
+      if (Array.isArray(rules) && rules.length > 0) {
+        setDbRules(rules);
+
+        // Find tier-specific rules
+        const goldRule = rules.find((r) => r.tier === "GOLD");
+        const silverRule = rules.find((r) => r.tier === "SILVER");
+        const bronzeRule = rules.find((r) => r.tier === "BRONZE");
+
+        setTiersList([
+          {
+            id: goldRule?.id || "GOLD",
+            tier: "GOLD",
+            name: "Gold Tier",
+            maxDiscount: goldRule?.max_discount ?? 15,
+            status: "active",
+            priority: "VIP",
+          },
+          {
+            id: silverRule?.id || "SILVER",
+            tier: "SILVER",
+            name: "Silver Tier",
+            maxDiscount: silverRule?.max_discount ?? 12,
+            status: "active",
+            priority: "Priority",
+          },
+          {
+            id: bronzeRule?.id || "BRONZE",
+            tier: "BRONZE",
+            name: "Bronze Tier",
+            maxDiscount: bronzeRule?.max_discount ?? 8,
+            status: "active",
+            priority: "Standard",
+          },
+        ]);
+      }
+    } catch (err) {
+      console.error("Failed to load discount rules from DB:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   }
 
-  function handleSaveTierUpdate() {
+  async function handleSaveTierUpdate() {
     if (!editingTier) return;
-    setTiersList(tiersList.map((t) => (t.id === editingTier.id ? editingTier : t)));
-    setEditingTier(null);
-    showToast("Tier discount threshold updated successfully");
+    setSaving(true);
+    try {
+      const existing = dbRules.find((r) => r.tier === editingTier.tier);
+      if (existing && existing.id) {
+        await updateDiscountRuleApi(existing.id, {
+          tier: editingTier.tier,
+          max_discount: Number(editingTier.maxDiscount),
+          min_margin: 12.0,
+          manager_approval_threshold: 10.0,
+          finance_approval_threshold: 15.0,
+        });
+      } else {
+        await createDiscountRuleApi({
+          tier: editingTier.tier,
+          max_discount: Number(editingTier.maxDiscount),
+          min_margin: 12.0,
+          manager_approval_threshold: 10.0,
+          finance_approval_threshold: 15.0,
+        });
+      }
+      await loadDiscountRules();
+      setEditingTier(null);
+      showToast(`${editingTier.name} threshold updated and saved to database`);
+    } catch (e) {
+      showToast("Error updating discount rule in database");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -52,19 +129,22 @@ export default function Discounts() {
       {/* Header */}
       <div>
         <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Discounts & Approval Workflows</h2>
-        <p className="text-[#6B7280] text-xs mt-0.5">Configure tier discount limits, category ceilings, and automated approval chains.</p>
+        <p className="text-[#6B7280] text-xs mt-0.5">Configure tier discount limits, category ceilings, and automated approval chains in the database.</p>
       </div>
 
-      {/* 1. Customer Tier Discount Configuration (Prompt Specs) */}
+      {/* 1. Customer Tier Discount Configuration */}
       <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-orange-50 text-[#F26C4F]"><Percent size={18} /></div>
             <div>
               <h3 className="text-[#1F2937] font-bold text-[15px]">Customer Tier Discount Ceilings</h3>
-              <p className="text-[#6B7280] text-xs">Maximum allowed discount per quotation by tier</p>
+              <p className="text-[#6B7280] text-xs">Maximum allowed discount per quotation saved in database</p>
             </div>
           </div>
+          <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            Active in dealflow360.db
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -115,7 +195,7 @@ export default function Discounts() {
         </div>
       </div>
 
-      {/* 3. Configurable Approval Chain (Prompt Specs) */}
+      {/* 3. Configurable Approval Chain */}
       <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -125,12 +205,6 @@ export default function Discounts() {
               <p className="text-[#6B7280] text-xs">Automatic routing of quotation discount requests based on threshold</p>
             </div>
           </div>
-          <button
-            onClick={() => showToast("Approval chain rules saved")}
-            className="text-xs font-bold text-[#F26C4F] hover:underline"
-          >
-            Save Chain Routing
-          </button>
         </div>
 
         <div className="space-y-3">
@@ -141,7 +215,7 @@ export default function Discounts() {
                   {i + 1}
                 </span>
                 <div>
-                  <p className="font-bold text-[#1F2937]">Discount Request Range: <span className="text-[#F26C4F]">{step.range}</span></p>
+                  <p className="font-bold text-[#1F2937]">Discount Request Trigger: <span className="text-[#F26C4F]">{step.range}</span></p>
                   <p className="text-[11px] text-[#6B7280]">Target Approver Role</p>
                 </div>
               </div>
@@ -176,12 +250,16 @@ export default function Discounts() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[#E5E7EB]">
               <button onClick={() => setEditingTier(null)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
                 Cancel
               </button>
-              <button onClick={handleSaveTierUpdate} className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535]">
-                Save Threshold
+              <button
+                disabled={saving}
+                onClick={handleSaveTierUpdate}
+                className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535] disabled:opacity-50"
+              >
+                {saving ? "Saving to DB..." : "Save Threshold to Database"}
               </button>
             </div>
           </div>

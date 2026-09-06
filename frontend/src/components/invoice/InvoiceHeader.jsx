@@ -7,6 +7,7 @@ export default function InvoiceHeader({
   onBack,
   onDownload,
   onSend,
+  onRecordPayment,
   onViewBilling,
   onViewQuotation,
   onRefresh,
@@ -48,6 +49,16 @@ export default function InvoiceHeader({
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#F26C4F]' : ''}`} />
           </button>
+
+          {invoice.status !== 'PAID' && onRecordPayment && (
+            <button
+              onClick={onRecordPayment}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Record Payment (Settle)</span>
+            </button>
+          )}
 
           <button
             onClick={onDownload}

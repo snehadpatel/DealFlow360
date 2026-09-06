@@ -105,7 +105,7 @@ def get_quote(quote_id: UUID, session: Session = Depends(get_session), user: Use
 def create_quote(
     payload: QuoteCreate,
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.REP, Role.MANAGER])),
+    user: User = Depends(require_roles([Role.REP, Role.MANAGER, Role.ADMIN])),
     idempotency_header: Optional[str] = Header(default=None, alias="Idempotency-Key"),
 ):
     quotation = quote_service.create_quote(
@@ -125,7 +125,7 @@ def update_quote(
     quote_id: UUID,
     payload: QuoteUpdate,
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.REP, Role.MANAGER])),
+    user: User = Depends(require_roles([Role.REP, Role.MANAGER, Role.ADMIN])),
 ):
     quotation = _load_visible(session, quote_id, user)
     quotation = quote_service.update_quote(
@@ -144,7 +144,7 @@ def update_quote(
 def delete_quote(
     quote_id: UUID,
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.REP, Role.MANAGER])),
+    user: User = Depends(require_roles([Role.REP, Role.MANAGER, Role.ADMIN])),
 ):
     quotation = _load_visible(session, quote_id, user)
     quote_service.delete_quote(session, quotation, user_id=user.id)
@@ -155,7 +155,7 @@ def delete_quote(
 def submit_quote(
     quote_id: UUID,
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.REP, Role.MANAGER])),
+    user: User = Depends(require_roles([Role.REP, Role.MANAGER, Role.ADMIN])),
 ):
     quotation = _load_visible(session, quote_id, user)
     quotation = quote_service.submit_quote(session, quotation, user_id=user.id)
@@ -178,7 +178,7 @@ def renew_quote(
     quote_id: UUID,
     payload: RenewRequest = RenewRequest(),
     session: Session = Depends(get_session),
-    user: User = Depends(require_roles([Role.REP, Role.MANAGER])),
+    user: User = Depends(require_roles([Role.REP, Role.MANAGER, Role.ADMIN])),
 ):
     quotation = _load_visible(session, quote_id, user)
     quotation = quote_service.renew_quote(session, quotation, user_id=user.id, expires_in_days=payload.expires_in_days)

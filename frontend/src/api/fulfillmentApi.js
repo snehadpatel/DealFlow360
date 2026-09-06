@@ -114,8 +114,17 @@ export const getFulfillmentById = async (id) => {
   return item;
 };
 
-export const allocateStock = async (id) => {
+export const allocateStock = async (id, allocations = {}) => {
   const f = await getFulfillmentById(id);
+  const orderId = f.rawId || id;
+  try {
+    await apiClient.put(`/orders/${orderId}/status`, {
+      status: 'PROCESSING',
+      notes: 'Stock allocated across fulfillment centers',
+    });
+  } catch (err) {
+    console.warn('Backend order allocation note:', err);
+  }
   f.status = 'ALLOCATED';
   f.permissions.can_allocate = false;
   f.permissions.can_create_shipment = true;
@@ -123,15 +132,28 @@ export const allocateStock = async (id) => {
 };
 
 export const createShipment = async (id, shipmentData = {}) => {
+  const f = await getFulfillmentById(id);
+  const orderId = f.rawId || id;
   try {
+    const whRes = await apiClient.get('/warehouses').catch(() => []);
+    const whId = Array.isArray(whRes) && whRes.length > 0 ? whRes[0].id : undefined;
+
     const res = await apiClient.post('/shipments', {
-      order_id: id,
-      courier: shipmentData.carrier || 'Blue Dart Express',
-      ...shipmentData,
+      order_id: orderId,
+      warehouse_id: shipmentData.warehouse_id || whId,
+      courier: shipmentData.carrier || shipmentData.courier || 'Blue Dart Express',
+      tracking_number: shipmentData.trackingNumber || shipmentData.tracking_number || `TRK-${Math.floor(100000 + Math.random() * 900000)}`,
+      shipping_cost: Number(shipmentData.shipping_cost) || 0,
     });
+
+    await apiClient.put(`/orders/${orderId}/status`, {
+      status: 'DELIVERED',
+      notes: 'Shipment dispatched to customer',
+    }).catch(() => {});
+
     return res;
-  } catch {
-    const f = await getFulfillmentById(id);
+  } catch (err) {
+    console.warn('Backend shipment creation error:', err);
     f.status = 'FULFILLED';
     return f;
   }

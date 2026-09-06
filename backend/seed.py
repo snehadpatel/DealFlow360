@@ -1,4 +1,4 @@
-﻿"""
+"""
 DealFlow360 Enterprise Database Seeder
 Populates EVERY database table with 200+ enterprise records:
 - user: 200 records
@@ -63,10 +63,25 @@ def seed(force: bool = False):
     """Seed every table in the database with 200+ realistic enterprise records."""
     init_db()
 
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("PRAGMA foreign_keys = OFF;"))
+        for tbl in [
+            "creditnote", "payment", "invoice", "backorder", "shipment", "orderline",
+            "order", "negotiationmessage", "portalnegotiation", "negotiation",
+            "auditlog", "approvalrequest", "quotationversion", "quotationline",
+            "quotation", "notification", "customersubscription", "subscriptionplan",
+            "stockinventory", "pricelistitem", "pricelist", "upsellrule", "discountrule",
+            "warehouse", "product", "customer", "user"
+        ]:
+            conn.execute(text(f'DROP TABLE IF EXISTS "{tbl}";'))
+        conn.commit()
+
+    User.__table__.create(engine, checkfirst=True)
+    Customer.__table__.create(engine, checkfirst=True)
+    SQLModel.metadata.create_all(engine)
+
     with Session(engine) as session:
-        print(" Resetting database tables for 200+ records in EVERY table...")
-        SQLModel.metadata.drop_all(engine)
-        SQLModel.metadata.create_all(engine)
 
         print(" Seeding 200+ records across all 27 database tables...")
         random.seed(42)
@@ -102,8 +117,23 @@ def seed(force: bool = False):
                       password_hash=cust_hash, role=Role.CUSTOMER)
         buyer2 = User(id=uuid4(), name="TechVision Lead", email="procurement@techvision.in",
                       password_hash=cust_hash, role=Role.CUSTOMER)
-        
-        users.extend([admin, rep_alex, manager, finance, ops, buyer1, buyer2])
+
+        # Standard TechNova Team (Scenario-Exact)
+        admin_arjun = User(id=uuid4(), name="Arjun", email="arjun@technova.com", password_hash=admin_hash, role=Role.ADMIN)
+        rep_rahul = User(id=uuid4(), name="Rahul", email="rahul@technova.com", password_hash=rep_hash, role=Role.REP)
+        rep_priya = User(id=uuid4(), name="Priya", email="priya@technova.com", password_hash=rep_hash, role=Role.REP)
+        rep_amit = User(id=uuid4(), name="Amit", email="amit@technova.com", password_hash=rep_hash, role=Role.REP)
+        mgr_neha = User(id=uuid4(), name="Neha", email="neha@technova.com", password_hash=mgr_hash, role=Role.MANAGER)
+        mgr_vikram = User(id=uuid4(), name="Vikram", email="vikram@technova.com", password_hash=mgr_hash, role=Role.MANAGER)
+        fin_sneha = User(id=uuid4(), name="Sneha", email="sneha@technova.com", password_hash=fin_hash, role=Role.FINANCE)
+        ops_karan = User(id=uuid4(), name="Karan", email="karan@technova.com", password_hash=ops_hash, role=Role.OPERATIONS)
+        buyer_ankit = User(id=uuid4(), name="Ankit", email="ankit@abcbank.com", password_hash=cust_hash, role=Role.CUSTOMER)
+
+        users.extend([
+            admin, rep_alex, manager, finance, ops, buyer1, buyer2,
+            admin_arjun, rep_rahul, rep_priya, rep_amit,
+            mgr_neha, mgr_vikram, fin_sneha, ops_karan, buyer_ankit
+        ])
 
         roles_pool = [Role.REP, Role.CUSTOMER, Role.MANAGER, Role.FINANCE, Role.OPERATIONS]
         role_weights = [0.45, 0.35, 0.08, 0.06, 0.06]
@@ -124,9 +154,7 @@ def seed(force: bool = False):
             session.add(u)
         session.flush()
 
-        reps = [u for u in users if u.role == Role.REP]
-        if not reps:
-            reps = [users[1]]
+        reps = [rep_rahul, rep_priya, rep_amit, rep_alex]
 
         # ─── 2. CUSTOMERS (200 Customers) ─────────────────────────────────────
         company_prefixes = [
@@ -144,8 +172,47 @@ def seed(force: bool = False):
             ("Ahmedabad", "24", "Gujarat"), ("Kolkata", "19", "West Bengal"), ("Gurugram", "06", "Haryana")
         ]
 
-        customers = []
-        cust_set = set()
+        # ─── 2. CUSTOMERS (TechNova Key Customers + 200 Enterprise) ───────────
+        cust_abc = Customer(
+            id=uuid4(), name="ABC Bank", tier=Tier.BRONZE, email="procure@abcbank.com", phone="+91-9820011223",
+            address_billing="Tower 1, Bandra Kurla Complex, Mumbai, Maharashtra",
+            address_shipping="Tower 1, Goods Inward, BKC, Mumbai, Maharashtra",
+            tax_id="GSTIN-27AAACB1234F1Z1", rep_id=rep_rahul.id, credit_limit=10000000.0,
+            payment_terms="Net 30", status=CustomerStatus.ACTIVE, created_at=now - timedelta(days=60)
+        )
+        buyer_ankit.customer_id = cust_abc.id
+        session.add(buyer_ankit)
+
+        cust_xyz = Customer(
+            id=uuid4(), name="XYZ Hospital", tier=Tier.SILVER, email="procure@xyzhospital.org", phone="+91-9820033445",
+            address_billing="Plot 45, Healthcare Park, Ahmedabad, Gujarat",
+            address_shipping="Plot 45, Pharmacy Bay, Ahmedabad, Gujarat",
+            tax_id="GSTIN-24AAACX5678G2Z2", rep_id=rep_priya.id, credit_limit=5000000.0,
+            payment_terms="Net 30", status=CustomerStatus.ACTIVE, created_at=now - timedelta(days=45)
+        )
+
+        cust_pqr = Customer(
+            id=uuid4(), name="PQR College", tier=Tier.BRONZE, email="purchase@pqrcollege.edu", phone="+91-9820055667",
+            address_billing="Institutional Area, Sector 12, Delhi NCR",
+            address_shipping="Institutional Area, Sector 12, Delhi NCR",
+            tax_id="GSTIN-07AAACP9012H3Z3", rep_id=rep_amit.id, credit_limit=1500000.0,
+            payment_terms="Net 15", status=CustomerStatus.ACTIVE, created_at=now - timedelta(days=30)
+        )
+
+        cust_reliance = Customer(
+            id=uuid4(), name="Reliance Manufacturing", tier=Tier.GOLD, email="procure@reliancemfg.com", phone="+91-9820077889",
+            address_billing="Reliance Greens, Plant Area, Jamnagar, Gujarat",
+            address_shipping="Reliance Greens, Gate 4, Jamnagar, Gujarat",
+            tax_id="GSTIN-24AAACR3456J4Z4", rep_id=rep_amit.id, credit_limit=25000000.0,
+            payment_terms="Net 90", status=CustomerStatus.ACTIVE, created_at=now - timedelta(days=90)
+        )
+
+        customers = [cust_abc, cust_xyz, cust_pqr, cust_reliance]
+        for c in customers:
+            session.add(c)
+        session.flush()
+
+        cust_set = {c.name for c in customers}
         while len(customers) < 200:
             pfx = random.choice(company_prefixes)
             sfx = random.choice(company_suffixes)
@@ -186,10 +253,44 @@ def seed(force: bool = False):
         session.add(buyer2)
         session.flush()
 
-        # ─── 3. PRODUCTS (200 Products) ───────────────────────────────────────
+        # ─── 3. PRODUCTS (TechNova Core Catalog + 200 Products) ───────────────
+        prod_laptop = Product(
+            id=uuid4(), name="Laptop X1", sku="HW-LT-X1", category="Hardware",
+            description="Enterprise Ultrabook Laptop X1, 14-inch, 16GB RAM, 512GB SSD",
+            price=60000.0, cost=42000.0, discount_ceiling=15.0, tax_rate=18.0, unit="unit",
+            is_archived=False
+        )
+        prod_server = Product(
+            id=uuid4(), name="Server S1", sku="HW-SRV-S1", category="Hardware",
+            description="Rackmount 2U High-Density Server S1, 64-Core, 256GB ECC RAM",
+            price=500000.0, cost=350000.0, discount_ceiling=20.0, tax_rate=18.0, unit="unit",
+            is_archived=False
+        )
+        prod_cloud = Product(
+            id=uuid4(), name="Microsoft 365 Cloud Software", sku="SW-M365", category="Subscription",
+            description="Microsoft 365 Enterprise Suite License / Cloud Software",
+            price=200000.0, cost=40000.0, discount_ceiling=25.0, tax_rate=18.0, unit="yr",
+            is_archived=False
+        )
+        prod_backup = Product(
+            id=uuid4(), name="Cloud Backup", sku="SW-BAK-CLD", category="Subscription",
+            description="Enterprise Automated Cloud Backup & Disaster Recovery",
+            price=500000.0, cost=100000.0, discount_ceiling=20.0, tax_rate=18.0, unit="yr",
+            is_archived=False
+        )
+        prod_support = Product(
+            id=uuid4(), name="Premium Support (3-Year)", sku="SRV-SUP-3Y", category="Services",
+            description="24/7 Dedicated Technical Account Manager & 3-Year Support SLA",
+            price=500000.0, cost=150000.0, discount_ceiling=15.0, tax_rate=18.0, unit="contract",
+            is_archived=False
+        )
+        products = [prod_laptop, prod_server, prod_cloud, prod_backup, prod_support]
+        for p in products:
+            session.add(p)
+        session.flush()
+
         categories = ["Hardware", "Subscription", "Services", "SaaS"]
-        products = []
-        prod_idx = 1
+        prod_idx = len(products) + 1
         while len(products) < 200:
             cat = categories[len(products) % len(categories)]
             if cat == "Hardware":
@@ -229,9 +330,28 @@ def seed(force: bool = False):
             prod_idx += 1
         session.flush()
 
-        # ─── 4. WAREHOUSES (200 Logistics & Fulfillment Hubs) ─────────────────
-        warehouses = []
-        hub_cities = ["Mumbai", "Delhi NCR", "Bengaluru", "Hyderabad", "Chennai", "Pune", "Ahmedabad", "Kolkata", "Noida", "Gurugram", "Jaipur", "Kochi", "Chandigarh", "Indore"]
+        # ─── 4. WAREHOUSES (TechNova Warehouses + Logistics Hubs) ─────────────
+        wh_ahm = Warehouse(
+            id=uuid4(), name="Ahmedabad Warehouse", code="AHM-01",
+            location="Ahmedabad, Gujarat", city="Ahmedabad",
+            is_active=True, replenishment_threshold=20, shipping_cost=1200.0, priority=1
+        )
+        wh_bom = Warehouse(
+            id=uuid4(), name="Mumbai Warehouse", code="BOM-01",
+            location="Mumbai, Maharashtra", city="Mumbai",
+            is_active=True, replenishment_threshold=25, shipping_cost=1500.0, priority=2
+        )
+        wh_del = Warehouse(
+            id=uuid4(), name="Delhi Warehouse", code="DEL-01",
+            location="Delhi NCR", city="Delhi NCR",
+            is_active=True, replenishment_threshold=30, shipping_cost=1800.0, priority=3
+        )
+        warehouses = [wh_ahm, wh_bom, wh_del]
+        for w in warehouses:
+            session.add(w)
+        session.flush()
+
+        hub_cities = ["Bengaluru", "Hyderabad", "Chennai", "Pune", "Kolkata", "Noida", "Gurugram", "Jaipur", "Kochi", "Chandigarh", "Indore"]
         while len(warehouses) < 200:
             cname = hub_cities[len(warehouses) % len(hub_cities)]
             w = Warehouse(
@@ -244,6 +364,11 @@ def seed(force: bool = False):
             warehouses.append(w)
             session.add(w)
         session.flush()
+
+        # Stock Inventory: Exact initial stock for Laptop X1 as in scenario
+        session.add(StockInventory(id=uuid4(), product_id=prod_laptop.id, warehouse_id=wh_ahm.id, available_units=60, reserved_units=0, incoming_units=50, reorder_level=20))
+        session.add(StockInventory(id=uuid4(), product_id=prod_laptop.id, warehouse_id=wh_bom.id, available_units=40, reserved_units=0, incoming_units=50, reorder_level=20))
+        session.add(StockInventory(id=uuid4(), product_id=prod_laptop.id, warehouse_id=wh_del.id, available_units=50, reserved_units=0, incoming_units=50, reorder_level=20))
 
         # Stock Inventory (400+ allocations)
         for i in range(400):
@@ -325,12 +450,139 @@ def seed(force: bool = False):
             ))
         session.flush()
 
-        # ─── 8. QUOTATIONS, LINES, & VERSIONS (200 Quotes, 500+ Lines, 200 Versions)
+        # ─── 8. QUOTATIONS, LINES, & VERSIONS (Scenario-Exact + 200 Quotes) ───
         quotations = []
+
+        def make_quote(cust, rep, items_spec, q_status, notes=""):
+            subtotal = 0.0
+            discount_total = 0.0
+            tax_total = 0.0
+            total_cost = 0.0
+            lines = []
+            for prod, qty, disc_pct in items_spec:
+                line_sub = prod.price * qty
+                disc_amt = line_sub * (disc_pct / 100.0)
+                taxable = line_sub - disc_amt
+                tax_amt = taxable * (prod.tax_rate / 100.0)
+                line_tot = taxable + tax_amt
+                line_cost = prod.cost * qty
+                subtotal += line_sub
+                discount_total += disc_amt
+                tax_total += tax_amt
+                total_cost += line_cost
+                lines.append({
+                    "product_id": prod.id,
+                    "quantity": qty,
+                    "unit_price": prod.price,
+                    "unit_cost": prod.cost,
+                    "discount_percent": disc_pct,
+                    "tax_rate": prod.tax_rate,
+                    "line_subtotal": line_sub,
+                    "discount_amount": disc_amt,
+                    "tax_amount": tax_amt,
+                    "line_total": line_tot
+                })
+            total = (subtotal - discount_total) + tax_total
+            margin = total - total_cost
+            margin_pct = (margin / total * 100.0) if total > 0 else 0.0
+            avg_disc = (discount_total / subtotal * 100.0) if subtotal > 0 else 0.0
+            blended_risk = round(min(100.0, max(5.0, (avg_disc * 2.2) + (25.0 if margin_pct < 15.0 else 5.0))), 1)
+            risk_level = "HIGH" if blended_risk >= 60.0 else ("MEDIUM" if blended_risk >= 30.0 else "LOW")
+            q = Quotation(
+                id=uuid4(), customer_id=cust.id, rep_id=rep.id,
+                status=q_status, subtotal=round(subtotal, 2),
+                discount_total=round(discount_total, 2), tax_total=round(tax_total, 2),
+                total=round(total, 2), margin=round(margin, 2), margin_percent=round(margin_pct, 1),
+                currency="INR", blended_risk=blended_risk, risk_level=risk_level, version=1,
+                notes=notes,
+                created_at=now - timedelta(days=2), expires_at=now + timedelta(days=30)
+            )
+            return q, lines
+
+        # Q-1001: ABC Bank (Rahul) - 100 Laptops + Cloud + Support @ 12% (Needs Sales Manager Neha)
+        q_1001, lines_1001 = make_quote(
+            cust_abc, rep_rahul,
+            [(prod_laptop, 100, 12.0), (prod_cloud, 1, 12.0), (prod_support, 1, 12.0)],
+            QuoteStatus.PENDING_APPROVAL,
+            notes="Q-1001: 100 Laptops + Microsoft 365 + Support for ABC Bank (12% discount > 10% ceiling, requires Sales Manager approval)"
+        )
+        quotations.append((q_1001, lines_1001))
+        session.add(q_1001)
+
+        # Q-1002: XYZ Hospital (Priya) - 20 Servers + 50 Laptops @ 8% (Approved, no approval required)
+        q_1002, lines_1002 = make_quote(
+            cust_xyz, rep_priya,
+            [(prod_server, 20, 8.0), (prod_laptop, 50, 8.0), (prod_backup, 1, 8.0), (prod_support, 1, 8.0)],
+            QuoteStatus.APPROVED,
+            notes="Q-1002: Infrastructure expansion for XYZ Hospital (8% discount <= 10% ceiling, no approval needed)"
+        )
+        quotations.append((q_1002, lines_1002))
+        session.add(q_1002)
+
+        # Q-1003: PQR College (Amit) - 5% discount (Approved)
+        q_1003, lines_1003 = make_quote(
+            cust_pqr, rep_amit,
+            [(prod_laptop, 10, 5.0)],
+            QuoteStatus.APPROVED,
+            notes="Q-1003: IT Lab upgrade for PQR College (5% discount, Approved)"
+        )
+        quotations.append((q_1003, lines_1003))
+        session.add(q_1003)
+
+        # Q-1004: ABC Bank (Rahul) - 22% discount (Manager + Finance Approval)
+        q_1004, lines_1004 = make_quote(
+            cust_abc, rep_rahul,
+            [(prod_laptop, 100, 22.0)],
+            QuoteStatus.PENDING_APPROVAL,
+            notes="Q-1004: 22% discount for ABC Bank (High discount > 20%, requires Sales Manager + Finance approval)"
+        )
+        quotations.append((q_1004, lines_1004))
+        session.add(q_1004)
+
+        # Q-1005: XYZ Hospital (Priya) - 10% discount (Customer Negotiation)
+        q_1005, lines_1005 = make_quote(
+            cust_xyz, rep_priya,
+            [(prod_laptop, 50, 10.0)],
+            QuoteStatus.DRAFT,
+            notes="Q-1005: Negotiation in progress with XYZ Hospital"
+        )
+        quotations.append((q_1005, lines_1005))
+        session.add(q_1005)
+
+        # Q-1006: Reliance Manufacturing (Amit) - 25% discount (Finance Approval)
+        q_1006, lines_1006 = make_quote(
+            cust_reliance, rep_amit,
+            [(prod_server, 10, 25.0)],
+            QuoteStatus.PENDING_APPROVAL,
+            notes="Q-1006: 25% discount for Reliance Manufacturing (Finance approval required)"
+        )
+        quotations.append((q_1006, lines_1006))
+        session.add(q_1006)
+
+        # Q-1007: ABC Bank (Rahul) - 7% discount (Confirmed -> Order SO-1001)
+        q_1007, lines_1007 = make_quote(
+            cust_abc, rep_rahul,
+            [(prod_laptop, 100, 7.0)],
+            QuoteStatus.CONFIRMED,
+            notes="Q-1007: 100 Laptops for ABC Bank @ 7% (Confirmed -> Order SO-1001 fulfillment)"
+        )
+        quotations.append((q_1007, lines_1007))
+        session.add(q_1007)
+
+        # Q-1015: Reliance Manufacturing (Amit) - ₹1 Crore deal @ 25% discount, 8% margin (High financial risk)
+        q_1015, lines_1015 = make_quote(
+            cust_reliance, rep_amit,
+            [(prod_server, 20, 25.0)],
+            QuoteStatus.PENDING_APPROVAL,
+            notes="Q-1015: Reliance Manufacturing ₹1 Crore deal, 25% discount, 8% margin (High financial risk, Finance Sneha approval)"
+        )
+        quotations.append((q_1015, lines_1015))
+        session.add(q_1015)
+
         status_pool = [QuoteStatus.CONFIRMED, QuoteStatus.APPROVED, QuoteStatus.PENDING_APPROVAL, QuoteStatus.DRAFT, QuoteStatus.REJECTED]
         status_weights = [0.45, 0.25, 0.15, 0.10, 0.05]
 
-        for i in range(200):
+        for i in range(len(quotations), 200):
             cust = customers[i % len(customers)]
             rep = reps[i % len(reps)]
             q_status = random.choices(status_pool, weights=status_weights)[0]
@@ -408,8 +660,52 @@ def seed(force: bool = False):
             ))
         session.flush()
 
-        # ─── 9. APPROVAL REQUESTS (200 Approval Requests) ─────────────────────
-        pending_quotes = [q for q, _ in quotations if q.status == QuoteStatus.PENDING_APPROVAL]
+        # ─── 9. APPROVAL REQUESTS (Scenario-Exact + 200 Approval Requests) ───
+        # Q-1001: ABC Bank (Rahul) - 12% discount needs Sales Manager Neha
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1001.id, approver_id=mgr_neha.id,
+            approver_role=Role.MANAGER.value, approval_level=1,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1001: 12% discount exceeds 10% rep ceiling, requires Sales Manager Neha sign-off"
+        ))
+
+        # Q-1004: ABC Bank (Rahul) - 22% discount needs Manager Neha + Finance Sneha
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1004.id, approver_id=mgr_neha.id,
+            approver_role=Role.MANAGER.value, approval_level=1,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1004: 22% discount tier 1 Sales Manager approval"
+        ))
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1004.id, approver_id=fin_sneha.id,
+            approver_role=Role.FINANCE.value, approval_level=2,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1004: 22% discount exceeds 20% tier 2 Finance approval"
+        ))
+
+        # Q-1006: Reliance (Amit) - 25% discount needs Finance Sneha
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1006.id, approver_id=fin_sneha.id,
+            approver_role=Role.FINANCE.value, approval_level=2,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1006: 25% discount requires Finance Sneha sign-off"
+        ))
+
+        # Q-1015: Reliance (Amit) - ₹1 Crore deal, 25% discount, 8% margin needs Finance Sneha
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1015.id, approver_id=mgr_neha.id,
+            approver_role=Role.MANAGER.value, approval_level=1,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1015: Reliance ₹1 Cr deal (25% disc, 8% margin) Sales Manager sign-off"
+        ))
+        session.add(ApprovalRequest(
+            id=uuid4(), quotation_id=q_1015.id, approver_id=fin_sneha.id,
+            approver_role=Role.FINANCE.value, approval_level=2,
+            status=ApprovalStatus.PENDING, quote_version=1,
+            comments="Q-1015: Reliance ₹1 Cr deal (25% disc, 8% margin < 15% floor) Finance Sneha sign-off"
+        ))
+
+        pending_quotes = [q for q, _ in quotations if q.status == QuoteStatus.PENDING_APPROVAL and q.id not in (q_1001.id, q_1004.id, q_1006.id, q_1015.id)]
         other_quotes = [q for q, _ in quotations if q.status != QuoteStatus.PENDING_APPROVAL]
 
         for i in range(200):
@@ -418,13 +714,13 @@ def seed(force: bool = False):
                 appr_status = ApprovalStatus.PENDING
                 app_role = Role.MANAGER.value
                 app_lvl = 1
-                approver_user = manager
+                approver_user = mgr_neha
             else:
                 q = other_quotes[i % len(other_quotes)]
                 appr_status = ApprovalStatus.APPROVED if i % 2 == 0 else ApprovalStatus.REJECTED
                 app_role = Role.MANAGER.value if i % 2 == 0 else Role.FINANCE.value
                 app_lvl = 1 if i % 2 == 0 else 2
-                approver_user = manager if i % 2 == 0 else finance
+                approver_user = mgr_neha if i % 2 == 0 else fin_sneha
 
             session.add(ApprovalRequest(
                 id=uuid4(), quotation_id=q.id, approver_id=approver_user.id,
@@ -434,26 +730,43 @@ def seed(force: bool = False):
             ))
         session.flush()
 
-        # ─── 10. ORDERS, ORDER LINES, SHIPMENTS & BACKORDERS (200 Each) ───────
+        # ─── 10. ORDERS, ORDER LINES, SHIPMENTS & BACKORDERS (Scenario + 200) ─
         orders = []
-        for i in range(200):
-            q, lines = quotations[i % len(quotations)]
-            ord_status = random.choices(
-                [OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.PROCESSING],
-                weights=[0.6, 0.25, 0.15]
-            )[0]
-            cust = next(c for c in customers if c.id == q.customer_id)
 
-            o = Order(
-                id=uuid4(), quotation_id=q.id, customer_id=q.customer_id, rep_id=q.rep_id,
-                status=ord_status, payment_status=PaymentStatus.PAID if ord_status == OrderStatus.DELIVERED else PaymentStatus.PARTIAL,
-                total_amount=q.total, delivery_address=cust.address_shipping or cust.address_billing,
-                promised_delivery_date=date.today() + timedelta(days=random.randint(2, 14)),
-                created_at=q.created_at + timedelta(days=1)
-            )
-            orders.append((o, lines))
-            session.add(o)
+        # Order SO-1001: 100 Laptops for ABC Bank, split between Ahmedabad (60) and Mumbai (40)
+        so_1001 = Order(
+            id=uuid4(), quotation_id=q_1007.id, customer_id=cust_abc.id, rep_id=rep_rahul.id,
+            status=OrderStatus.PROCESSING, payment_status=PaymentStatus.PENDING,
+            total_amount=q_1007.total, delivery_address=cust_abc.address_shipping or cust_abc.address_billing,
+            promised_delivery_date=date.today() + timedelta(days=5),
+            notes="SO-1001: 100 Laptops for ABC Bank (Operations Karan fulfillment: 60 Ahmedabad + 40 Mumbai)",
+            created_at=now - timedelta(days=1)
+        )
+        orders.append((so_1001, lines_1007))
+        session.add(so_1001)
         session.flush()
+
+        # Split: 60 Ahmedabad, 40 Mumbai
+        session.add(OrderLine(
+            id=uuid4(), order_id=so_1001.id, product_id=prod_laptop.id,
+            warehouse_id=wh_ahm.id, quantity=60,
+            unit_price=prod_laptop.price * 0.93, line_total=prod_laptop.price * 0.93 * 60
+        ))
+        session.add(OrderLine(
+            id=uuid4(), order_id=so_1001.id, product_id=prod_laptop.id,
+            warehouse_id=wh_bom.id, quantity=40,
+            unit_price=prod_laptop.price * 0.93, line_total=prod_laptop.price * 0.93 * 40
+        ))
+
+        # Auto-create Invoice for SO-1001 as in pipeline
+        inv_1001 = Invoice(
+            id=uuid4(), invoice_number="INV-SO-1001", order_id=so_1001.id, customer_id=cust_abc.id,
+            status=InvoiceStatus.SENT, amount=q_1007.total, amount_paid=0.0,
+            outstanding_amount=q_1007.total, currency="INR",
+            due_date=date.today() + timedelta(days=30), invoice_date=now - timedelta(days=1),
+            notes="Tax Invoice for Order SO-1001 (ABC Bank 100 Laptops)"
+        )
+        session.add(inv_1001)
 
         courier_list = ["Blue Dart Express", "Delhivery Logistics", "DHL Supply Chain", "FedEx Enterprise", "Gati KWE"]
         for idx, (o, lines) in enumerate(orders):
@@ -524,7 +837,28 @@ def seed(force: bool = False):
             ))
         session.flush()
 
-        # ─── 12. NEGOTIATIONS, MESSAGES & PORTAL NEGOTIATIONS (200 Each) ──────
+        # ─── 12. NEGOTIATIONS, MESSAGES & PORTAL NEGOTIATIONS (Scenario + 200) ─
+        # Scenario Negotiation for Q-1001: Ankit (ABC Bank) asks Rahul for additional 5% discount
+        neg_1001 = Negotiation(
+            id=uuid4(), quotation_id=q_1001.id, customer_id=cust_abc.id, rep_id=rep_rahul.id,
+            status=NegotiationStatus.OPEN,
+            requested_discount=17.0, counter_discount=15.0, final_discount=None
+        )
+        session.add(neg_1001)
+        session.flush()
+        session.add(NegotiationMessage(
+            id=uuid4(), negotiation_id=neg_1001.id, sender_id=buyer_ankit.id,
+            sender_role=SenderRole.CUSTOMER,
+            message="We want 100 laptops, but can you reduce the price by another 5% (requesting 17% total)?",
+            discount_proposed=17.0
+        ))
+        session.add(NegotiationMessage(
+            id=uuid4(), negotiation_id=neg_1001.id, sender_id=rep_rahul.id,
+            sender_role=SenderRole.REP,
+            message="Received Ankit! Since 17% > 10%, this requires fresh Sales Manager sign-off from Neha. Submitting now.",
+            discount_proposed=17.0
+        ))
+
         for idx in range(200):
             q, _ = quotations[idx % len(quotations)]
             neg = Negotiation(

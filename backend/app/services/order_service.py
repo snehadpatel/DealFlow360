@@ -45,6 +45,24 @@ def create_order_from_quote(session: Session, quotation: Quotation) -> Order:
 
     session.commit()
     session.refresh(order)
+
+    # Automatically generate an Invoice for this confirmed Order
+    try:
+        from app.models.invoice import Invoice
+        from app.services import invoice_service
+        existing_inv = session.exec(select(Invoice).where(Invoice.order_id == order.id)).first()
+        if not existing_inv:
+            invoice_service.create_invoice(
+                session,
+                customer_id=quotation.customer_id,
+                amount=quotation.total,
+                order_id=order.id,
+                currency=quotation.currency or "INR",
+                notes=f"Generated from confirmed Quotation {quotation.id}",
+            )
+    except Exception as inv_err:
+        print(f"Notice: Invoice auto-creation for order {order.id}: {inv_err}")
+
     return order
 
 

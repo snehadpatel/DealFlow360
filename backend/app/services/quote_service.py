@@ -369,7 +369,7 @@ def update_quote(
             detail=f"A {quotation.status.value} quote cannot be edited. Renew or clone it instead.",
         )
 
-    was_issued = quotation.status in (QuoteStatus.PENDING_APPROVAL, QuoteStatus.APPROVED)
+    was_issued = quotation.status in (QuoteStatus.PENDING_APPROVAL, QuoteStatus.APPROVED, QuoteStatus.NEGOTIATION)
     old_lines = _lines_for_quote(session, quotation.id)
     old_weighted = risk_engine.weighted_discount_percent(_risk_inputs(session, old_lines))
 

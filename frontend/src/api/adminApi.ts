@@ -201,6 +201,104 @@ export async function createWarehouseApi(data: any): Promise<any> {
   }
 }
 
+export async function updateWarehouseApi(id: string, data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.put(`/warehouses/${id}`, data);
+    return res;
+  } catch (err) {
+    console.error('Failed to update warehouse in DB:', err);
+    throw err;
+  }
+}
+
+export async function deleteWarehouseApi(id: string): Promise<void> {
+  try {
+    await apiClient.delete(`/warehouses/${id}`);
+  } catch (err) {
+    console.error('Failed to delete warehouse in DB:', err);
+    throw err;
+  }
+}
+
+export async function fetchPriceListsList(): Promise<any[]> {
+  try {
+    const res: any = await apiClient.get('/price-lists');
+    return Array.isArray(res) ? res : [];
+  } catch (err) {
+    console.error('Failed to fetch price lists from DB:', err);
+    return [];
+  }
+}
+
+export async function createPriceListApi(data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.post('/price-lists', data);
+    return res;
+  } catch (err) {
+    console.error('Failed to create price list in DB:', err);
+    throw err;
+  }
+}
+
+export async function fetchPriceListItems(priceListId: string): Promise<any[]> {
+  try {
+    const res: any = await apiClient.get(`/price-lists/${priceListId}/items`);
+    return Array.isArray(res) ? res : [];
+  } catch (err) {
+    console.error('Failed to fetch price list items from DB:', err);
+    return [];
+  }
+}
+
+export async function addPriceListItemApi(priceListId: string, data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.post(`/price-lists/${priceListId}/items`, data);
+    return res;
+  } catch (err) {
+    console.error('Failed to add price list item in DB:', err);
+    throw err;
+  }
+}
+
+export async function fetchDiscountRulesList(): Promise<any[]> {
+  try {
+    const res: any = await apiClient.get('/discount-rules');
+    return Array.isArray(res) ? res : [];
+  } catch (err) {
+    console.error('Failed to fetch discount rules from DB:', err);
+    return [];
+  }
+}
+
+export async function createDiscountRuleApi(data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.post('/discount-rules', data);
+    return res;
+  } catch (err) {
+    console.error('Failed to create discount rule in DB:', err);
+    throw err;
+  }
+}
+
+export async function updateDiscountRuleApi(id: string, data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.put(`/discount-rules/${id}`, data);
+    return res;
+  } catch (err) {
+    console.error('Failed to update discount rule in DB:', err);
+    throw err;
+  }
+}
+
+export async function deleteDiscountRuleApi(id: string): Promise<void> {
+  try {
+    await apiClient.delete(`/discount-rules/${id}`);
+  } catch (err) {
+    console.error('Failed to delete discount rule in DB:', err);
+    throw err;
+  }
+}
+
 export async function fetchSubscriptionPlansList(): Promise<any[]> {
   try {
     const res: any = await apiClient.get('/subscriptions/plans');
@@ -208,6 +306,35 @@ export async function fetchSubscriptionPlansList(): Promise<any[]> {
   } catch (err) {
     console.error('Failed to fetch subscription plans from DB:', err);
     return [];
+  }
+}
+
+export async function createSubscriptionPlanApi(data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.post('/subscriptions/plans', data);
+    return res;
+  } catch (err) {
+    console.error('Failed to create subscription plan in DB:', err);
+    throw err;
+  }
+}
+
+export async function updateSubscriptionPlanApi(id: string, data: any): Promise<any> {
+  try {
+    const res: any = await apiClient.put(`/subscriptions/plans/${id}`, data);
+    return res;
+  } catch (err) {
+    console.error('Failed to update subscription plan in DB:', err);
+    throw err;
+  }
+}
+
+export async function deleteSubscriptionPlanApi(id: string): Promise<void> {
+  try {
+    await apiClient.delete(`/subscriptions/plans/${id}`);
+  } catch (err) {
+    console.error('Failed to delete subscription plan in DB:', err);
+    throw err;
   }
 }
 

@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr
 class UserCreate(BaseModel):
     name: str
     email: str
-    password: str
+    password: Optional[str] = "Pass@123"
     role: str = "REP"
 
 class UserUpdate(BaseModel):

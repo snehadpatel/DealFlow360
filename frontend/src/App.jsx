@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 5000, // 5 seconds to ensure fresh data across tab switches
     },
   },
 });
@@ -91,10 +91,10 @@ export default function App() {
 
   if (activeTab === "admin") {
     return (
-      <>
+      <QueryClientProvider client={queryClient}>
         <AdminDashboard />
         <ChatWidget activeTab="admin" />
-      </>
+      </QueryClientProvider>
     );
   }
 

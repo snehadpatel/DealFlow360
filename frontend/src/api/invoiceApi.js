@@ -156,3 +156,36 @@ export const sendInvoice = async (invoiceId, payload = {}) => {
     return { success: true, message: `Invoice ${invoiceId} dispatched.` };
   }
 };
+
+/**
+ * Record Payment against Invoice in DB
+ */
+export const recordInvoicePayment = async (invoiceId, payload = {}) => {
+  try {
+    const res = await apiClient.post(`/invoices/${invoiceId}/pay`, {
+      amount: Number(payload.amount) || 0,
+      method: payload.method || 'BANK_TRANSFER',
+      transaction_id: payload.transaction_id || `TXN-${Date.now()}`,
+      notes: payload.notes || 'Payment recorded via portal',
+    });
+    return res;
+  } catch (err) {
+    console.error('Failed to record invoice payment in DB:', err);
+    throw err;
+  }
+};
+
+/**
+ * Update Invoice Status in DB
+ */
+export const updateInvoiceStatus = async (invoiceId, status) => {
+  try {
+    const res = await apiClient.put(`/invoices/${invoiceId}/status`, null, {
+      params: { status },
+    });
+    return res;
+  } catch (err) {
+    console.error('Failed to update invoice status in DB:', err);
+    throw err;
+  }
+};

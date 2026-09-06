@@ -84,13 +84,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Demo credentials matching seeded database users
+  // Demo credentials matching seeded TechNova team
   const DEMO_CREDENTIALS = {
-    REP: { email: "alex.rep@dealflow360.com", password: "rep123" },
-    MANAGER: { email: "maria.manager@dealflow360.com", password: "mgr123" },
-    FINANCE: { email: "felix.finance@dealflow360.com", password: "fin123" },
-    CUSTOMER: { email: "buyer@abccorp.com", password: "cust123" },
-    ADMIN: { email: "admin@dealflow360.com", password: "admin123" },
+    REP: { email: "rahul@technova.com", password: "rep123" },
+    MANAGER: { email: "neha@technova.com", password: "mgr123" },
+    FINANCE: { email: "sneha@technova.com", password: "fin123" },
+    OPERATIONS: { email: "karan@technova.com", password: "ops123" },
+    CUSTOMER: { email: "ankit@abcbank.com", password: "cust123" },
+    ADMIN: { email: "arjun@technova.com", password: "admin123" },
   };
 
   const loginDemoPersona = async (role) => {

@@ -42,11 +42,12 @@ export default function Login({ onNavigateToSignup }) {
   };
 
   const demoAccounts = [
-    { role: "REP", title: "Sales Rep", badge: "Quote Builder" },
-    { role: "MANAGER", title: "Manager", badge: "Approver" },
-    { role: "FINANCE", title: "Finance/Ops", badge: "Fulfillment" },
-    { role: "CUSTOMER", title: "Customer", badge: "Portal" },
-    { role: "ADMIN", title: "Admin", badge: "Dashboard" },
+    { role: "REP", title: "Rahul", badge: "Sales Rep" },
+    { role: "MANAGER", title: "Neha", badge: "Sales Mgr" },
+    { role: "FINANCE", title: "Sneha", badge: "Finance" },
+    { role: "OPERATIONS", title: "Karan", badge: "Operations" },
+    { role: "CUSTOMER", title: "Ankit", badge: "ABC Bank" },
+    { role: "ADMIN", title: "Arjun", badge: "Admin" },
   ];
 
   const handlePersonaClick = async (role) => {
