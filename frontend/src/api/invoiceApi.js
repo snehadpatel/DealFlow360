@@ -155,22 +155,8 @@ export const sendInvoice = async (invoiceId, payload = {}) => {
 };
 
 /**
- * Record a payment against an invoice. Backend flips status to PAID /
+ * Record a payment against an invoice in DB. Backend flips status to PAID /
  * PARTIALLY_PAID and the audit listener logs it with the acting user.
- */
-export const recordInvoicePayment = async (invoiceId, payload = {}) => {
-  return await apiClient.post(`/invoices/${invoiceId}/pay`, payload);
-};
-
-/**
- * Update an invoice's status directly (SENT, CANCELLED, etc.).
- */
-export const updateInvoiceStatus = async (invoiceId, status) => {
-  return await apiClient.put(`/invoices/${invoiceId}/status`, null, { params: { status } });
-};
-
-/**
- * Record Payment against Invoice in DB
  */
 export const recordInvoicePayment = async (invoiceId, payload = {}) => {
   try {

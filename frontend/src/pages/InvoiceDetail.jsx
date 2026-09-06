@@ -183,7 +183,6 @@ export default function InvoiceDetail({
         onBack={onBack}
         onDownload={handleDownload}
         onSend={() => setIsSendModalOpen(true)}
-        onRecordPayment={handleRecordPayment}
         onViewBilling={onViewBilling}
         onViewQuotation={onViewQuotation}
         onRefresh={() => fetchInvoice(true)}
