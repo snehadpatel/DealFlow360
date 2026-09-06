@@ -60,8 +60,7 @@ def update_plan(session: Session, plan_id: UUID, **kwargs) -> SubscriptionPlan:
 
 def delete_plan(session: Session, plan_id: UUID):
     plan = get_plan_or_404(session, plan_id)
-    plan.is_active = False
-    session.add(plan)
+    session.delete(plan)
     session.commit()
 
 
