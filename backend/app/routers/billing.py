@@ -43,6 +43,7 @@ def get_billing_summary(
     return billing_service.summary(session)
 
 
+
 @router.get("/{billing_id}")
 def get_billing_detail(
     billing_id: str,
@@ -52,7 +53,8 @@ def get_billing_detail(
     record = billing_service.get_billing(session, billing_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Billing record {billing_id} not found")
-    return record
+    return _build_billing_record(session, order)
+
 
 
 @router.get("/{billing_id}/items")
@@ -115,8 +117,9 @@ def send_billing_invoice(
     invoice_service.mark_invoice_sent(session, UUID(invoice_id))
 
     target_email = payload.email or record["customer"]["email"]
+    inv_number = record["invoice"]["invoiceNumber"] or "N/A"
     return {
         "success": True,
-        "message": f"Invoice {record['invoice']['invoiceNumber']} dispatched to {target_email}",
+        "message": f"Invoice {inv_number} dispatched to {target_email}",
         "sentAt": datetime.utcnow().isoformat(),
     }

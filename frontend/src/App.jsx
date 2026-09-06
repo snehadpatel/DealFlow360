@@ -74,7 +74,7 @@ function AppRouter({ activeTab, setActiveTab, selectedBillingId }) {
   if (activeTab === "billing") {
     return (
       <BillingDetail
-        billingId={selectedBillingId || "BIL-2045"}
+        billingId={selectedBillingId}
         onBack={() => setActiveTab("subscription")}
       />
     );

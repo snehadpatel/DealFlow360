@@ -52,3 +52,6 @@ backend/dealflow360.db
 backend/dealflow360.db-wal
 backend/dealflow360.db-shm
 dealflow360.db
+*.db
+*.db-wal
+*.db-shm
