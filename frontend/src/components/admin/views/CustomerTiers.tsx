@@ -139,7 +139,7 @@ export default function CustomerTiers() {
                 onClick={() => toggle(tier.id)}
                 className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${tier.status ? "bg-[#F26C4F]" : "bg-[#E5E7EB]"}`}
               >
-                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${tier.status ? "translate-x-5" : "translate-x-0.5"}`} />
+                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${tier.status ? "left-[22px]" : "left-0.5"}`} />
               </button>
             </div>
 

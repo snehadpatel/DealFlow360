@@ -8,7 +8,7 @@ export default function Login({ onNavigateToSignup }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedPersona, setSelectedPersona] = useState("REP");
+  const [selectedPersona, setSelectedPersona] = useState(null);
 
   const {
     register,
