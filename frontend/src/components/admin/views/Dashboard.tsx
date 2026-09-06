@@ -80,6 +80,7 @@ import { fetchDashboardStats, fetchCustomersList, fetchProductsList, fetchUsersL
 
 export default function Dashboard({ onNavigate }: Props) {
   const [selectedAiDeal, setSelectedAiDeal] = useState<string | null>("DEAL-882");
+  const [escalated, setEscalated] = useState(false);
   const [stats, setStats] = useState<any>({
     total_customers: 200,
     total_quotes: 200,
@@ -475,10 +476,15 @@ export default function Dashboard({ onNavigate }: Props) {
             <div className="mt-4 pt-3 border-t border-[#E5E7EB] flex items-center justify-between">
               <span className="text-[11px] text-[#6B7280]">Recommended Action: <strong>Escalate to Finance VP</strong></span>
               <button
-                onClick={() => alert("Action triggered: Escalated to Finance VP")}
-                className="px-3 py-1.5 bg-[#F26C4F] text-white text-xs font-bold rounded-lg hover:bg-[#e05535] transition"
+                onClick={() => setEscalated(true)}
+                disabled={escalated}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
+                  escalated
+                    ? "bg-emerald-100 text-emerald-700 cursor-default"
+                    : "bg-[#F26C4F] text-white hover:bg-[#e05535]"
+                }`}
               >
-                Execute Escalation
+                {escalated ? "✓ Escalated to Finance VP" : "Execute Escalation"}
               </button>
             </div>
           </div>
