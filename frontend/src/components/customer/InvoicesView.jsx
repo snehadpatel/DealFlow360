@@ -26,7 +26,9 @@ export default function InvoicesView() {
       <InvoiceDetail
         invoiceId={selectedInvoiceId}
         onBack={() => setSelectedInvoiceId(null)}
-        onViewQuotation={(qId) => alert(`Quotation Ref: ${qId}`)}
+        // Customers view quotations from the Quotations tab; from an invoice we
+        // don't deep-link, so this is a no-op rather than a jarring alert popup.
+        onViewQuotation={() => {}}
       />
     );
   }

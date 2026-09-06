@@ -87,6 +87,39 @@ export default function InvoicesScreen({ initialInvoiceId, onNavigateToQuotation
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
 
+  const handleExport = () => {
+    const rows = invoicesResponse.items || [];
+    if (!rows.length) {
+      showToast('No invoices to export', 'error');
+      return;
+    }
+    const headers = ['Invoice #', 'Customer', 'Status', 'Amount', 'Outstanding', 'Due Date'];
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = rows.map((inv) =>
+      [
+        inv.invoiceNumber || inv.invoice_number || inv.id,
+        inv.customerName || inv.customer_name || inv.customer?.name || '',
+        inv.status,
+        inv.totals?.grandTotal ?? inv.amount ?? '',
+        inv.totals?.outstanding ?? inv.outstanding_amount ?? '',
+        inv.dueDate || inv.due_date || '',
+      ]
+        .map(esc)
+        .join(',')
+    );
+    const csv = [headers.map(esc).join(','), ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoices-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${rows.length} invoice(s) to CSV`);
+  };
+
   const handleDownload = async (invoiceId) => {
     try {
       await downloadInvoicePdf(invoiceId);
@@ -116,7 +149,13 @@ export default function InvoicesScreen({ initialInvoiceId, onNavigateToQuotation
     return (
       <InvoiceDetail
         invoiceId={selectedInvoiceId}
-        onBack={() => setSelectedInvoiceId(null)}
+        onBack={() => {
+          // Re-fetch the list + KPI summary so a payment/send just recorded in
+          // the detail view is reflected on the invoices list without a manual
+          // refresh (mirrors ApprovalScreen's back handler).
+          setSelectedInvoiceId(null);
+          fetchData(true);
+        }}
         onViewQuotation={onNavigateToQuotation || ((qId) => alert(`Navigating to Quotation ${qId}`))}
         onViewBilling={onNavigateToBilling || (() => alert('Navigating to Billing Schedule'))}
       />
@@ -171,8 +210,9 @@ export default function InvoicesScreen({ initialInvoiceId, onNavigateToQuotation
           </button>
 
           <button
-            onClick={() => showToast('Exporting invoices to CSV...', 'success')}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-[#E5E7EB] text-[#1F2937] rounded-xl text-xs font-semibold shadow-xs transition"
+            onClick={handleExport}
+            disabled={!invoicesResponse.items?.length}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-[#E5E7EB] text-[#1F2937] rounded-xl text-xs font-semibold shadow-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-3.5 h-3.5 text-[#6B7280]" />
             <span>Export</span>

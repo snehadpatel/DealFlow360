@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getMyQuotations } from '../../api/salesApi';
 import { Search, Plus } from 'lucide-react';
 import StatusBadge from '../customer/StatusBadge'; // Reuse customer badge as it has same styles
+import QuotationDetail from '../customer/QuotationDetail';
 
 const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const formatCurrency = (val) => currencyFormatter.format(val || 0);
@@ -11,6 +12,7 @@ export default function MyQuotations({ onNewQuote }) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
+  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
 
   const fetchQuotations = async () => {
     setLoading(true);
@@ -27,6 +29,20 @@ export default function MyQuotations({ onNewQuote }) {
   useEffect(() => {
     fetchQuotations();
   }, [searchTerm, activeFilter]);
+
+  // Drill into a single quotation (read-only detail + negotiation view). Back
+  // re-runs the list fetch so any status change made in the detail is reflected.
+  if (selectedQuoteId) {
+    return (
+      <QuotationDetail
+        quotationId={selectedQuoteId}
+        onBack={() => {
+          setSelectedQuoteId(null);
+          fetchQuotations();
+        }}
+      />
+    );
+  }
 
 
 
@@ -118,7 +134,10 @@ export default function MyQuotations({ onNewQuote }) {
                       <StatusBadge status={quote.status} />
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg text-xs font-medium transition">
+                      <button
+                        onClick={() => setSelectedQuoteId(quote.id)}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg text-xs font-medium transition"
+                      >
                         View
                       </button>
                     </td>
