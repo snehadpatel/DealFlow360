@@ -11,7 +11,6 @@ import {
   ArrowRight, 
   RefreshCw, 
   X,
-import {
   FileText,
   Percent,
   ShieldCheck,
