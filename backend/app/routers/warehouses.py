@@ -45,6 +45,16 @@ def update_warehouse(
     return admin_service.update_warehouse(session, warehouse_id, **payload.model_dump(exclude_none=True))
 
 
+@router.delete("/{warehouse_id}", status_code=204)
+def delete_warehouse(
+    warehouse_id: UUID,
+    session: Session = Depends(get_session),
+    _: User = Depends(require_roles([Role.ADMIN]))
+):
+    """Soft-delete (deactivate) a warehouse."""
+    admin_service.delete_warehouse(session, warehouse_id)
+
+
 @router.get("/{warehouse_id}/stock", response_model=List[StockResponse])
 def get_warehouse_stock(warehouse_id: UUID, session: Session = Depends(get_session), _: User = Depends(get_current_user)):
     return admin_service.list_stock(session, warehouse_id=warehouse_id)

@@ -20,7 +20,10 @@ from app.models.price_list import PriceList, PriceListItem
 from app.models.discount_rule import DiscountRule, UpsellRule
 from app.models.order import Order, OrderLine, Shipment, Backorder, OrderStatus, ShipmentStatus
 from app.models.invoice import Invoice, Payment, CreditNote, InvoiceStatus
-from app.models.subscription import SubscriptionPlan, CustomerSubscription, BillingCycle, SubscriptionStatus
+from app.models.subscription import (
+    SubscriptionPlan, CustomerSubscription, BillingCycle, SubscriptionStatus,
+    BillingSchedule, ScheduleStatus,
+)
 from app.models.negotiation import Negotiation, NegotiationMessage, NegotiationStatus
 from app.models.notification import Notification
 
@@ -42,6 +45,7 @@ __all__ = [
     "Order", "OrderLine", "Shipment", "Backorder", "OrderStatus", "ShipmentStatus",
     "Invoice", "Payment", "CreditNote", "InvoiceStatus",
     "SubscriptionPlan", "CustomerSubscription", "BillingCycle", "SubscriptionStatus",
+    "BillingSchedule", "ScheduleStatus",
     "Negotiation", "NegotiationMessage", "NegotiationStatus",
     "Notification",
 ]

@@ -1,7 +1,7 @@
 """Subscriptions router — replaces empty stub with full CRUD."""
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlmodel import Session
 
 from app.db import get_session
@@ -68,6 +68,18 @@ def subscribe(
     return subscription_service.subscribe_customer(
         session, payload.customer_id, payload.plan_id, payload.quantity, payload.start_date
     )
+
+@router.get("/{sub_id}/proration-preview")
+def proration_preview(
+    sub_id: UUID,
+    plan_id: Optional[UUID] = Query(default=None),
+    quantity: Optional[int] = Query(default=None),
+    session: Session = Depends(get_session),
+    _: User = Depends(get_current_user),
+):
+    """Dry-run the proration math for a proposed change without persisting it,
+    so the UI can show the customer exactly what they'll be charged/credited."""
+    return subscription_service.preview_proration(session, sub_id, plan_id=plan_id, quantity=quantity)
 
 @router.put("/{sub_id}", response_model=CustomerSubscriptionResponse)
 def update_subscription(

@@ -147,39 +147,174 @@ def create_backorder(session: Session, **kwargs) -> Backorder:
 
 
 def resolve_backorder(session: Session, backorder_id: UUID) -> Backorder:
+    """Resolve a backorder by re-running allocation against current stock.
+
+    When a restock has arrived, the backordered quantity is re-planned by the
+    allocation_engine and the newly-available units are reserved (consolidated
+    onto the fewest warehouses). Only if the shortfall is now fully coverable is
+    the backorder marked resolved; a partial restock leaves it open with the
+    remaining shortfall updated.
+    """
+    from app.services import allocation_engine
     b = session.get(Backorder, backorder_id)
     if not b:
         raise HTTPException(status_code=404, detail="Backorder not found")
-    b.is_resolved = True
+
+    stocks = _load_warehouse_stocks(session, b.product_id)
+    plan = allocation_engine.plan_allocation(stocks, b.backorder_qty)
+
+    # Reserve whatever is now available toward the shortfall.
+    for alloc in plan.allocations:
+        stock = session.exec(
+            select(StockInventory)
+            .where(StockInventory.warehouse_id == alloc.warehouse_id)
+            .where(StockInventory.product_id == b.product_id)
+        ).first()
+        if stock:
+            stock.reserved_units += alloc.allocated_qty
+            session.add(stock)
+
+    b.available_qty += plan.allocated_qty
+    b.backorder_qty = plan.backorder_qty
+    if plan.backorder_qty == 0:
+        b.is_resolved = True
+
     session.add(b)
     session.commit()
     session.refresh(b)
     return b
 
 
-def recommend_warehouse_split(session: Session, product_id: UUID, required_qty: int) -> list:
-    """Recommend how to split an order across warehouses based on stock."""
-    stocks = session.exec(
+def _load_warehouse_stocks(session: Session, product_id: UUID):
+    """Load the active warehouses' stock position for a product as engine inputs."""
+    from app.services.allocation_engine import WarehouseStock
+    rows = session.exec(
         select(StockInventory, Warehouse)
         .join(Warehouse, StockInventory.warehouse_id == Warehouse.id)
         .where(StockInventory.product_id == product_id)
         .where(Warehouse.is_active == True)
         .order_by(Warehouse.priority)
     ).all()
+    return [
+        WarehouseStock(
+            warehouse_id=warehouse.id,
+            warehouse_name=warehouse.name,
+            available_units=stock.available_units,
+            reserved_units=stock.reserved_units,
+            shipping_cost=warehouse.shipping_cost,
+            priority=warehouse.priority,
+        )
+        for stock, warehouse in rows
+    ]
 
-    recommendations = []
-    remaining = required_qty
-    for stock, warehouse in stocks:
-        if remaining <= 0:
-            break
-        allocate = min(stock.available_units - stock.reserved_units, remaining)
-        if allocate > 0:
-            recommendations.append({
-                "warehouse_id": str(warehouse.id),
-                "warehouse_name": warehouse.name,
-                "allocated_qty": allocate,
-                "shipping_cost": warehouse.shipping_cost,
-            })
-            remaining -= allocate
 
-    return recommendations
+def recommend_warehouse_split(session: Session, product_id: UUID, required_qty: int) -> dict:
+    """Recommend how to split an order across warehouses (dry-run, no persistence).
+
+    Delegates the real decision to the deterministic allocation_engine: prefers
+    a single-warehouse consolidation, otherwise a priority-ranked split, and
+    reports any backorder shortfall. Returns the full engine plan so the UI can
+    show *why* an order was split or backordered.
+    """
+    from app.services import allocation_engine
+    stocks = _load_warehouse_stocks(session, product_id)
+    plan = allocation_engine.plan_allocation(stocks, required_qty)
+    return {
+        "product_id": str(product_id),
+        "required_qty": plan.required_qty,
+        "total_available": plan.total_available,
+        "allocated_qty": plan.allocated_qty,
+        "backorder_qty": plan.backorder_qty,
+        "is_split": plan.is_split,
+        "is_backordered": plan.is_backordered,
+        "consolidated": plan.consolidated,
+        "total_shipping_cost": plan.total_shipping_cost,
+        "allocations": [
+            {
+                "warehouse_id": str(a.warehouse_id),
+                "warehouse_name": a.warehouse_name,
+                "allocated_qty": a.allocated_qty,
+                "shipping_cost": a.shipping_cost,
+            }
+            for a in plan.allocations
+        ],
+        "notes": plan.notes,
+    }
+
+
+def allocate_order(session: Session, order_id: UUID) -> dict:
+    """Really allocate an order's lines across warehouses and persist the result.
+
+    For each line the allocation_engine decides the split; we then:
+      * reserve the allocated units in each contributing warehouse's stock,
+      * stamp the first (or sole) warehouse on the OrderLine,
+      * create a real Backorder row for any shortfall, and
+      * advance the order to PROCESSING.
+
+    This is the operations counterpart to the dry-run recommend_warehouse_split:
+    it mutates stock and creates the backorders the fulfillment screen lists.
+    """
+    from app.services import allocation_engine
+    order = get_order_or_404(session, order_id)
+    lines = session.exec(select(OrderLine).where(OrderLine.order_id == order_id)).all()
+
+    line_results = []
+    any_backorder = False
+    for line in lines:
+        stocks = _load_warehouse_stocks(session, line.product_id)
+        plan = allocation_engine.plan_allocation(stocks, line.quantity)
+
+        # Reserve the allocated units against each contributing warehouse.
+        for alloc in plan.allocations:
+            stock = session.exec(
+                select(StockInventory)
+                .where(StockInventory.warehouse_id == alloc.warehouse_id)
+                .where(StockInventory.product_id == line.product_id)
+            ).first()
+            if stock:
+                stock.reserved_units += alloc.allocated_qty
+                session.add(stock)
+
+        # Stamp the primary (highest-priority) warehouse on the line.
+        if plan.allocations:
+            line.warehouse_id = plan.allocations[0].warehouse_id
+            session.add(line)
+
+        # Persist a real backorder for any shortfall.
+        if plan.is_backordered:
+            any_backorder = True
+            session.add(Backorder(
+                order_id=order_id,
+                product_id=line.product_id,
+                required_qty=plan.required_qty,
+                available_qty=plan.allocated_qty,
+                backorder_qty=plan.backorder_qty,
+            ))
+
+        line_results.append({
+            "product_id": str(line.product_id),
+            "required_qty": plan.required_qty,
+            "allocated_qty": plan.allocated_qty,
+            "backorder_qty": plan.backorder_qty,
+            "is_split": plan.is_split,
+            "consolidated": plan.consolidated,
+            "allocations": [
+                {"warehouse_id": str(a.warehouse_id), "warehouse_name": a.warehouse_name,
+                 "allocated_qty": a.allocated_qty, "shipping_cost": a.shipping_cost}
+                for a in plan.allocations
+            ],
+            "notes": plan.notes,
+        })
+
+    order.status = OrderStatus.PROCESSING
+    order.updated_at = datetime.utcnow()
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    return {
+        "order_id": str(order_id),
+        "status": order.status.value if hasattr(order.status, "value") else str(order.status),
+        "has_backorder": any_backorder,
+        "lines": line_results,
+    }
