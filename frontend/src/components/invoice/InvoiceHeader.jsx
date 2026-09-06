@@ -7,8 +7,6 @@ export default function InvoiceHeader({
   onBack,
   onDownload,
   onSend,
-  onRecordPayment,
-  onViewBilling,
   onViewQuotation,
   onRefresh,
   onRecordPayment,
