@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AIInsightCard from '../components/ai/AIInsightCard';
+import AIActionModal from '../components/ai/AIActionModal';
 import apiClient from '../api/client';
 import { Activity, ShieldAlert, Sparkles, Filter, RefreshCw, TrendingUp } from 'lucide-react';
 
@@ -8,6 +9,10 @@ export default function DealHealthDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeDeals, setActiveDeals] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState(null);
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -41,6 +46,18 @@ export default function DealHealthDashboard() {
     };
     fetchDeals();
   }, [refreshKey]);
+
+  const handleActionClick = (action) => {
+    setModalAction(action);
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setModalAction(null);
+    // Refresh data after modal closes so updated values are reflected
+    setRefreshKey((k) => k + 1);
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
@@ -129,9 +146,17 @@ export default function DealHealthDashboard() {
           key={`${selectedDealId}-${refreshKey}`}
           dealId={selectedDealId}
           quotationId={selectedDealId}
-          onActionClick={(action) => alert(`Executed AI recommended action: ${action}`)}
+          onActionClick={handleActionClick}
         />
       )}
+
+      {/* Action Modal */}
+      <AIActionModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        actionType={modalAction}
+        dealId={selectedDealId}
+      />
     </div>
   );
 }
