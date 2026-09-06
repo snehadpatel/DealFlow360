@@ -20,6 +20,7 @@ type Plan = {
   status: "active" | "inactive";
   highlight?: boolean;
   persisted?: boolean;
+  created_at?: string;
 };
 
 const initialPlans: Plan[] = [
@@ -51,7 +52,8 @@ export default function SubscriptionPlans() {
   const [addOpen, setAddOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState(200);
+  const [selectedPlanId, setSelectedPlanId] = useState<number | string | null>(null);
 
   useEffect(() => {
     loadPlans();
@@ -59,6 +61,7 @@ export default function SubscriptionPlans() {
 
   const [addForm, setAddForm] = useState({ name: "", price: 0, description: "" });
   const [saving, setSaving] = useState(false);
+  const [localSearch, setLocalSearch] = useState("");
 
   async function loadPlans() {
     try {
@@ -82,8 +85,9 @@ export default function SubscriptionPlans() {
           status: p.is_active === false ? "inactive" : "active",
           highlight: p.name?.toUpperCase() === "PRO" || idx === 1,
           persisted: true,
+          created_at: p.created_at,
         }));
-        setPlans(formatted);
+        setPlans(formatted.reverse());
       }
     } catch (e) {
       console.warn("Using initial plans fallback", e);
@@ -106,7 +110,7 @@ export default function SubscriptionPlans() {
         description: editingPlan.description,
         is_active: editingPlan.status === "active",
       };
-      if (typeof editingPlan.id === "string") {
+      if (editingPlan.persisted) {
         await updateSubscriptionPlanApi(editingPlan.id, payload);
         await loadPlans();
       } else {
@@ -149,21 +153,39 @@ export default function SubscriptionPlans() {
 
   async function handleDeletePlan() {
     if (!editingPlan) return;
-    if (typeof editingPlan.id !== "string") {
+    if (!editingPlan.persisted) {
       // Demo-only row; just drop it locally.
       setPlans(plans.filter((p) => p.id !== editingPlan.id));
       setEditingPlan(null);
       return;
     }
-    if (!window.confirm(`Archive the ${editingPlan.name} plan?`)) return;
+    if (!window.confirm(`Delete the ${editingPlan.name} plan permanently?`)) return;
     setSaving(true);
     try {
       await deleteSubscriptionPlanApi(editingPlan.id);
       await loadPlans();
       setEditingPlan(null);
-      showToast("Plan archived");
+      showToast("Plan deleted");
     } catch (e) {
-      showToast("Error archiving plan");
+      showToast("Error deleting plan");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeletePlanDirect(planToDelete: Plan) {
+    if (!planToDelete.persisted) {
+      setPlans(plans.filter((p) => p.id !== planToDelete.id));
+      return;
+    }
+    if (!window.confirm(`Delete the ${planToDelete.name} plan permanently?`)) return;
+    setSaving(true);
+    try {
+      await deleteSubscriptionPlanApi(planToDelete.id);
+      await loadPlans();
+      showToast("Plan deleted");
+    } catch (e) {
+      showToast("Error deleting plan");
     } finally {
       setSaving(false);
     }
@@ -181,9 +203,23 @@ export default function SubscriptionPlans() {
           <h2 className="text-[18px] font-bold text-[#1F2937]">Subscription Plans</h2>
           <p className="text-[#6B7280] text-sm">Manage plan tiers, pricing, and feature access.</p>
         </div>
-        <button onClick={() => setAddOpen(true)} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E]">
-          <Plus size={16} /> Create Plan
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Search plans..." 
+              value={localSearch}
+              onChange={(e) => { setLocalSearch(e.target.value); setPage(1); }}
+              className="pl-8 pr-3 py-2 border border-[#E5E7EB] rounded-lg text-[13px] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 w-48 sm:w-64"
+            />
+            <div className="absolute left-2.5 top-2.5 text-[#9CA3AF]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+          </div>
+          <button onClick={() => setAddOpen(true)} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E] whitespace-nowrap">
+            <Plus size={16} /> Create Plan
+          </button>
+        </div>
       </div>
 
       {/* Stats row */}
@@ -201,9 +237,16 @@ export default function SubscriptionPlans() {
       </div>
 
       {/* Plan Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {plans.slice((page - 1) * perPage, page * perPage).map((plan) => (
-          <div key={plan.id} className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col ${plan.highlight ? "border-[#F26C4F] shadow-md" : "border-[#E5E7EB]"}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5" onMouseLeave={() => setSelectedPlanId(null)}>
+        {plans.filter(p => p.name.toLowerCase().includes(localSearch.toLowerCase())).slice((page - 1) * perPage, page * perPage).map((plan) => {
+          const isHighlighted = selectedPlanId === plan.id || (selectedPlanId === null && plan.highlight);
+          return (
+          <div 
+            key={plan.id} 
+            onClick={() => setSelectedPlanId(plan.id)}
+            onMouseEnter={() => setSelectedPlanId(plan.id)}
+            className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col cursor-pointer transition-all ${isHighlighted ? "border-[#F26C4F] shadow-md" : "border-[#E5E7EB] hover:border-[#F26C4F]"}`}
+          >
             {plan.highlight && (
               <div className="absolute -top-3 left-6">
                 <span className="bg-[#F26C4F] text-white text-[11px] font-semibold px-3 py-1 rounded-full">Most Popular</span>
@@ -233,18 +276,28 @@ export default function SubscriptionPlans() {
                 </div>
                 <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${plan.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>{plan.status}</span>
               </div>
-              <button onClick={() => setEditingPlan(plan)} className={`w-full py-2 rounded-lg text-[13px] font-medium transition-colors ${plan.highlight ? "bg-[#F26C4F] text-white hover:bg-[#E05A3E]" : "border border-[#E5E7EB] text-[#1F2937] hover:bg-[#F4F5F7]"}`}>
-                Edit Plan
-              </button>
+              <div className="flex gap-2 w-full">
+                <button onClick={(e) => { e.stopPropagation(); setEditingPlan(plan); }} className={`flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors ${isHighlighted ? "bg-[#F26C4F] text-white hover:bg-[#E05A3E]" : "border border-[#E5E7EB] text-[#1F2937] hover:bg-[#F4F5F7]"}`}>
+                  Edit Plan
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); handleDeletePlanDirect(plan); }} className="flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors border border-red-200 text-red-600 hover:bg-red-50">
+                  Delete Plan
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border border-[#E5E7EB] bg-white rounded-xl text-xs text-[#6B7280] gap-2">
         <div className="flex items-center gap-2">
-          <span>Showing {plans.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, plans.length)} of <strong>{plans.length}</strong> loaded database records</span>
+          {(() => {
+            const filteredCount = plans.filter(p => p.name.toLowerCase().includes(localSearch.toLowerCase())).length;
+            return (
+              <span>Showing {filteredCount === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, filteredCount)} of <strong>{filteredCount}</strong> {localSearch ? "matching" : "loaded database"} records</span>
+            );
+          })()}
           <select
             aria-label="Items per page"
             value={perPage}
@@ -267,10 +320,10 @@ export default function SubscriptionPlans() {
           >
             <ChevronLeft size={14} />
           </button>
-          <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(plans.length / perPage) || 1}</span>
+          <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(plans.filter(p => p.name.toLowerCase().includes(localSearch.toLowerCase())).length / perPage) || 1}</span>
           <button
             aria-label="Next page"
-            disabled={page === Math.ceil(plans.length / perPage) || plans.length === 0}
+            disabled={page === Math.ceil(plans.filter(p => p.name.toLowerCase().includes(localSearch.toLowerCase())).length / perPage) || plans.filter(p => p.name.toLowerCase().includes(localSearch.toLowerCase())).length === 0}
             onClick={() => setPage(p => p + 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
           >
@@ -311,7 +364,7 @@ export default function SubscriptionPlans() {
               disabled={saving}
               className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline disabled:opacity-50"
             >
-              Archive this plan
+              Delete this plan
             </button>
           </div>
         </div>
