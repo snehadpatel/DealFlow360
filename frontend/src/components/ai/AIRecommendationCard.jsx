@@ -4,6 +4,39 @@ import AIRecommendationReason from './AIRecommendationReason';
 import RecommendationActions from './RecommendationActions';
 import { Package, Repeat, Layers, ArrowUpRight, Sparkles } from 'lucide-react';
 
+// Moved to module scope: these are static constants that don't depend on
+// props or state, so they should be created once when the module loads,
+// not recreated on every render of every card.
+const formatCurrency = (val) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(val || 0);
+
+const TYPE_BADGES = {
+  UPSELL: {
+    label: 'Upsell',
+    bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    icon: ArrowUpRight,
+  },
+  CROSS_SELL: {
+    label: 'Cross-Sell',
+    bg: 'bg-blue-50 text-blue-700 border-blue-200',
+    icon: Layers,
+  },
+  COMPLEMENTARY: {
+    label: 'Complementary',
+    bg: 'bg-purple-50 text-purple-700 border-purple-200',
+    icon: Package,
+  },
+  ALTERNATIVE: {
+    label: 'Alternative',
+    bg: 'bg-amber-50 text-amber-700 border-amber-200',
+    icon: Repeat,
+  },
+};
+
 export default function AIRecommendationCard({
   recommendation,
   onAddToQuote,
@@ -12,37 +45,7 @@ export default function AIRecommendationCard({
 }) {
   const [isAdded, setIsAdded] = useState(false);
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
-
-  const typeBadges = {
-    UPSELL: {
-      label: 'Upsell',
-      bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      icon: ArrowUpRight,
-    },
-    CROSS_SELL: {
-      label: 'Cross-Sell',
-      bg: 'bg-blue-50 text-blue-700 border-blue-200',
-      icon: Layers,
-    },
-    COMPLEMENTARY: {
-      label: 'Complementary',
-      bg: 'bg-purple-50 text-purple-700 border-purple-200',
-      icon: Package,
-    },
-    ALTERNATIVE: {
-      label: 'Alternative',
-      bg: 'bg-amber-50 text-amber-700 border-amber-200',
-      icon: Repeat,
-    },
-  };
-
-  const currentType = typeBadges[recommendation.recommendationType] || typeBadges.CROSS_SELL;
+  const currentType = TYPE_BADGES[recommendation.recommendationType] || TYPE_BADGES.CROSS_SELL;
   const TypeIcon = currentType.icon;
 
   const handleAdd = () => {
@@ -51,7 +54,7 @@ export default function AIRecommendationCard({
   };
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-xs hover:border-[#F26C4F]/40 transition-all space-y-3 flex flex-col justify-between">
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-xs hover:border-[#F26C4F]/40 transition-colors space-y-3 flex flex-col justify-between">
       {/* Card Header: Type Badge & Confidence */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">

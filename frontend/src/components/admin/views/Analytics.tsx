@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area, PieChart, Pie, Cell, ComposedChart, Line, CartesianGrid, Legend } from "recharts";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const analyticsData = [
   { month: "Jan", revenue: 42, target: 40, orders: 34, quotes: 52, avgDiscount: 8.2, dealCycle: 18 },
@@ -23,20 +25,50 @@ const COLORS = ['#F26C4F', '#F8B179', '#1F2937'];
 export default function Analytics() {
   const [dateRange, setDateRange] = useState("YTD 2026");
   const [toast, setToast] = useState("");
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   }
 
-  function exportReport(format: string) {
-    showToast(`Exported report in ${format} format successfully`);
+  async function exportReport(format: string) {
+    if (format === "PDF" && reportRef.current) {
+      try {
+        setIsExporting(true);
+        const canvas = await html2canvas(reportRef.current, {
+          scale: 2, // Higher resolution
+          useCORS: true,
+          logging: false
+        });
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Calculate PDF dimensions (A4 size is 210x297 mm)
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('Analytics_Report.pdf');
+        
+        showToast(`Exported report in ${format} format successfully`);
+      } catch (err) {
+        console.error("Failed to export PDF", err);
+        showToast("Failed to export PDF");
+      } finally {
+        setIsExporting(false);
+      }
+    } else {
+      // Mock CSV/XLSX export for now
+      showToast(`Exported report in ${format} format successfully`);
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={reportRef}>
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
+        <div data-html2canvas-ignore="true" className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
           {toast}
         </div>
@@ -49,7 +81,7 @@ export default function Analytics() {
           <p className="text-[#6B7280] text-xs mt-0.5">Comprehensive reports across sales revenue, discounts, customer metrics, and subscriptions.</p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div data-html2canvas-ignore="true" className="flex items-center gap-2 flex-wrap">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
@@ -74,9 +106,10 @@ export default function Analytics() {
           </button>
           <button
             onClick={() => exportReport("PDF")}
-            className="flex items-center gap-1 bg-[#F26C4F] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#e05535] shadow-md transition-colors"
+            disabled={isExporting}
+            className="flex items-center gap-1 bg-[#F26C4F] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#e05535] shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileText size={14} /> Export PDF
+            <FileText size={14} /> {isExporting ? "Exporting..." : "Export PDF"}
           </button>
         </div>
       </div>

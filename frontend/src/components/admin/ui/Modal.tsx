@@ -12,19 +12,22 @@ type Props = {
   size?: "sm" | "md" | "lg";
 };
 
+// Moved to module scope: this is a static lookup and doesn't need to be
+// recreated on every render.
+const MODAL_WIDTHS: Record<string, string> = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
+
 export default function Modal({ open = true, onClose, title, description, children, onSave, saveLabel = "Save", size = "md" }: Props) {
   if (!open) return null;
-  const widths = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className={`relative bg-white rounded-2xl p-6 w-full ${widths[size]} shadow-xl max-h-[90vh] overflow-y-auto`}>
+      <div className={`relative bg-white rounded-2xl p-6 w-full ${MODAL_WIDTHS[size]} shadow-xl max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-[#1F2937] font-semibold text-base">{title}</h2>
             {description && <p className="text-[#6B7280] text-sm mt-0.5">{description}</p>}
           </div>
-          <button onClick={onClose} className="text-[#6B7280] hover:text-[#1F2937] ml-4 flex-shrink-0 mt-0.5">
+          <button onClick={onClose} aria-label="Close dialog" className="text-[#6B7280] hover:text-[#1F2937] ml-4 flex-shrink-0 mt-0.5">
             <X size={18} />
           </button>
         </div>

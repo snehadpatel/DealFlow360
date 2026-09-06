@@ -5,8 +5,16 @@ import apiClient from './client';
  * Maps seamlessly to backend /ai/upsell and /api/ai/recommendations.
  */
 export const getQuotationRecommendations = async (quotationId, cart = []) => {
-  const cartProductNames = cart.map((item) => item.product || item.product_name || item.name).filter(Boolean);
-  const cartProductIds = cart.map((item) => item.productId || item.product_id || item.id).filter(Boolean);
+  // .flatMap() combines the map + filter(Boolean) into a single pass over the array,
+  // avoiding the creation of an intermediate array that gets thrown away immediately.
+  const cartProductNames = cart.flatMap((item) => {
+    const name = item.product || item.product_name || item.name;
+    return name ? [name] : [];
+  });
+  const cartProductIds = cart.flatMap((item) => {
+    const id = item.productId || item.product_id || item.id;
+    return id ? [id] : [];
+  });
 
   try {
     // Try primary AI endpoint from backend contract

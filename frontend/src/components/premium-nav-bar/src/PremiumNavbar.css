@@ -21,7 +21,8 @@
 /* Base styles for the navigation links */
 .nav-item {
   position: relative;
-  overflow: hidden; /* Crucial: Keeps the wave inside the button */
+  overflow: hidden;
+  /* Crucial: Keeps the wave inside the button */
   padding: 12px 32px;
   border-radius: 40px;
   text-decoration: none;
@@ -51,16 +52,16 @@
 .nav-item i {
   position: absolute;
   left: 50%;
-  top: 100%; /* Starts fully hidden below the button */
-  transform: translateX(-50%);
+  top: 0;
+  transform: translate(-50%, 80px);
   width: 160px;
   height: 160px;
-  transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
   z-index: 1;
 }
 
 .nav-item:hover i {
-  top: -30px; /* Slides up to fill the button */
+  transform: translate(-50%, -30px);
 }
 
 /* 2. The spinning squircle that creates the wave illusion */
@@ -71,9 +72,17 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: #f26c4f; /* The premium purple color */
-  border-radius: 42%; /* Slightly flattened circle creates the wave crests */
-  animation: gooey 6s linear infinite;
+  background: #8b5cf6;
+  border-radius: 42%;
+  animation: gooey 8s linear infinite;
+
+  /* FIX 2: Pauses the rotation entirely when you aren't hovering */
+  animation-play-state: paused;
+}
+
+/* Tells the animation to start spinning only when hovered */
+.nav-item:hover i::before {
+  animation-play-state: running;
 }
 
 /* Spins the shape infinitely */
@@ -81,6 +90,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

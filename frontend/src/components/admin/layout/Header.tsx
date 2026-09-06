@@ -86,7 +86,11 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
 
   return (
     <header className="fixed top-0 left-0 lg:left-[240px] right-0 h-[64px] bg-white border-b border-[#E5E7EB] z-20 flex items-center px-6 gap-4 shadow-xs">
-      <button onClick={onMenuToggle} className="lg:hidden text-[#6B7280] hover:text-[#1F2937] mr-1">
+      <button
+        onClick={onMenuToggle}
+        aria-label="Open navigation menu"
+        className="lg:hidden text-[#6B7280] hover:text-[#1F2937] mr-1"
+      >
         <Menu size={20} />
       </button>
 
@@ -103,7 +107,7 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
       <div className="flex items-center gap-2">
         {/* Search Field */}
         {searchOpen ? (
-          <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-1.5 border border-[#E5E7EB] transition-all">
+          <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-1.5 border border-[#E5E7EB] transition-colors">
             <Search size={15} className="text-[#6B7280]" />
             <input
               autoFocus
@@ -111,6 +115,7 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search customers, deals, products..."
               className="bg-transparent outline-none text-xs text-[#1F2937] w-48 sm:w-64"
+              aria-label="Search customers, deals, and products"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && searchQuery.trim()) {
                   onNavigate("customers");
@@ -118,7 +123,7 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
                 }
               }}
             />
-            <button onClick={() => setSearchOpen(false)}>
+            <button onClick={() => setSearchOpen(false)} aria-label="Close search">
               <X size={13} className="text-[#6B7280] hover:text-[#1F2937]" />
             </button>
           </div>
@@ -126,7 +131,7 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
           <button
             onClick={() => setSearchOpen(true)}
             className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#F4F5F7] text-[#6B7280] hover:text-[#1F2937] transition-colors border border-transparent hover:border-[#E5E7EB]"
-            title="Search"
+            aria-label="Open search"
           >
             <Search size={18} />
           </button>
@@ -137,7 +142,7 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
           <button
             onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}
             className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#F4F5F7] text-[#6B7280] hover:text-[#1F2937] transition-colors relative border border-transparent hover:border-[#E5E7EB]"
-            title="Notifications"
+            aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
           >
             <Bell size={18} />
             {unreadCount > 0 && (
@@ -184,6 +189,8 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
           <button
             onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
             className="flex items-center gap-2 rounded-xl hover:bg-[#F4F5F7] p-1.5 border border-transparent hover:border-[#E5E7EB] transition-colors"
+            aria-label="Open profile menu"
+            aria-expanded={profileOpen}
           >
             <div className="w-8 h-8 rounded-full bg-[#F26C4F] flex items-center justify-center flex-shrink-0 shadow-xs">
               <span className="text-white font-bold text-xs">{userInitials}</span>

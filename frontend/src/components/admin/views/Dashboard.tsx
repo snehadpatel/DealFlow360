@@ -387,7 +387,7 @@ export default function Dashboard({ onNavigate }: Props) {
                   <span className="text-[#1F2937] font-bold">{s.count.toLocaleString()} customers</span>
                 </div>
                 <div className="h-2 bg-[#F4F5F7] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: s.color }} />
+                  <div className="h-full rounded-full transition-[width]" style={{ width: `${s.pct}%`, background: s.color }} />
                 </div>
               </div>
             ))}
@@ -434,7 +434,7 @@ export default function Dashboard({ onNavigate }: Props) {
                 <div
                   key={deal.id}
                   onClick={() => setSelectedAiDeal(deal.id)}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-colors ${
                     isSelected
                       ? "border-[#F26C4F] bg-[#FFF8F6] shadow-xs"
                       : "border-[#E5E7EB] hover:border-gray-300 bg-white"

@@ -25,6 +25,78 @@ const queryClient = new QueryClient({
   },
 });
 
+// Defined at module scope so they are created once, not on every render.
+// If these were inside the component, React would create a new array object
+// each render, breaking memoization for any child that receives them as props.
+const BASE_TABS = [
+  { id: "sales_workspace", label: "Sales Dashboard", roles: ["REP", "ADMIN"] },
+  { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
+  { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
+  { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN", "OPERATIONS"] },
+  { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
+  { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
+  { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
+  { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
+  { id: "admin", label: "Admin Console", roles: ["ADMIN"] },
+];
+
+const CUSTOMER_TABS = [
+  { id: "cust_dashboard", label: "Dashboard", roles: ["CUSTOMER", "ADMIN"] },
+  { id: "cust_quotations", label: "My Quotations", roles: ["CUSTOMER", "ADMIN"] },
+  { id: "cust_negotiations", label: "Negotiations", roles: ["CUSTOMER", "ADMIN"] },
+  { id: "cust_invoices", label: "Invoices", roles: ["CUSTOMER", "ADMIN"] },
+  { id: "cust_subscriptions", label: "Subscriptions", roles: ["CUSTOMER", "ADMIN"] },
+  { id: "cust_profile", label: "Profile", roles: ["CUSTOMER", "ADMIN"] },
+];
+
+/** Returns the default tab id for a given user role. */
+function getDefaultTabForRole(role) {
+  if (role === 'CUSTOMER') return 'cust_dashboard';
+  if (role === 'MANAGER' || role === 'FINANCE') return 'approval';
+  if (role === 'ADMIN') return 'admin';
+  if (role === 'REP') return 'sales_workspace';
+  return 'quotation';
+}
+
+/**
+ * AppRouter — renders the correct screen for the current activeTab.
+ * Extracted from App() to reduce its cyclomatic complexity. Each case here
+ * is an independent branch; keeping them in App() made it score 20+.
+ */
+function AppRouter({ activeTab, setActiveTab, selectedBillingId }) {
+  if (activeTab === "sales_workspace") return <SalesWorkspace />;
+  if (activeTab === "quotation") return <QuotationBuilder />;
+  if (activeTab === "approval") return <ApprovalScreen />;
+  if (activeTab === "fulfillment") return <FulfillmentScreen />;
+  if (activeTab === "subscription") return <SubscriptionBillingScreen />;
+  if (activeTab === "billing") {
+    return (
+      <BillingDetail
+        billingId={selectedBillingId || "BIL-2045"}
+        onBack={() => setActiveTab("subscription")}
+      />
+    );
+  }
+  if (activeTab === "invoices") {
+    return (
+      <InvoicesScreen
+        onNavigateToQuotation={() => setActiveTab("quotation")}
+        onNavigateToBilling={() => setActiveTab("billing")}
+      />
+    );
+  }
+  if (activeTab.startsWith("cust_")) {
+    return (
+      <CustomerPortal
+        activeTab={activeTab.replace('cust_', '')}
+        onTabChange={(tab) => setActiveTab(`cust_${tab}`)}
+      />
+    );
+  }
+  if (activeTab === "dashboard") return <DealHealthDashboard />;
+  return null;
+}
+
 export default function App() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
@@ -32,17 +104,7 @@ export default function App() {
   const [selectedBillingId, setSelectedBillingId] = useState("BIL-2045");
 
   React.useEffect(() => {
-    if (user?.role === 'CUSTOMER') {
-      setActiveTab('cust_dashboard');
-    } else if (user?.role === 'MANAGER' || user?.role === 'FINANCE') {
-      setActiveTab('approval');
-    } else if (user?.role === 'ADMIN') {
-      setActiveTab('admin');
-    } else if (user?.role === 'REP') {
-      setActiveTab('sales_workspace');
-    } else {
-      setActiveTab('quotation');
-    }
+    setActiveTab(getDefaultTabForRole(user?.role));
   }, [user]);
 
   // Google OAuth client ID (fallback mock client id if not configured in env)
@@ -62,33 +124,6 @@ export default function App() {
     );
   }
 
-  const baseTabs = [
-    { id: "sales_workspace", label: "Sales Dashboard", roles: ["REP", "ADMIN"] },
-    { id: "quotation", label: "Quotation Builder", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
-    { id: "approval", label: "Approvals", roles: ["MANAGER", "FINANCE", "ADMIN"] },
-    { id: "fulfillment", label: "Fulfillment & Stock", roles: ["FINANCE", "ADMIN", "OPERATIONS"] },
-    { id: "subscription", label: "Subscriptions", roles: ["REP", "FINANCE", "ADMIN"] },
-    { id: "billing", label: "Billing Detail", roles: ["REP", "FINANCE", "ADMIN"] },
-    { id: "invoices", label: "Invoices", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
-    { id: "dashboard", label: "Deal Health Dashboard", roles: ["REP", "MANAGER", "FINANCE", "ADMIN"] },
-    { id: "admin", label: "Admin Console", roles: ["ADMIN"] },
-  ];
-
-  const customerTabs = [
-    { id: "cust_dashboard", label: "Dashboard", roles: ["CUSTOMER", "ADMIN"] },
-    { id: "cust_quotations", label: "My Quotations", roles: ["CUSTOMER", "ADMIN"] },
-    { id: "cust_negotiations", label: "Negotiations", roles: ["CUSTOMER", "ADMIN"] },
-    { id: "cust_invoices", label: "Invoices", roles: ["CUSTOMER", "ADMIN"] },
-    { id: "cust_subscriptions", label: "Subscriptions", roles: ["CUSTOMER", "ADMIN"] },
-    { id: "cust_profile", label: "Profile", roles: ["CUSTOMER", "ADMIN"] },
-  ];
-
-  const isCustomerView = user?.role === 'CUSTOMER' || activeTab.startsWith('cust_');
-
-  const allowedTabs = isCustomerView 
-    ? customerTabs 
-    : baseTabs.filter((tab) => !user?.role || tab.roles.includes(user.role));
-
   if (activeTab === "admin") {
     return (
       <QueryClientProvider client={queryClient}>
@@ -97,6 +132,11 @@ export default function App() {
       </QueryClientProvider>
     );
   }
+
+  const isCustomerView = user?.role === 'CUSTOMER' || activeTab.startsWith('cust_');
+  const allowedTabs = isCustomerView
+    ? CUSTOMER_TABS
+    : BASE_TABS.filter((tab) => !user?.role || tab.roles.includes(user.role));
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-[#1F2937] flex flex-col font-sans relative">
@@ -147,6 +187,7 @@ export default function App() {
           )}
           <button
             onClick={logout}
+            aria-label="Log out of DealFlow360"
             className="text-xs text-[#EF4444] hover:text-[#DC2626] px-3 py-1 rounded-full border border-[#EF4444]/30 hover:bg-[#FEE2E2]/50 transition font-medium"
           >
             Logout
@@ -157,30 +198,12 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
         <QueryClientProvider client={queryClient}>
-          {activeTab === "sales_workspace" && <SalesWorkspace />}
-          {activeTab === "quotation" && <QuotationBuilder />}
-          {activeTab === "approval" && <ApprovalScreen />}
-          {activeTab === "fulfillment" && <FulfillmentScreen />}
-          {activeTab === "subscription" && <SubscriptionBillingScreen />}
-          {activeTab === "billing" && (
-            <BillingDetail
-              billingId={selectedBillingId || "BIL-2045"}
-              onBack={() => setActiveTab("subscription")}
-            />
-          )}
-          {activeTab === "invoices" && (
-            <InvoicesScreen
-              onNavigateToQuotation={(qId) => setActiveTab("quotation")}
-              onNavigateToBilling={() => setActiveTab("billing")}
-            />
-          )}
-          {activeTab.startsWith("cust_") && (
-            <CustomerPortal 
-              activeTab={activeTab.replace('cust_', '')} 
-              onTabChange={(tab) => setActiveTab(`cust_${tab}`)} 
-            />
-          )}
-          {activeTab === "dashboard" && <DealHealthDashboard />}
+          {/* AppRouter is a separate component to keep App()'s complexity low */}
+          <AppRouter
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            selectedBillingId={selectedBillingId}
+          />
         </QueryClientProvider>
       </main>
 
