@@ -74,7 +74,7 @@ function AppRouter({ activeTab, setActiveTab, selectedBillingId }) {
   if (activeTab === "billing") {
     return (
       <BillingDetail
-        billingId={selectedBillingId || "BIL-2045"}
+        billingId={selectedBillingId}
         onBack={() => setActiveTab("subscription")}
       />
     );
@@ -115,7 +115,7 @@ function AppShell() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
   const [activeTab, setActiveTab] = useState("quotation");
-  const [selectedBillingId, setSelectedBillingId] = useState("BIL-2045");
+  const [selectedBillingId, setSelectedBillingId] = useState(null);
 
   React.useEffect(() => {
     setActiveTab(getDefaultTabForRole(user?.role));

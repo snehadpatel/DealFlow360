@@ -10,7 +10,7 @@ import BillingTimeline from '../components/billing/BillingTimeline';
 import SendInvoiceModal from '../components/billing/SendInvoiceModal';
 import { AlertCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
 
-export default function BillingDetail({ billingId = 'BIL-2045', onBack }) {
+export default function BillingDetail({ billingId = null, onBack }) {
   const [billing, setBilling] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,16 +24,12 @@ export default function BillingDetail({ billingId = 'BIL-2045', onBack }) {
     setError(null);
 
     try {
+      // getBillingById self-resolves a missing/unknown id to the latest real
+      // billing record, so no synthetic fallback is needed here.
       const data = await getBillingById(billingId);
       setBilling(data);
     } catch (err) {
-      console.warn('Billing record fetch error, falling back to active billing:', err);
-      try {
-        const fallback = await getBillingDetail('BIL-2045');
-        setBilling(fallback);
-      } catch {
-        setError(err.message || 'Failed to load billing information');
-      }
+      setError(err.message || 'Failed to load billing information');
     } finally {
       setLoading(false);
       setRefreshing(false);
