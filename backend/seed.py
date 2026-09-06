@@ -758,7 +758,11 @@ def seed(force: bool = False):
             notes="SO-1001: 100 Laptops for ABC Bank (Operations Karan fulfillment: 60 Ahmedabad + 40 Mumbai)",
             created_at=now - timedelta(days=1)
         )
-        orders.append((so_1001, lines_1007))
+        # so_1001 carries an empty line list here because its OrderLines are
+        # added explicitly below with a bespoke Ahmedabad/Mumbai warehouse split.
+        # The shared loop further down creates OrderLines from each tuple's line
+        # list, so passing lines_1007 would double-insert them.
+        orders.append((so_1001, []))
         session.add(so_1001)
         session.flush()
 
@@ -783,6 +787,55 @@ def seed(force: bool = False):
             notes="Tax Invoice for Order SO-1001 (ABC Bank 100 Laptops)"
         )
         session.add(inv_1001)
+
+        # Bulk orders: every CONFIRMED/APPROVED quotation (other than Q-1007,
+        # which already produced scenario order SO-1001) converts into a real
+        # Order so the Fulfillment, Billing and Invoices screens read a full
+        # dataset from the DB rather than a single seeded row. Order lines are
+        # derived from each quotation's own line items so totals reconcile.
+        order_status_pool = [
+            OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.PICKING,
+            OrderStatus.PACKED, OrderStatus.SHIPPED, OrderStatus.DELIVERED,
+        ]
+        order_status_weights = [0.18, 0.20, 0.12, 0.12, 0.18, 0.20]
+        fulfillable = [
+            (q, lines) for q, lines in quotations
+            if q.status in (QuoteStatus.CONFIRMED, QuoteStatus.APPROVED) and q.id != q_1007.id
+        ]
+        for q, q_lines in fulfillable:
+            o_status = random.choices(order_status_pool, weights=order_status_weights)[0]
+            if o_status == OrderStatus.DELIVERED:
+                pay_status = PaymentStatus.PAID
+            elif o_status in (OrderStatus.SHIPPED, OrderStatus.PACKED):
+                pay_status = random.choice([PaymentStatus.PARTIAL, PaymentStatus.PENDING])
+            else:
+                pay_status = PaymentStatus.PENDING
+            cust = next((c for c in customers if c.id == q.customer_id), None)
+            delivery_addr = (cust.address_shipping or cust.address_billing) if cust else None
+            days_since = random.randint(1, 60)
+            created_dt = now - timedelta(days=days_since)
+            o = Order(
+                id=uuid4(), quotation_id=q.id, customer_id=q.customer_id, rep_id=q.rep_id,
+                status=o_status, payment_status=pay_status, total_amount=q.total,
+                delivery_address=delivery_addr,
+                promised_delivery_date=(created_dt + timedelta(days=random.randint(3, 14))).date(),
+                actual_delivery_date=(created_dt + timedelta(days=random.randint(3, 10))).date() if o_status == OrderStatus.DELIVERED else None,
+                notes=f"Auto-generated fulfillment order for confirmed quote #{str(q.id)[:8]}",
+                created_at=created_dt,
+            )
+            # Convert quotation lines into order lines (warehouse assigned in loop below).
+            o_lines = [
+                {
+                    "product_id": l["product_id"],
+                    "quantity": l["quantity"],
+                    "unit_price": l["unit_price"],
+                    "line_total": l["line_total"],
+                }
+                for l in q_lines
+            ]
+            orders.append((o, o_lines))
+            session.add(o)
+        session.flush()
 
         courier_list = ["Blue Dart Express", "Delhivery Logistics", "DHL Supply Chain", "FedEx Enterprise", "Gati KWE"]
         for idx, (o, lines) in enumerate(orders):

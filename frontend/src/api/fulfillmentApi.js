@@ -115,12 +115,21 @@ export const getFulfillmentById = async (id) => {
 };
 
 export const allocateStock = async (id) => {
-  // Persist to the backend: move the order to PROCESSING. `id` may be the
-  // display id (FUL-XXXX) so resolve the raw order UUID first. Errors propagate
-  // so the UI surfaces a real failure instead of a fake local mutation.
+  // Real allocation: the backend allocation_engine splits the order across
+  // warehouses, reserves stock, and raises backorders for any shortfall, then
+  // moves the order to PROCESSING. `id` may be the display id (FUL-XXXX) so
+  // resolve the raw order UUID first. Errors propagate so the UI surfaces a
+  // real failure instead of a fake local mutation.
   const f = await getFulfillmentById(id);
-  await apiClient.put(`/orders/${f.rawId}/status`, { status: 'PROCESSING' });
-  return { ...f, status: 'ALLOCATED', permissions: { can_allocate: false, can_create_shipment: true } };
+  const result = await apiClient.post(`/orders/${f.rawId}/allocate`);
+  const backorderCount = (result?.lines || []).reduce((acc, l) => acc + (l.backorder_qty || 0), 0);
+  return {
+    ...f,
+    status: 'ALLOCATED',
+    backorderCount,
+    allocation: result,
+    permissions: { can_allocate: false, can_create_shipment: true },
+  };
 };
 
 export const createShipment = async (id, shipmentData = {}) => {
