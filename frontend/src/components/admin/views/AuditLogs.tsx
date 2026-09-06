@@ -126,6 +126,7 @@ export default function AuditLogs() {
           <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
             <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
             <input
+              aria-label="Search audit logs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search user, action, quotation ID..."
@@ -134,6 +135,7 @@ export default function AuditLogs() {
           </div>
 
           <select
+            aria-label="Filter by role"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-medium text-[#374151] outline-none"
@@ -189,6 +191,7 @@ export default function AuditLogs() {
           <div className="flex items-center gap-2">
             <span>Showing {filtered.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, filtered.length)} of <strong>{filtered.length}</strong> loaded database records</span>
             <select
+              aria-label="Items per page"
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
               className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -202,6 +205,7 @@ export default function AuditLogs() {
           </div>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -210,6 +214,7 @@ export default function AuditLogs() {
             </button>
             <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(filtered.length / perPage) || 1}</span>
             <button
+              aria-label="Next page"
               disabled={page === Math.ceil(filtered.length / perPage) || filtered.length === 0}
               onClick={() => setPage(p => p + 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"

@@ -43,16 +43,18 @@ export default function AdminSettings() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Company Entity Name</label>
+            <label htmlFor="settings-company-name" className="block font-bold text-[#374151] mb-1">Company Entity Name</label>
             <input
+              id="settings-company-name"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
             />
           </div>
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Base Currency</label>
+            <label htmlFor="settings-currency" className="block font-bold text-[#374151] mb-1">Base Currency</label>
             <select
+              id="settings-currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -63,8 +65,9 @@ export default function AdminSettings() {
             </select>
           </div>
           <div>
-            <label className="block font-bold text-[#374151] mb-1">System Timezone</label>
+            <label htmlFor="settings-timezone" className="block font-bold text-[#374151] mb-1">System Timezone</label>
             <select
+              id="settings-timezone"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -83,8 +86,9 @@ export default function AdminSettings() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Inactivity Session Timeout (Minutes)</label>
+            <label htmlFor="settings-session-timeout" className="block font-bold text-[#374151] mb-1">Inactivity Session Timeout (Minutes)</label>
             <input
+              id="settings-session-timeout"
               type="number"
               value={sessionTimeout}
               onChange={(e) => setSessionTimeout(e.target.value)}
@@ -92,8 +96,8 @@ export default function AdminSettings() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Enforce Multi-Factor Auth (MFA)</label>
-            <select className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]">
+            <label htmlFor="settings-mfa" className="block font-bold text-[#374151] mb-1">Enforce Multi-Factor Auth (MFA)</label>
+            <select id="settings-mfa" className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]">
               <option value="optional">Optional for Reps</option>
               <option value="mandatory">Mandatory for Admin & Finance</option>
             </select>
@@ -108,8 +112,9 @@ export default function AdminSettings() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Default GST Tax %</label>
+            <label htmlFor="settings-default-tax" className="block font-bold text-[#374151] mb-1">Default GST Tax %</label>
             <input
+              id="settings-default-tax"
               type="number"
               value={defaultTax}
               onChange={(e) => setDefaultTax(e.target.value)}
@@ -117,8 +122,9 @@ export default function AdminSettings() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Max Auto-Approval Discount %</label>
+            <label htmlFor="settings-approval-threshold" className="block font-bold text-[#374151] mb-1">Max Auto-Approval Discount %</label>
             <input
+              id="settings-approval-threshold"
               type="number"
               value={approvalThreshold}
               onChange={(e) => setApprovalThreshold(e.target.value)}
@@ -126,8 +132,9 @@ export default function AdminSettings() {
             />
           </div>
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Default Quotation Validity (Days)</label>
+            <label htmlFor="settings-quote-validity" className="block font-bold text-[#374151] mb-1">Default Quotation Validity (Days)</label>
             <input
+              id="settings-quote-validity"
               type="number"
               value={quoteValidity}
               onChange={(e) => setQuoteValidity(e.target.value)}

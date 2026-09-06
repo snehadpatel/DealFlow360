@@ -2,6 +2,9 @@ import React from 'react';
 import InvoiceStatusBadge from './InvoiceStatusBadge';
 import { Eye, Download, Send, ExternalLink, FileText, User } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function InvoiceTable({
   invoices,
   onViewInvoice,
@@ -11,12 +14,6 @@ export default function InvoiceTable({
   onViewQuotation,
   userRole,
 }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   if (!invoices || invoices.length === 0) {
     return (

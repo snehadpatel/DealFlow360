@@ -2,6 +2,9 @@ import React from 'react';
 import InvoiceStatusBadge from './InvoiceStatusBadge';
 import { Eye, Download, Send, ExternalLink, ArrowRight } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function InvoiceMobileCard({
   invoice,
   onViewInvoice,
@@ -10,12 +13,6 @@ export default function InvoiceMobileCard({
   onViewQuotation,
   userRole,
 }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   const amount = invoice.totals?.grandTotal ?? 0;
   const paid = invoice.totals?.amountPaid ?? 0;
@@ -81,6 +78,7 @@ export default function InvoiceMobileCard({
       <div className="flex items-center justify-between pt-2 border-t border-[#E5E7EB]/60" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center space-x-2">
           <button
+            aria-label="Download PDF"
             onClick={() => onDownloadInvoice(invoice.id)}
             className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-[#6B7280] transition"
             title="Download PDF"
@@ -89,6 +87,7 @@ export default function InvoiceMobileCard({
           </button>
           {userRole !== 'CUSTOMER' && (
             <button
+              aria-label="Send to Customer"
               onClick={() => onSendInvoice(invoice)}
               className="p-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-[#6B7280] transition"
               title="Send to Customer"

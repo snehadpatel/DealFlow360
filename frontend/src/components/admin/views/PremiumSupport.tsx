@@ -108,16 +108,18 @@ export default function PremiumSupport() {
           <div className="space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Response SLA</label>
+                <label htmlFor="support-sla" className="block font-bold text-[#374151] mb-1">Response SLA</label>
                 <input
+                  id="support-sla"
                   value={editingPkg.sla}
                   onChange={(e) => setEditingPkg({ ...editingPkg, sla: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Support Hours</label>
+                <label htmlFor="support-hours" className="block font-bold text-[#374151] mb-1">Support Hours</label>
                 <input
+                  id="support-hours"
                   value={editingPkg.hours}
                   onChange={(e) => setEditingPkg({ ...editingPkg, hours: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -126,8 +128,9 @@ export default function PremiumSupport() {
             </div>
 
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Escalation Path</label>
+              <label htmlFor="support-escalation" className="block font-bold text-[#374151] mb-1">Escalation Path</label>
               <input
+                id="support-escalation"
                 value={editingPkg.escalationLevel}
                 onChange={(e) => setEditingPkg({ ...editingPkg, escalationLevel: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"

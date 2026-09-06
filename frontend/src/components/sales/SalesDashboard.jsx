@@ -3,13 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { getSalesDashboard } from '../../api/salesApi';
 import { FileText, Clock, Trophy, Edit3, MessageSquare, Percent, ArrowRight } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function SalesDashboard({ onAction }) {
   const { data, isLoading: loading } = useQuery({
     queryKey: ['salesDashboard'],
     queryFn: getSalesDashboard
   });
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   if (loading) {
     return (
@@ -52,10 +55,11 @@ export default function SalesDashboard({ onAction }) {
         {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <div 
+            <button 
               key={i}
+              type="button"
               onClick={() => onAction(kpi.tab)}
-              className="bg-white border border-gray-200 rounded-2xl p-5 shadow-md flex items-center justify-between transition hover:shadow-md-hover cursor-pointer"
+              className="w-full text-left bg-white border border-gray-200 rounded-2xl p-5 shadow-md flex items-center justify-between transition hover:shadow-md-hover cursor-pointer"
             >
               <div>
                 <div className="text-xs font-bold text-textSecondary uppercase tracking-wider">{kpi.title}</div>
@@ -64,7 +68,7 @@ export default function SalesDashboard({ onAction }) {
               <div className={`p-3.5 rounded-2xl border ${kpi.bg} ${kpi.color}`}>
                 <Icon className="w-6 h-6" />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

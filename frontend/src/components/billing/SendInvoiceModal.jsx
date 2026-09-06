@@ -43,6 +43,7 @@ export default function SendInvoiceModal({ isOpen, onClose, onSend, defaultEmail
             <h3 className="text-base font-bold text-textPrimary">Send Tax Invoice</h3>
           </div>
           <button
+            aria-label="Close modal"
             onClick={onClose}
             className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
@@ -72,8 +73,9 @@ export default function SendInvoiceModal({ isOpen, onClose, onSend, defaultEmail
             )}
 
             <div>
-              <label className="font-semibold text-textPrimary block mb-1.5">Recipient Email</label>
+              <label htmlFor="billing-invoice-email" className="font-semibold text-textPrimary block mb-1.5">Recipient Email</label>
               <input
+                id="billing-invoice-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

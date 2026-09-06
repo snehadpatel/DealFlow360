@@ -1,30 +1,27 @@
 import React from 'react';
 import { CreditCard, AlertCircle, CheckCircle2, Clock, Hash, Calendar } from 'lucide-react';
 
+const formatters = new Map();
+const getFormatter = (currency) => {
+  if (!formatters.has(currency)) {
+    formatters.set(currency, new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }));
+  }
+  return formatters.get(currency);
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function PaymentInformation({ payment, currency = 'USD' }) {
   if (!payment) return null;
 
-  const formatCurrency = (val) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(val || 0);
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatCurrency = (val) => getFormatter(currency).format(val || 0);
 
   const isPending = payment.status === 'PENDING' || payment.paidAmount === 0;
 

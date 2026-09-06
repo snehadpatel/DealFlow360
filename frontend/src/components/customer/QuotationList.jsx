@@ -3,6 +3,9 @@ import { getCustomerQuotations } from '../../api/customerApi';
 import StatusBadge from './StatusBadge';
 import { Search, FileText, ArrowRight } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function QuotationList({ onSelectQuotation }) {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +38,7 @@ export default function QuotationList({ onSelectQuotation }) {
     { id: 'COMPLETED', label: 'Completed' },
   ];
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   const filteredQuotations = quotations.filter((q) => {
     const matchesSearch = q.id.toLowerCase().includes(searchTerm.toLowerCase()) || q.salesRep.toLowerCase().includes(searchTerm.toLowerCase()) || q.customer.toLowerCase().includes(searchTerm.toLowerCase());

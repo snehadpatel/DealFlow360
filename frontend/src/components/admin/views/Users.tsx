@@ -145,6 +145,7 @@ export default function Users() {
           <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
             <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
             <input
+              aria-label="Search users"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search user by name or email..."
@@ -153,6 +154,7 @@ export default function Users() {
           </div>
 
           <select
+            aria-label="Filter by role"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-medium text-[#374151] outline-none"
@@ -185,6 +187,7 @@ export default function Users() {
                     <td className="py-3 px-4 font-medium text-[#4B5563]">{u.email}</td>
                     <td className="py-3 px-4">
                       <select
+                        aria-label="Change user role"
                         value={u.role}
                         onChange={(e) => changeRole(u.id, e.target.value)}
                         className="bg-[#FAFBFD] border border-[#E5E7EB] rounded-lg px-2 py-0.5 text-xs font-bold text-[#F26C4F] outline-none"
@@ -239,6 +242,7 @@ export default function Users() {
           <div className="flex items-center gap-2">
             <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> loaded database records</span>
             <select
+              aria-label="Items per page"
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
               className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -252,6 +256,7 @@ export default function Users() {
           </div>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -260,6 +265,7 @@ export default function Users() {
             </button>
             <span className="px-2 font-bold text-[#1F2937]">{page} / {pages || 1}</span>
             <button
+              aria-label="Next page"
               disabled={page === pages || pages === 0}
               onClick={() => setPage(p => p + 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -275,8 +281,9 @@ export default function Users() {
         <Modal title="Add Internal User Account" onClose={() => setAddOpen(false)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Full Name *</label>
+              <label htmlFor="add-user-name" className="block font-bold text-[#374151] mb-1">Full Name *</label>
               <input
+                id="add-user-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Maria Manager"
@@ -284,8 +291,9 @@ export default function Users() {
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+              <label htmlFor="add-user-email" className="block font-bold text-[#374151] mb-1">Email Address *</label>
               <input
+                id="add-user-email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="name@dealflow360.com"
@@ -294,8 +302,9 @@ export default function Users() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Assigned Role</label>
+                <label htmlFor="add-user-role" className="block font-bold text-[#374151] mb-1">Assigned Role</label>
                 <select
+                  id="add-user-role"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -308,8 +317,9 @@ export default function Users() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Department</label>
+                <label htmlFor="add-user-dept" className="block font-bold text-[#374151] mb-1">Department</label>
                 <input
+                  id="add-user-dept"
                   value={form.department}
                   onChange={(e) => setForm({ ...form, department: e.target.value })}
                   placeholder="Sales / Finance"
@@ -345,16 +355,18 @@ export default function Users() {
         <Modal title="Edit Internal User Account" onClose={() => setEditUser(null)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Full Name *</label>
+              <label htmlFor="edit-user-name" className="block font-bold text-[#374151] mb-1">Full Name *</label>
               <input
+                id="edit-user-name"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+              <label htmlFor="edit-user-email" className="block font-bold text-[#374151] mb-1">Email Address *</label>
               <input
+                id="edit-user-email"
                 value={editForm.email}
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -362,8 +374,9 @@ export default function Users() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Assigned Role</label>
+                <label htmlFor="edit-user-role" className="block font-bold text-[#374151] mb-1">Assigned Role</label>
                 <select
+                  id="edit-user-role"
                   value={editForm.role}
                   onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -376,8 +389,9 @@ export default function Users() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Department</label>
+                <label htmlFor="edit-user-dept" className="block font-bold text-[#374151] mb-1">Department</label>
                 <input
+                  id="edit-user-dept"
                   value={editForm.department}
                   onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"

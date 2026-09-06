@@ -224,6 +224,7 @@ export default function ChatWidget({ activeTab = 'general' }) {
           <div className="p-3 bg-white border-t border-[#E5E7EB]">
             <div className="flex items-center gap-2 bg-[#F4F5F7] border border-[#E5E7EB] focus-within:border-[#F26C4F] focus-within:bg-white rounded-xl px-3 py-1.5 transition-all">
               <input
+                aria-label="Chat message"
                 ref={inputRef}
                 type="text"
                 value={inputText}
@@ -234,6 +235,7 @@ export default function ChatWidget({ activeTab = 'general' }) {
                 className="flex-1 bg-transparent text-xs sm:text-sm text-[#1F2937] placeholder-gray-400 focus:outline-none disabled:opacity-60"
               />
               <button
+                aria-label="Send message"
                 type="button"
                 onClick={() => handleSend()}
                 disabled={!inputText.trim() || isLoading}

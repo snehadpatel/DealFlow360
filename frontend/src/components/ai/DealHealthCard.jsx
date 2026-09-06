@@ -1,13 +1,14 @@
 import React from 'react';
 import { Activity, TrendingUp, CheckCircle2, AlertCircle, AlertTriangle, Shield } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 0,
+});
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function DealHealthCard({ health }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   if (!health) return null;
 

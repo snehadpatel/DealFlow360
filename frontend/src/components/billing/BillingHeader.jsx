@@ -1,6 +1,41 @@
 import React from 'react';
 import { ArrowLeft, Download, Send, RefreshCw, Calendar, FileText, User } from 'lucide-react';
 
+const getStatusBadge = (status) => {
+  switch (status) {
+    case 'PAID': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    case 'PARTIALLY_PAID': return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'PENDING': return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'PROCESSING': return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'OVERDUE': return 'bg-rose-50 text-rose-700 border-rose-200';
+    case 'FAILED':
+    case 'CANCELLED': return 'bg-slate-100 text-slate-700 border-slate-300';
+    default: return 'bg-slate-100 text-slate-700 border-slate-200';
+  }
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return dateStr;
+  }
+};
+
+const formatBillingId = (id, bId) => {
+  if (bId && !bId.includes('-4') && bId.startsWith('BIL-')) return bId;
+  if (!id) return 'BIL-2045';
+  if (String(id).startsWith('BIL-')) return id;
+  return `BIL-${String(id).replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+};
+
+const formatQuoteId = (qid) => {
+  if (!qid) return 'Q-2045';
+  if (String(qid).startsWith('Q-')) return qid;
+  return `Q-${String(qid).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+};
+
 export default function BillingHeader({
   billing,
   onBack,
@@ -11,53 +46,7 @@ export default function BillingHeader({
 }) {
   if (!billing) return null;
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'PAID':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'PARTIALLY_PAID':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'PENDING':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'PROCESSING':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'OVERDUE':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'FAILED':
-      case 'CANCELLED':
-        return 'bg-slate-100 text-slate-700 border-slate-300';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const formatBillingId = (id, bId) => {
-    if (bId && !bId.includes('-4') && bId.startsWith('BIL-')) return bId;
-    if (!id) return 'BIL-2045';
-    if (String(id).startsWith('BIL-')) return id;
-    return `BIL-${String(id).replace(/-/g, '').slice(0, 6).toUpperCase()}`;
-  };
-
-  const formatQuoteId = (qid) => {
-    if (!qid) return 'Q-2045';
-    if (String(qid).startsWith('Q-')) return qid;
-    return `Q-${String(qid).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
-  };
 
   const displayBillingId = formatBillingId(billing.id, billing.billingId);
   const displayQuoteId = formatQuoteId(billing.quotationId);

@@ -101,8 +101,10 @@ export default function Sidebar({ activeView, onNavigate, mobileOpen, onClose }:
   return (
     <>
       {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden w-full cursor-default"
           onClick={onClose}
         />
       )}

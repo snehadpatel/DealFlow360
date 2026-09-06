@@ -131,17 +131,17 @@ export default function CloudBackup() {
       {/* Schedule Modal */}
       <Modal open={scheduleOpen} onClose={() => setScheduleOpen(false)} title="Configure Backup Schedule" onSave={() => { setScheduleOpen(false); showToast("Schedule updated"); }} saveLabel="Save Schedule">
         <div className="space-y-4">
-          <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">Backup Frequency</label>
-            <select className={inputCls}><option>Every 12 hours</option><option>Every 6 hours</option><option>Daily</option><option>Weekly</option></select>
+          <div><label htmlFor="backup-frequency" className="block text-[12px] font-medium text-[#6B7280] mb-1">Backup Frequency</label>
+            <select id="backup-frequency" className={inputCls}><option>Every 12 hours</option><option>Every 6 hours</option><option>Daily</option><option>Weekly</option></select>
           </div>
-          <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">Full Backup Schedule</label>
-            <select className={inputCls}><option>Daily at 02:00 AM</option><option>Weekly on Sunday</option><option>Monthly on 1st</option></select>
+          <div><label htmlFor="backup-full-schedule" className="block text-[12px] font-medium text-[#6B7280] mb-1">Full Backup Schedule</label>
+            <select id="backup-full-schedule" className={inputCls}><option>Daily at 02:00 AM</option><option>Weekly on Sunday</option><option>Monthly on 1st</option></select>
           </div>
-          <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">Retention Period</label>
-            <select className={inputCls}><option>30 days</option><option>60 days</option><option>90 days</option><option>1 year</option></select>
+          <div><label htmlFor="backup-retention" className="block text-[12px] font-medium text-[#6B7280] mb-1">Retention Period</label>
+            <select id="backup-retention" className={inputCls}><option>30 days</option><option>60 days</option><option>90 days</option><option>1 year</option></select>
           </div>
-          <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">Notification Email</label>
-            <input className={inputCls} defaultValue="admin@revalo.com" type="email" /></div>
+          <div><label htmlFor="backup-email" className="block text-[12px] font-medium text-[#6B7280] mb-1">Notification Email</label>
+            <input id="backup-email" className={inputCls} defaultValue="admin@revalo.com" type="email" /></div>
         </div>
       </Modal>
 

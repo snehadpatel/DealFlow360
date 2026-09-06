@@ -1,29 +1,27 @@
 import React from 'react';
 import { FileCheck, Download, Send, ExternalLink, Calendar, AlertCircle } from 'lucide-react';
 
+const formatters = new Map();
+const getFormatter = (currency) => {
+  if (!formatters.has(currency)) {
+    formatters.set(currency, new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 0 }));
+  }
+  return formatters.get(currency);
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function InvoiceSummary({ invoice, currency = 'USD', onDownload, onOpenSendModal }) {
   if (!invoice) return null;
 
-  const formatCurrency = (val) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0
-    }).format(val || 0);
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatCurrency = (val) => getFormatter(currency).format(val || 0);
 
   const getStatusBadge = (status) => {
     switch (status) {

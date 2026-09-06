@@ -75,6 +75,7 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           <button 
+            aria-label="Go Back"
             onClick={onBack}
             className="p-2 border border-gray-200 rounded-lg bg-white text-textSecondary hover:text-brand-600 hover:border-brand-200 transition"
           >

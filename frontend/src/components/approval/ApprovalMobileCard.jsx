@@ -3,8 +3,10 @@ import StatusBadge from './StatusBadge';
 import RiskBadge from './RiskBadge';
 import { ArrowRight, User, Building2 } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function ApprovalMobileCard({ item, onReview }) {
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
   const formattedDate = new Date(item.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   return (

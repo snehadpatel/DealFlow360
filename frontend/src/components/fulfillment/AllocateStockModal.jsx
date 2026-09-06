@@ -85,7 +85,7 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
             <PackageSearch className="w-5 h-5 text-brand-500" />
             <h2 className="text-xl font-bold text-textPrimary">Allocate Stock</h2>
           </div>
-          <button onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
+          <button aria-label="Close modal" onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -143,8 +143,9 @@ export default function AllocateStockModal({ isOpen, onClose, orderId, items, wa
                                 <div className="text-[10px] text-textSecondary">Available: {available}</div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <label className="text-xs font-semibold text-textSecondary">Allocate:</label>
+                              <label htmlFor={`alloc-${item.productId}-${wh.warehouseId}`} className="text-xs font-semibold text-textSecondary">Allocate:</label>
                                 <input 
+                                  id={`alloc-${item.productId}-${wh.warehouseId}`}
                                   type="number"
                                   min="0"
                                   max={available}

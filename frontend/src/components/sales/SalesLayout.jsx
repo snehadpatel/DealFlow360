@@ -66,14 +66,17 @@ export default function SalesLayout({ activeTab, onTabChange, children }) {
         {/* Mobile Slide-over Sidebar Drawer */}
         {mobileMenuOpen && (
           <div className="fixed inset-0 z-50 lg:hidden flex">
-            <div
-              className="fixed inset-0 bg-black/30"
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="fixed inset-0 bg-black/30 w-full cursor-default"
               onClick={() => setMobileMenuOpen(false)}
             />
             <div className="relative flex-1 max-w-xs w-full bg-white border-r border-gray-200 p-4 flex flex-col space-y-2 z-10">
               <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-2">
                 <div className="text-xs font-bold text-textPrimary uppercase tracking-wider">Sales Menu</div>
                 <button
+                  aria-label="Close menu"
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-1 rounded-lg text-textSecondary hover:text-textPrimary"
                 >

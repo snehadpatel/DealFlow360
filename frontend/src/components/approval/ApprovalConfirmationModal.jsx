@@ -54,7 +54,7 @@ export default function ApprovalConfirmationModal({ isOpen, onClose, onConfirm, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={!isSubmitting ? onClose : undefined} />
+      <button type="button" aria-label="Close modal" className="absolute inset-0 bg-black/40 backdrop-blur-sm w-full cursor-default" onClick={!isSubmitting ? onClose : undefined} />
       
       {/* Modal Content */}
       <div className="relative bg-white rounded-2xl shadow-md w-full max-w-md mx-4 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
@@ -68,6 +68,7 @@ export default function ApprovalConfirmationModal({ isOpen, onClose, onConfirm, 
             <h2 className="text-base font-extrabold text-textPrimary">{config.title}</h2>
           </div>
           <button 
+            aria-label="Close modal"
             onClick={onClose} 
             disabled={isSubmitting}
             className="text-textSecondary hover:text-textPrimary p-1 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
@@ -98,11 +99,12 @@ export default function ApprovalConfirmationModal({ isOpen, onClose, onConfirm, 
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-textPrimary uppercase tracking-wider flex justify-between">
+            <label htmlFor="approval-comment" className="text-xs font-bold text-textPrimary uppercase tracking-wider flex justify-between">
               <span>{actionType === 'approve' ? 'Comment (Optional)' : 'Reason / Comment'}</span>
               {config.requireComment && <span className="text-danger-500">*Required</span>}
             </label>
             <textarea
+              id="approval-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               disabled={isSubmitting}

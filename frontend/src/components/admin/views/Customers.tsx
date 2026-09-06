@@ -251,6 +251,7 @@ export default function Customers() {
           <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
             <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
             <input
+              aria-label="Search customers"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search customer, company, email..."
@@ -260,6 +261,7 @@ export default function Customers() {
 
           <div className="flex items-center gap-2">
             <select
+              aria-label="Filter by tier"
               value={tierFilter}
               onChange={(e) => setTierFilter(e.target.value)}
               className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-medium text-[#374151] outline-none"
@@ -363,6 +365,7 @@ export default function Customers() {
           <div className="flex items-center gap-2">
             <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> loaded database records</span>
             <select
+              aria-label="Items per page"
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
               className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -376,6 +379,7 @@ export default function Customers() {
           </div>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -384,6 +388,7 @@ export default function Customers() {
             </button>
             <span className="px-2 font-bold text-[#1F2937]">{page} / {pages || 1}</span>
             <button
+              aria-label="Next page"
               disabled={page === pages || pages === 0}
               onClick={() => setPage(p => p + 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -399,8 +404,9 @@ export default function Customers() {
         <Modal title="Add New Customer Account" onClose={() => setAddOpen(false)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Company Name *</label>
+              <label htmlFor="add-cust-name" className="block font-bold text-[#374151] mb-1">Company Name *</label>
               <input
+                id="add-cust-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Acme Corp India"
@@ -409,8 +415,9 @@ export default function Customers() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+                <label htmlFor="add-cust-email" className="block font-bold text-[#374151] mb-1">Email Address *</label>
                 <input
+                  id="add-cust-email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="contact@company.com"
@@ -418,8 +425,9 @@ export default function Customers() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Phone</label>
+                <label htmlFor="add-cust-phone" className="block font-bold text-[#374151] mb-1">Phone</label>
                 <input
+                  id="add-cust-phone"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="+91..."
@@ -429,8 +437,9 @@ export default function Customers() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Customer Tier</label>
+                <label htmlFor="add-cust-tier" className="block font-bold text-[#374151] mb-1">Customer Tier</label>
                 <select
+                  id="add-cust-tier"
                   value={form.tier}
                   onChange={(e) => setForm({ ...form, tier: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -441,8 +450,9 @@ export default function Customers() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Credit Limit</label>
+                <label htmlFor="add-cust-credit" className="block font-bold text-[#374151] mb-1">Credit Limit</label>
                 <input
+                  id="add-cust-credit"
                   type="number"
                   value={form.credit_limit}
                   onChange={(e) => setForm({ ...form, credit_limit: Number(e.target.value) })}
@@ -451,8 +461,9 @@ export default function Customers() {
               </div>
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Billing Address</label>
+              <label htmlFor="add-cust-address" className="block font-bold text-[#374151] mb-1">Billing Address</label>
               <textarea
+                id="add-cust-address"
                 value={form.address_billing}
                 onChange={(e) => setForm({ ...form, address_billing: e.target.value })}
                 rows={2}
@@ -486,8 +497,9 @@ export default function Customers() {
               <p className="font-bold text-[#F26C4F] text-xs mb-2">Admin Control</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Tier</label>
+                  <label htmlFor="detail-cust-tier" className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Tier</label>
                   <select
+                    id="detail-cust-tier"
                     value={detailCustomer.tier}
                     onChange={(e) => handleUpdateAdminControls(e.target.value, detailCustomer.status)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 text-xs font-bold text-[#1F2937]"
@@ -499,8 +511,9 @@ export default function Customers() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Account Status</label>
+                  <label htmlFor="detail-cust-status" className="block text-[10px] font-bold text-[#6B7280] mb-0.5">Account Status</label>
                   <select
+                    id="detail-cust-status"
                     value={detailCustomer.status}
                     onChange={(e) => handleUpdateAdminControls(detailCustomer.tier, e.target.value)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 text-xs font-bold text-[#1F2937]"
@@ -544,8 +557,9 @@ export default function Customers() {
         <Modal title="Edit Customer Account" onClose={() => setEditCustomer(null)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Company Name *</label>
+              <label htmlFor="edit-cust-name" className="block font-bold text-[#374151] mb-1">Company Name *</label>
               <input
+                id="edit-cust-name"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -553,16 +567,18 @@ export default function Customers() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Email Address *</label>
+                <label htmlFor="edit-cust-email" className="block font-bold text-[#374151] mb-1">Email Address *</label>
                 <input
+                  id="edit-cust-email"
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Phone</label>
+                <label htmlFor="edit-cust-phone" className="block font-bold text-[#374151] mb-1">Phone</label>
                 <input
+                  id="edit-cust-phone"
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -571,8 +587,9 @@ export default function Customers() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Customer Tier</label>
+                <label htmlFor="edit-cust-tier" className="block font-bold text-[#374151] mb-1">Customer Tier</label>
                 <select
+                  id="edit-cust-tier"
                   value={editForm.tier}
                   onChange={(e) => setEditForm({ ...editForm, tier: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -583,8 +600,9 @@ export default function Customers() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Credit Limit</label>
+                <label htmlFor="edit-cust-credit" className="block font-bold text-[#374151] mb-1">Credit Limit</label>
                 <input
+                  id="edit-cust-credit"
                   type="number"
                   value={editForm.credit_limit}
                   onChange={(e) => setEditForm({ ...editForm, credit_limit: Number(e.target.value) })}
@@ -593,8 +611,9 @@ export default function Customers() {
               </div>
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Billing Address</label>
+              <label htmlFor="edit-cust-address" className="block font-bold text-[#374151] mb-1">Billing Address</label>
               <textarea
+                id="edit-cust-address"
                 value={editForm.address_billing}
                 onChange={(e) => setEditForm({ ...editForm, address_billing: e.target.value })}
                 rows={2}

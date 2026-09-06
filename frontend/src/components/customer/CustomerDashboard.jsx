@@ -14,6 +14,9 @@ import {
   Sparkles
 } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function CustomerDashboard({ 
   onSelectQuotation, 
   onViewAllQuotations, 
@@ -40,9 +43,6 @@ export default function CustomerDashboard({
     fetchDashboard();
   }, []);
 
-  const formatCurrency = (val) => {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
-  };
 
   if (loading) {
     return (
@@ -151,10 +151,11 @@ export default function CustomerDashboard({
         {cardItems.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <div
+            <button
               key={idx}
+              type="button"
               onClick={card.action}
-              className="bg-white border border-gray-200 rounded-2xl p-5 shadow-md flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
+              className="w-full text-left bg-white border border-gray-200 rounded-2xl p-5 shadow-md flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
             >
               <div>
                 <div className="text-[11px] font-bold uppercase tracking-wider text-textSecondary">{card.title}</div>
@@ -163,7 +164,7 @@ export default function CustomerDashboard({
               <div className={`p-3 rounded-2xl border ${card.bgColor} ${card.color}`}>
                 <Icon className="w-6 h-6" />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

@@ -7,12 +7,12 @@ import { Package, Repeat, Layers, ArrowUpRight, Sparkles } from 'lucide-react';
 // Moved to module scope: these are static constants that don't depend on
 // props or state, so they should be created once when the module loads,
 // not recreated on every render of every card.
-const formatCurrency = (val) =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(val || 0);
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 0,
+});
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
 
 const TYPE_BADGES = {
   UPSELL: {

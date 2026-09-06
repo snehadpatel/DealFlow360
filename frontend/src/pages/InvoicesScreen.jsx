@@ -144,7 +144,7 @@ export default function InvoicesScreen({ initialInvoiceId, onNavigateToQuotation
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           )}
           <span>{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-2 hover:opacity-75">
+          <button aria-label="Close toast" onClick={() => setToast(null)} className="ml-2 hover:opacity-75">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>

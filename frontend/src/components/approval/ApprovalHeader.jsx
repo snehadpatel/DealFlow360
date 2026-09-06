@@ -9,6 +9,7 @@ export function ApprovalHeader({ approval, onBack, onRefresh, isRefreshing }) {
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
       <div className="flex items-center space-x-4">
         <button 
+          aria-label="Go back"
           onClick={onBack}
           className="p-2 border border-gray-200 rounded-lg text-textSecondary hover:text-textPrimary hover:bg-gray-50 transition"
         >

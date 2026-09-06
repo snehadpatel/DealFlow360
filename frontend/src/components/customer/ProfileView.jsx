@@ -16,6 +16,9 @@ import {
   Award
 } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function ProfileView() {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,12 +54,6 @@ export default function ProfileView() {
     }
   };
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   return (
     <div className="space-y-6 max-w-4xl font-sans">
@@ -184,8 +181,9 @@ export default function ProfileView() {
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-bold uppercase tracking-wider text-textSecondary">Company Legal Name</label>
+                <label htmlFor="profile-company-name" className="font-bold uppercase tracking-wider text-textSecondary">Company Legal Name</label>
                 <input
+                  id="profile-company-name"
                   type="text"
                   value={formData.companyName || ''}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
@@ -195,8 +193,9 @@ export default function ProfileView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold uppercase tracking-wider text-textSecondary">Contact Phone</label>
+                <label htmlFor="profile-phone" className="font-bold uppercase tracking-wider text-textSecondary">Contact Phone</label>
                 <input
+                  id="profile-phone"
                   type="text"
                   value={formData.phone || ''}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -205,8 +204,9 @@ export default function ProfileView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold uppercase tracking-wider text-textSecondary">Tax Registration / GSTIN</label>
+                <label htmlFor="profile-tax-id" className="font-bold uppercase tracking-wider text-textSecondary">Tax Registration / GSTIN</label>
                 <input
+                  id="profile-tax-id"
                   type="text"
                   value={formData.taxId || ''}
                   onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
@@ -215,8 +215,9 @@ export default function ProfileView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold uppercase tracking-wider text-textSecondary">Business Email</label>
+                <label htmlFor="profile-email" className="font-bold uppercase tracking-wider text-textSecondary">Business Email</label>
                 <input
+                  id="profile-email"
                   type="email"
                   value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -225,8 +226,9 @@ export default function ProfileView() {
               </div>
 
               <div className="sm:col-span-2 space-y-1.5">
-                <label className="font-bold uppercase tracking-wider text-textSecondary">Billing Address</label>
+                <label htmlFor="profile-address" className="font-bold uppercase tracking-wider text-textSecondary">Billing Address</label>
                 <textarea
+                  id="profile-address"
                   rows="3"
                   value={formData.address || ''}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}

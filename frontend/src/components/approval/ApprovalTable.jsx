@@ -3,17 +3,19 @@ import StatusBadge from './StatusBadge';
 import RiskBadge from './RiskBadge';
 import { ArrowRight } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => {
+  const num = Number(val);
+  return currencyFormatter.format(isNaN(num) ? 0 : num);
+};
+const formatDate = (isoStr) => {
+  if (!isoStr) return '05 Sep 2026';
+  const d = new Date(isoStr);
+  return isNaN(d.getTime()) ? '05 Sep 2026' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const formatApprovalType = (type) => { switch (type) { case 'CUSTOMER_NEGOTIATION': return 'Customer Negotiation'; case 'DISCOUNT': return 'Discount Override'; case 'FINANCE': return 'Finance'; default: return type || 'Discount'; } };
+
 export default function ApprovalTable({ items = [], onReview }) {
-  const formatCurrency = (val) => {
-    const num = Number(val);
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(isNaN(num) ? 0 : num);
-  };
-  const formatDate = (isoStr) => {
-    if (!isoStr) return '05 Sep 2026';
-    const d = new Date(isoStr);
-    return isNaN(d.getTime()) ? '05 Sep 2026' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-  const formatApprovalType = (type) => { switch (type) { case 'CUSTOMER_NEGOTIATION': return 'Customer Negotiation'; case 'DISCOUNT': return 'Discount Override'; case 'FINANCE': return 'Finance'; default: return type || 'Discount'; } };
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">

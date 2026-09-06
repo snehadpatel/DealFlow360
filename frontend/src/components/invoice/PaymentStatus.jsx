@@ -1,13 +1,10 @@
 import React from 'react';
 import { CheckCircle2, Clock, AlertTriangle, XCircle, CreditCard, ShieldCheck } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function PaymentStatus({ status, statusMessage, dueDate, outstanding }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   const statusConfigs = {
     PAID: {

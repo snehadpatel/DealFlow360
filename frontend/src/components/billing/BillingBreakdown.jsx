@@ -1,28 +1,27 @@
 import React, { useState } from 'react';
 import { Package, RefreshCw, Calendar, Tag, Percent } from 'lucide-react';
 
+const formatters = new Map();
+const getFormatter = (currency) => {
+  if (!formatters.has(currency)) {
+    formatters.set(currency, new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }));
+  }
+  return formatters.get(currency);
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function BillingBreakdown({ oneTimeItems = [], recurringItems = [], currency = 'USD' }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'onetime' | 'recurring'
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount || 0);
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatCurrency = (amount) => getFormatter(currency).format(amount || 0);
 
   const showOneTime = activeTab === 'all' || activeTab === 'onetime';
   const showRecurring = activeTab === 'all' || activeTab === 'recurring';

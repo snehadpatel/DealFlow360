@@ -4,12 +4,15 @@ import StatusBadge from '../components/approval/StatusBadge';
 import RiskBadge from '../components/approval/RiskBadge';
 import { ArrowLeft } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function ApprovalDetailPlaceholder({ approvalId, onBack }) {
   const [approval, setApproval] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { if (approvalId) getApprovalById(approvalId).then(setApproval).catch(() => setApproval(null)).finally(() => setLoading(false)); }, [approvalId]);
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   if (loading) return <div className="space-y-6 animate-pulse max-w-4xl mx-auto"><div className="h-8 bg-gray-200 rounded w-32" /><div className="h-48 bg-white border border-gray-200 rounded-2xl" /></div>;
 

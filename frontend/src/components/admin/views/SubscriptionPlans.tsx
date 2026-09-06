@@ -42,7 +42,7 @@ const initialPlans: Plan[] = [
 
 const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 placeholder-[#9CA3AF]";
 function FL({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}</label>{children}</div>;
+  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}{children}</label></div>;
 }
 
 export default function SubscriptionPlans() {
@@ -246,6 +246,7 @@ export default function SubscriptionPlans() {
         <div className="flex items-center gap-2">
           <span>Showing {plans.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, plans.length)} of <strong>{plans.length}</strong> loaded database records</span>
           <select
+            aria-label="Items per page"
             value={perPage}
             onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
             className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -259,6 +260,7 @@ export default function SubscriptionPlans() {
         </div>
         <div className="flex items-center gap-1">
           <button
+            aria-label="Previous page"
             disabled={page === 1}
             onClick={() => setPage(p => p - 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -267,6 +269,7 @@ export default function SubscriptionPlans() {
           </button>
           <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(plans.length / perPage) || 1}</span>
           <button
+            aria-label="Next page"
             disabled={page === Math.ceil(plans.length / perPage) || plans.length === 0}
             onClick={() => setPage(p => p + 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"

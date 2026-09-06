@@ -85,9 +85,9 @@ export default function ApprovalScreen() {
               <div className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs shadow-md">
                 <div className="text-textSecondary font-medium">Showing <span className="font-bold text-textPrimary">{startCount}</span>–<span className="font-bold text-textPrimary">{endCount}</span> of <span className="font-bold text-textPrimary">{approvalsResponse.total}</span> approvals</div>
                 <div className="flex items-center space-x-2">
-                  <button onClick={() => handlePageChange(filters.page - 1)} disabled={filters.page <= 1} className="p-2 bg-gray-50 border border-gray-200 text-textSecondary hover:text-textPrimary disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition"><ChevronLeft className="w-4 h-4" /></button>
+                  <button aria-label="Previous Page" onClick={() => handlePageChange(filters.page - 1)} disabled={filters.page <= 1} className="p-2 bg-gray-50 border border-gray-200 text-textSecondary hover:text-textPrimary disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition"><ChevronLeft className="w-4 h-4" /></button>
                   <span className="px-3 py-1 bg-brand-50 border border-brand-200 text-brand-600 font-bold rounded-lg">Page {filters.page} of {totalPages}</span>
-                  <button onClick={() => handlePageChange(filters.page + 1)} disabled={filters.page >= totalPages} className="p-2 bg-gray-50 border border-gray-200 text-textSecondary hover:text-textPrimary disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition"><ChevronRight className="w-4 h-4" /></button>
+                  <button aria-label="Next Page" onClick={() => handlePageChange(filters.page + 1)} disabled={filters.page >= totalPages} className="p-2 bg-gray-50 border border-gray-200 text-textSecondary hover:text-textPrimary disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition"><ChevronRight className="w-4 h-4" /></button>
                 </div>
               </div>
             </div>

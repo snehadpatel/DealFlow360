@@ -46,6 +46,7 @@ export default function SendInvoiceModal({ isOpen, onClose, onConfirm, invoice }
             </div>
           </div>
           <button
+            aria-label="Close modal"
             onClick={onClose}
             className="p-1.5 rounded-lg text-[#6B7280] hover:bg-slate-100 transition"
           >
@@ -62,12 +63,13 @@ export default function SendInvoiceModal({ isOpen, onClose, onConfirm, invoice }
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block font-semibold text-[#1F2937] mb-1">
+            <label htmlFor="invoice-recipient-email" className="block font-semibold text-[#1F2937] mb-1">
               Recipient Email Address <span className="text-[#F26C4F]">*</span>
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#6B7280] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                id="invoice-recipient-email"
                 type="email"
                 required
                 value={recipientEmail}
@@ -79,10 +81,11 @@ export default function SendInvoiceModal({ isOpen, onClose, onConfirm, invoice }
           </div>
 
           <div>
-            <label className="block font-semibold text-[#1F2937] mb-1">
+            <label htmlFor="invoice-cover-note" className="block font-semibold text-[#1F2937] mb-1">
               Email Cover Note
             </label>
             <textarea
+              id="invoice-cover-note"
               rows={5}
               value={message}
               onChange={(e) => setMessage(e.target.value)}

@@ -1,13 +1,23 @@
 import React from 'react';
 import { Calculator, CheckCircle, AlertCircle } from 'lucide-react';
 
+const currencyFormatters = new Map();
+const getCurrencyFormatter = (currency) => {
+  if (!currencyFormatters.has(currency)) {
+    currencyFormatters.set(
+      currency,
+      new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: currency,
+        maximumFractionDigits: 0,
+      })
+    );
+  }
+  return currencyFormatters.get(currency);
+};
+
 export default function InvoiceTotals({ totals, currency = 'INR' }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: currency || 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
+  const formatCurrency = (val) => getCurrencyFormatter(currency || 'INR').format(val || 0);
 
   if (!totals) return null;
 

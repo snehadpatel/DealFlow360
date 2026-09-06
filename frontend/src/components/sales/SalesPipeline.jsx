@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getSalesPipeline } from '../../api/salesApi';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function SalesPipeline() {
   const [pipeline, setPipeline] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +12,7 @@ export default function SalesPipeline() {
     getSalesPipeline().then(setPipeline).finally(() => setLoading(false));
   }, []);
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   const stages = [
     { id: 'LEAD', title: 'Lead', color: 'bg-gray-100 border-gray-200 text-gray-700' },

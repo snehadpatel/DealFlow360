@@ -1,37 +1,28 @@
 import React from 'react';
 import { History, CheckCircle, Clock, Send, FileText, ArrowRight } from 'lucide-react';
 
-export default function BillingTimeline({ timeline = [] }) {
-  const getTimelineIcon = (status) => {
-    switch (status) {
-      case 'CREATED':
-        return <FileText className="w-3.5 h-3.5 text-blue-600" />;
-      case 'GENERATED':
-        return <CheckCircle className="w-3.5 h-3.5 text-purple-600" />;
-      case 'SENT':
-        return <Send className="w-3.5 h-3.5 text-amber-600" />;
-      case 'PROCESSING':
-        return <Clock className="w-3.5 h-3.5 text-cyan-600" />;
-      case 'COMPLETED':
-        return <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />;
-      default:
-        return <History className="w-3.5 h-3.5 text-slate-500" />;
-    }
-  };
+const getTimelineIcon = (status) => {
+  switch (status) {
+    case 'CREATED': return <FileText className="w-3.5 h-3.5 text-blue-600" />;
+    case 'GENERATED': return <CheckCircle className="w-3.5 h-3.5 text-purple-600" />;
+    case 'SENT': return <Send className="w-3.5 h-3.5 text-amber-600" />;
+    case 'PROCESSING': return <Clock className="w-3.5 h-3.5 text-cyan-600" />;
+    case 'COMPLETED': return <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />;
+    default: return <History className="w-3.5 h-3.5 text-slate-500" />;
+  }
+};
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return dateStr;
+  }
+};
+
+export default function BillingTimeline({ timeline = [] }) {
+
 
   return (
     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-4">

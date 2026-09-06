@@ -11,11 +11,15 @@ import {
   ArrowRight, 
   RefreshCw, 
   X,
+import {
   FileText,
   Percent,
   ShieldCheck,
   TrendingDown
 } from 'lucide-react';
+
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
 
 export default function NegotiationsView({ onSelectQuotation }) {
   const [negotiations, setNegotiations] = useState([]);
@@ -115,12 +119,6 @@ export default function NegotiationsView({ onSelectQuotation }) {
     return matchesSearch && n.status === activeFilter;
   });
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   const kpis = {
     total: negotiations.length,

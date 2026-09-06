@@ -3,6 +3,9 @@ import { getMyQuotations } from '../../api/salesApi';
 import { Search, Plus } from 'lucide-react';
 import StatusBadge from '../customer/StatusBadge'; // Reuse customer badge as it has same styles
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function MyQuotations({ onNewQuote }) {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export default function MyQuotations({ onNewQuote }) {
     fetchQuotations();
   }, [searchTerm, activeFilter]);
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   const filterTabs = [
     { id: 'ALL', label: 'All' },

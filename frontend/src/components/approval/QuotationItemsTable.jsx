@@ -1,9 +1,10 @@
 import React from 'react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function QuotationItemsTable({ items }) {
   if (!items || items.length === 0) return null;
-
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden">

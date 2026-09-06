@@ -1,16 +1,18 @@
 import React from 'react';
 import { DollarSign, Clock, CreditCard, CheckCircle2, AlertCircle } from 'lucide-react';
 
+const formatters = new Map();
+const getFormatter = (currency) => {
+  if (!formatters.has(currency)) {
+    formatters.set(currency, new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 0 }));
+  }
+  return formatters.get(currency);
+};
+
 export default function BillingSummary({ billing }) {
   if (!billing) return null;
 
-  const formatCurrency = (val) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: billing.currency || 'USD',
-      maximumFractionDigits: 0
-    }).format(val || 0);
-  };
+  const formatCurrency = (val) => getFormatter(billing.currency || 'USD').format(val || 0);
 
   const cards = [
     {

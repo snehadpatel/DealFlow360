@@ -14,8 +14,8 @@ import {
 
 const CATEGORY_ORDER = ['Hardware', 'Services', 'Subscription'];
 
-const fmtINR = (val) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const fmtINR = (val) => currencyFormatter.format(val || 0);
 
 // Local preview math ONLY — shown live while editing. The authoritative
 // numbers come back from the backend after Save/Submit (see `saved` state).
@@ -254,6 +254,7 @@ export default function QuotationBuilder() {
           <div className="flex items-center space-x-2 mt-1">
             <span className="text-sm font-semibold text-[#6B7280]">Customer:</span>
             <select
+              aria-label="Select customer"
               value={customerId}
               onChange={(e) => { setCustomerId(e.target.value); invalidate(); }}
               className="text-sm font-bold text-[#F26C4F] bg-transparent border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#F26C4F]"
@@ -353,6 +354,7 @@ export default function QuotationBuilder() {
                             </div>
                           </div>
                           <button
+                            aria-label="Add to cart"
                             onClick={() => addToCart(product)}
                             className="p-1.5 bg-gray-100 hover:bg-[#F26C4F] hover:text-white text-[#6B7280] rounded-lg transition"
                           >
@@ -397,13 +399,13 @@ export default function QuotationBuilder() {
                             <span className="font-bold text-sm text-[#1F2937]">{item.name}</span>
                             <span className="ml-2 text-[10px] text-slate-400">{item.category}</span>
                           </div>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5" /></button>
+                          <button aria-label="Remove from cart" onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5" /></button>
                         </div>
                         <div className="flex justify-between items-end mt-3">
                           <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-lg p-0.5">
-                            <button onClick={() => updateQty(item.id, -1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Minus className="w-3 h-3" /></button>
+                            <button aria-label="Decrease quantity" onClick={() => updateQty(item.id, -1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Minus className="w-3 h-3" /></button>
                             <span className="text-xs font-bold w-6 text-center">{item.qty}</span>
-                            <button onClick={() => updateQty(item.id, 1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Plus className="w-3 h-3" /></button>
+                            <button aria-label="Increase quantity" onClick={() => updateQty(item.id, 1)} className="p-1 text-[#6B7280] hover:bg-gray-100 rounded"><Plus className="w-3 h-3" /></button>
                           </div>
                           <span className="font-bold text-sm text-[#1F2937]">{fmtINR(previewLine(item).net)}</span>
                         </div>
@@ -412,6 +414,7 @@ export default function QuotationBuilder() {
                           <span className="text-[11px] font-medium text-[#6B7280]">Line discount %</span>
                           <div className="flex items-center gap-2">
                             <input
+                              aria-label="Line discount percentage"
                               type="number"
                               min="0" max="100"
                               value={item.discount_percent}

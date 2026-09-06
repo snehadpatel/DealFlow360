@@ -2,9 +2,12 @@ import React from 'react';
 import StatusBadge from './StatusBadge';
 import { CheckCircle2, MessageSquare, RefreshCcw } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function CounterOfferCard({ counterOffer, onAccept, onContinue, loading }) {
   if (!counterOffer) return null;
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
   const { requestedDiscount, approvedDiscount, updatedTotal, salesMessage } = counterOffer;
 
   return (

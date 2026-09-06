@@ -78,8 +78,9 @@ export default function AdminProfile() {
         <div className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Full Name</label>
+              <label htmlFor="profile-name" className="block font-bold text-[#374151] mb-1">Full Name</label>
               <input
+                id="profile-name"
                 disabled={!isEditing}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -87,8 +88,9 @@ export default function AdminProfile() {
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Email Address</label>
+              <label htmlFor="profile-email" className="block font-bold text-[#374151] mb-1">Email Address</label>
               <input
+                id="profile-email"
                 disabled={!isEditing}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -98,8 +100,9 @@ export default function AdminProfile() {
           </div>
 
           <div>
-            <label className="block font-bold text-[#374151] mb-1">Department</label>
+            <label htmlFor="profile-department" className="block font-bold text-[#374151] mb-1">Department</label>
             <input
+              id="profile-department"
               disabled={!isEditing}
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
@@ -138,8 +141,9 @@ export default function AdminProfile() {
         <Modal open={changePassOpen} title="Change Administrator Password" onClose={() => setChangePassOpen(false)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Current Password *</label>
+              <label htmlFor="profile-old-password" className="block font-bold text-[#374151] mb-1">Current Password *</label>
               <input
+                id="profile-old-password"
                 type="password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
@@ -147,8 +151,9 @@ export default function AdminProfile() {
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">New Secure Password *</label>
+              <label htmlFor="profile-new-password" className="block font-bold text-[#374151] mb-1">New Secure Password *</label>
               <input
+                id="profile-new-password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}

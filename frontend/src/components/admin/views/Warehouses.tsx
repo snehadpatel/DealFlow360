@@ -172,6 +172,7 @@ export default function Warehouses() {
                 <Eye size={14} /> Inventory Breakdown
               </button>
               <button
+                aria-label="Toggle warehouse status"
                 onClick={() => toggleStatus(wh.id, wh.status)}
                 className="p-1.5 text-[#6B7280] hover:text-amber-600 transition"
               >
@@ -187,6 +188,7 @@ export default function Warehouses() {
         <div className="flex items-center gap-2">
           <span>Showing {warehouses.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, warehouses.length)} of <strong>{warehouses.length}</strong> loaded database records</span>
           <select
+            aria-label="Items per page"
             value={perPage}
             onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
             className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -200,6 +202,7 @@ export default function Warehouses() {
         </div>
         <div className="flex items-center gap-1">
           <button
+            aria-label="Previous page"
             disabled={page === 1}
             onClick={() => setPage(p => p - 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -208,6 +211,7 @@ export default function Warehouses() {
           </button>
           <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(warehouses.length / perPage) || 1}</span>
           <button
+            aria-label="Next page"
             disabled={page === Math.ceil(warehouses.length / perPage) || warehouses.length === 0}
             onClick={() => setPage(p => p + 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"

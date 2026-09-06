@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Send, AlertCircle, Loader2 } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function NegotiationForm({ currentDiscount, currentTotal, onSubmit, loading }) {
   const [requestedDiscount, setRequestedDiscount] = useState(currentDiscount + 5);
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
 
-  const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
 
   const validate = () => {
     const errs = {};
@@ -45,17 +48,17 @@ export default function NegotiationForm({ currentDiscount, currentTotal, onSubmi
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-textSecondary">Requested Discount (%)</label>
+          <label htmlFor="negotiation-discount" className="text-xs font-bold uppercase tracking-wider text-textSecondary">Requested Discount (%)</label>
           <div className="relative">
-            <input type="number" min="0" max="100" step="0.5" value={requestedDiscount} onChange={(e) => setRequestedDiscount(e.target.value)} disabled={loading} className={`w-full bg-gray-50 border px-4 py-2.5 rounded-lg text-sm text-textPrimary focus:outline-none transition ${errors.requestedDiscount ? 'border-danger-500 focus:border-danger-500' : 'border-gray-200 focus:border-primary-500'}`} />
+            <input id="negotiation-discount" type="number" min="0" max="100" step="0.5" value={requestedDiscount} onChange={(e) => setRequestedDiscount(e.target.value)} disabled={loading} className={`w-full bg-gray-50 border px-4 py-2.5 rounded-lg text-sm text-textPrimary focus:outline-none transition ${errors.requestedDiscount ? 'border-danger-500 focus:border-danger-500' : 'border-gray-200 focus:border-primary-500'}`} />
             <span className="absolute right-4 top-2.5 text-sm font-bold text-textSecondary">%</span>
           </div>
           {errors.requestedDiscount && <p className="text-xs text-danger-500 flex items-center space-x-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /><span>{errors.requestedDiscount}</span></p>}
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-textSecondary">Negotiation Message / Reason</label>
-          <textarea rows="4" value={message} onChange={(e) => setMessage(e.target.value)} disabled={loading} placeholder="Explain why you are requesting this change..." className={`w-full bg-gray-50 border px-4 py-2.5 rounded-lg text-sm text-textPrimary placeholder-text-secondary focus:outline-none transition ${errors.message ? 'border-danger-500 focus:border-danger-500' : 'border-gray-200 focus:border-primary-500'}`} />
+          <label htmlFor="negotiation-message" className="text-xs font-bold uppercase tracking-wider text-textSecondary">Negotiation Message / Reason</label>
+          <textarea id="negotiation-message" rows="4" value={message} onChange={(e) => setMessage(e.target.value)} disabled={loading} placeholder="Explain why you are requesting this change..." className={`w-full bg-gray-50 border px-4 py-2.5 rounded-lg text-sm text-textPrimary placeholder-text-secondary focus:outline-none transition ${errors.message ? 'border-danger-500 focus:border-danger-500' : 'border-gray-200 focus:border-primary-500'}`} />
           {errors.message && <p className="text-xs text-danger-500 flex items-center space-x-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /><span>{errors.message}</span></p>}
         </div>
 

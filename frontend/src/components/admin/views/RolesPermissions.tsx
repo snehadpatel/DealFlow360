@@ -97,6 +97,7 @@ export default function RolesPermissions() {
                     return (
                       <td key={r.id} className="py-3.5 px-4 text-center">
                         <button
+                          aria-label="Toggle permission"
                           onClick={() => togglePermission(permKey, r.id)}
                           className={`w-7 h-7 rounded-lg inline-flex items-center justify-center transition-colors ${
                             isAllowed

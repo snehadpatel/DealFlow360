@@ -45,7 +45,7 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
             <Truck className="w-5 h-5 text-brand-500" />
             <h2 className="text-xl font-bold text-textPrimary">Create Shipment</h2>
           </div>
-          <button onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
+          <button aria-label="Close modal" onClick={onClose} disabled={isSubmitting} className="text-gray-400 hover:text-gray-600 transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -58,8 +58,9 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Carrier *</label>
+            <label htmlFor="shipment-carrier" className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Carrier *</label>
             <select 
+              id="shipment-carrier"
               name="carrier"
               value={formData.carrier}
               onChange={handleChange}
@@ -74,8 +75,9 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Shipping Address *</label>
+            <label htmlFor="shipment-address" className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Shipping Address *</label>
             <textarea 
+              id="shipment-address"
               name="address"
               value={formData.address}
               onChange={handleChange}
@@ -87,8 +89,9 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Packages</label>
+              <label htmlFor="shipment-packages" className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Packages</label>
               <input 
+                id="shipment-packages"
                 type="number"
                 name="packageCount"
                 min="1"
@@ -98,8 +101,9 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Expected Delivery *</label>
+              <label htmlFor="shipment-delivery-date" className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Expected Delivery *</label>
               <input 
+                id="shipment-delivery-date"
                 type="date"
                 name="expectedDelivery"
                 value={formData.expectedDelivery}
@@ -110,8 +114,9 @@ export default function CreateShipmentModal({ isOpen, onClose, orderId, onConfir
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Notes</label>
+            <label htmlFor="shipment-notes" className="block text-xs font-semibold text-textSecondary uppercase tracking-wider mb-1">Notes</label>
             <textarea 
+              id="shipment-notes"
               name="notes"
               value={formData.notes}
               onChange={handleChange}

@@ -28,6 +28,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
         
         <div className="relative flex-shrink-0">
           <select 
+            aria-label="Filter by status"
             className="appearance-none block w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-textSecondary cursor-pointer hover:border-gray-300"
             value={filters.status}
             onChange={(e) => handleChange('status', e.target.value)}
@@ -45,6 +46,7 @@ export default function FulfillmentFilters({ filters, onFilterChange, onRefresh,
 
         <div className="relative flex-shrink-0">
           <select 
+            aria-label="Filter by warehouse"
             className="appearance-none block w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white font-medium text-textSecondary cursor-pointer hover:border-gray-300"
             value={filters.warehouse}
             onChange={(e) => handleChange('warehouse', e.target.value)}

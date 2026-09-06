@@ -232,8 +232,9 @@ export default function Discounts() {
         <Modal title={`Edit ${editingTier.name} Discount Limit`} onClose={() => setEditingTier(null)}>
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Maximum Discount % Ceiling *</label>
+              <label htmlFor="discount-max-pct" className="block font-bold text-[#374151] mb-1">Maximum Discount % Ceiling *</label>
               <input
+                id="discount-max-pct"
                 type="number"
                 value={editingTier.maxDiscount}
                 onChange={(e) => setEditingTier({ ...editingTier, maxDiscount: Number(e.target.value) })}
@@ -241,8 +242,9 @@ export default function Discounts() {
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Priority Classification</label>
+              <label htmlFor="discount-priority" className="block font-bold text-[#374151] mb-1">Priority Classification</label>
               <input
+                id="discount-priority"
                 value={editingTier.priority}
                 onChange={(e) => setEditingTier({ ...editingTier, priority: e.target.value })}
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"

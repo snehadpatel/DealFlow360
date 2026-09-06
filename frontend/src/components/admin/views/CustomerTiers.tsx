@@ -50,7 +50,7 @@ const initialTiers: Tier[] = [
 
 const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 placeholder-[#9CA3AF]";
 function FL({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}</label>{children}</div>;
+  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}{children}</label></div>;
 }
 
 export default function CustomerTiers() {
@@ -135,6 +135,7 @@ export default function CustomerTiers() {
                 </div>
               </div>
               <button
+                aria-label="Toggle tier status"
                 onClick={() => toggle(tier.id)}
                 className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${tier.status ? "bg-[#F26C4F]" : "bg-[#E5E7EB]"}`}
               >
@@ -201,7 +202,7 @@ export default function CustomerTiers() {
             </select>
           </FL>
           <div>
-            <label className="block text-[12px] font-medium text-[#6B7280] mb-2">Subscription Plans Eligible</label>
+            <p className="block text-[12px] font-medium text-[#6B7280] mb-2">Subscription Plans Eligible</p>
             <div className="flex gap-3">
               {["Basic", "Pro", "Enterprise"].map((p) => (
                 <label key={p} className="flex items-center gap-2 text-[13px] text-[#1F2937] cursor-pointer">

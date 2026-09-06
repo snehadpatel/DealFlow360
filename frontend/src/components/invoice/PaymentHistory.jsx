@@ -1,13 +1,10 @@
 import React from 'react';
 import { History, CheckCircle2, Clock, XCircle, CreditCard } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function PaymentHistory({ payments = [] }) {
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-xs space-y-4">

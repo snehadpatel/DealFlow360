@@ -54,6 +54,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onClearFilters
         {/* Status filter */}
         <div className="relative">
           <select
+            aria-label="Filter by status"
             value={filters.status || 'ALL'}
             onChange={(e) => handleChange('status', e.target.value)}
             className="w-full px-3 py-2 bg-[#F4F5F7] border border-transparent focus:border-[#F26C4F] focus:bg-white rounded-xl text-xs text-[#1F2937] font-medium transition outline-hidden cursor-pointer"
@@ -69,6 +70,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onClearFilters
         {/* Invoice Date filter */}
         <div className="relative">
           <select
+            aria-label="Filter by invoice date"
             value={filters.date || 'ALL'}
             onChange={(e) => handleChange('date', e.target.value)}
             className="w-full px-3 py-2 bg-[#F4F5F7] border border-transparent focus:border-[#F26C4F] focus:bg-white rounded-xl text-xs text-[#1F2937] font-medium transition outline-hidden cursor-pointer"
@@ -84,6 +86,7 @@ export default function InvoiceFilters({ filters, onFilterChange, onClearFilters
         {/* Due Date filter */}
         <div className="relative">
           <select
+            aria-label="Filter by due date"
             value={filters.dueDate || 'ALL'}
             onChange={(e) => handleChange('dueDate', e.target.value)}
             className="w-full px-3 py-2 bg-[#F4F5F7] border border-transparent focus:border-[#F26C4F] focus:bg-white rounded-xl text-xs text-[#1F2937] font-medium transition outline-hidden cursor-pointer"

@@ -40,6 +40,7 @@ export default function SubscriptionsFilters({ filters, onFilterChange, onRefres
               <Filter className="h-3.5 w-3.5 text-slate-400" />
             </div>
             <select
+              aria-label="Filter by status"
               className="pl-9 pr-8 py-2 w-full border border-slate-300 rounded-lg text-sm appearance-none bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               value={filters.status}
               onChange={(e) => onFilterChange({ ...filters, status: e.target.value })}
@@ -52,6 +53,7 @@ export default function SubscriptionsFilters({ filters, onFilterChange, onRefres
 
           <div className="relative flex-1 sm:w-40">
             <select
+              aria-label="Filter by billing cycle"
               className="px-3 pr-8 py-2 w-full border border-slate-300 rounded-lg text-sm appearance-none bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               value={filters.billingCycle}
               onChange={(e) => onFilterChange({ ...filters, billingCycle: e.target.value })}

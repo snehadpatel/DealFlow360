@@ -83,6 +83,7 @@ export default function Analytics() {
 
         <div data-html2canvas-ignore="true" className="flex items-center gap-2 flex-wrap">
           <select
+            aria-label="Filter by date range"
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
             className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-semibold text-[#374151] outline-none hover:border-[#F26C4F] transition-colors"

@@ -4,6 +4,9 @@ import InvoiceStatusBadge from '../invoice/InvoiceStatusBadge';
 import InvoiceDetail from '../../pages/InvoiceDetail';
 import { Download, Eye, FileText, ArrowLeft } from 'lucide-react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const formatCurrency = (val) => currencyFormatter.format(val || 0);
+
 export default function InvoicesView() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,12 +20,6 @@ export default function InvoicesView() {
       .finally(() => setLoading(false));
   }, []);
 
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(val || 0);
 
   if (selectedInvoiceId) {
     return (

@@ -216,6 +216,7 @@ export default function Pricing() {
                   <td className="py-3 px-4 text-[#6B7280]">{r.effectiveDate}</td>
                   <td className="py-3 px-4 text-right">
                     <button
+                      aria-label="Edit pricing rule"
                       onClick={() => showToast(`Editing rule for ${r.product}`)}
                       className="p-1.5 text-[#6B7280] hover:text-[#F26C4F] transition"
                     >
@@ -235,8 +236,9 @@ export default function Pricing() {
           <div className="space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Product Name *</label>
+                <label htmlFor="pricing-product-name" className="block font-bold text-[#374151] mb-1">Product Name *</label>
                 <input
+                  id="pricing-product-name"
                   value={newRule.product}
                   onChange={(e) => setNewRule({ ...newRule, product: e.target.value })}
                   placeholder="e.g. Laptop Pro 14"
@@ -244,8 +246,9 @@ export default function Pricing() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Base Catalog Price (₹) *</label>
+                <label htmlFor="pricing-base-price" className="block font-bold text-[#374151] mb-1">Base Catalog Price (₹) *</label>
                 <input
+                  id="pricing-base-price"
                   type="number"
                   value={newRule.basePrice}
                   onChange={(e) => {
@@ -266,8 +269,9 @@ export default function Pricing() {
             <p className="font-bold text-[#F26C4F] text-xs pt-1">Automated Tier Prices (Configurable)</p>
             <div className="grid grid-cols-3 gap-3 bg-[#FFF8F6] p-3 rounded-xl border border-[#F26C4F]/20">
               <div>
-                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Gold Price (₹)</label>
+                <label htmlFor="pricing-gold-price" className="block text-[10px] font-bold text-[#374151] mb-0.5">Gold Price (₹)</label>
                 <input
+                  id="pricing-gold-price"
                   type="number"
                   value={newRule.goldPrice}
                   onChange={(e) => setNewRule({ ...newRule, goldPrice: Number(e.target.value) })}
@@ -275,8 +279,9 @@ export default function Pricing() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Silver Price (₹)</label>
+                <label htmlFor="pricing-silver-price" className="block text-[10px] font-bold text-[#374151] mb-0.5">Silver Price (₹)</label>
                 <input
+                  id="pricing-silver-price"
                   type="number"
                   value={newRule.silverPrice}
                   onChange={(e) => setNewRule({ ...newRule, silverPrice: Number(e.target.value) })}
@@ -284,8 +289,9 @@ export default function Pricing() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Bronze Price (₹)</label>
+                <label htmlFor="pricing-bronze-price" className="block text-[10px] font-bold text-[#374151] mb-0.5">Bronze Price (₹)</label>
                 <input
+                  id="pricing-bronze-price"
                   type="number"
                   value={newRule.bronzePrice}
                   onChange={(e) => setNewRule({ ...newRule, bronzePrice: Number(e.target.value) })}
@@ -296,8 +302,9 @@ export default function Pricing() {
 
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Volume Min Units</label>
+                <label htmlFor="pricing-vol-min" className="block font-bold text-[#374151] mb-1">Volume Min Units</label>
                 <input
+                  id="pricing-vol-min"
                   type="number"
                   value={newRule.qtyDiscountMin}
                   onChange={(e) => setNewRule({ ...newRule, qtyDiscountMin: Number(e.target.value) })}
@@ -305,8 +312,9 @@ export default function Pricing() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Volume Discount %</label>
+                <label htmlFor="pricing-vol-pct" className="block font-bold text-[#374151] mb-1">Volume Discount %</label>
                 <input
+                  id="pricing-vol-pct"
                   type="number"
                   value={newRule.qtyDiscountPct}
                   onChange={(e) => setNewRule({ ...newRule, qtyDiscountPct: Number(e.target.value) })}

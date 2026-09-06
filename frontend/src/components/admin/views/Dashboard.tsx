@@ -431,10 +431,11 @@ export default function Dashboard({ onNavigate }: Props) {
             {atRiskDeals.map((deal) => {
               const isSelected = selectedAiDeal === deal.id;
               return (
-                <div
+                <button
                   key={deal.id}
+                  type="button"
                   onClick={() => setSelectedAiDeal(deal.id)}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-colors ${
+                  className={`w-full text-left p-3.5 rounded-xl border cursor-pointer transition-colors ${
                     isSelected
                       ? "border-[#F26C4F] bg-[#FFF8F6] shadow-xs"
                       : "border-[#E5E7EB] hover:border-gray-300 bg-white"
@@ -448,7 +449,7 @@ export default function Dashboard({ onNavigate }: Props) {
                     <StatusPill status={deal.risk} />
                   </div>
                   <p className="text-xs text-[#4B5563] line-clamp-1">{deal.reason}</p>
-                </div>
+                </button>
               );
             })}
           </div>

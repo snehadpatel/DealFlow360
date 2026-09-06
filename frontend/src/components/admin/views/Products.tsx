@@ -240,6 +240,7 @@ export default function Products() {
           <div className="flex items-center gap-2 bg-[#F4F5F7] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
             <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
             <input
+              aria-label="Search products"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Search product name, SKU..."
@@ -248,6 +249,7 @@ export default function Products() {
           </div>
 
           <select
+            aria-label="Filter by category"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-[#E5E7EB] bg-white rounded-xl px-3 py-2 text-xs font-medium text-[#374151] outline-none"
@@ -349,6 +351,7 @@ export default function Products() {
           <div className="flex items-center gap-2">
             <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> loaded database records</span>
             <select
+              aria-label="Items per page"
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
               className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
@@ -362,6 +365,7 @@ export default function Products() {
           </div>
           <div className="flex items-center gap-1">
             <button
+              aria-label="Previous page"
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -370,6 +374,7 @@ export default function Products() {
             </button>
             <span className="px-2 font-bold text-[#1F2937]">{page} / {pages || 1}</span>
             <button
+              aria-label="Next page"
               disabled={page === pages || pages === 0}
               onClick={() => setPage(p => p + 1)}
               className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
@@ -386,8 +391,9 @@ export default function Products() {
           <div className="space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Product Name *</label>
+                <label htmlFor="add-prod-name" className="block font-bold text-[#374151] mb-1">Product Name *</label>
                 <input
+                  id="add-prod-name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. Enterprise Router R-50"
@@ -395,8 +401,9 @@ export default function Products() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">SKU Code *</label>
+                <label htmlFor="add-prod-sku" className="block font-bold text-[#374151] mb-1">SKU Code *</label>
                 <input
+                  id="add-prod-sku"
                   value={form.sku}
                   onChange={(e) => setForm({ ...form, sku: e.target.value.toUpperCase() })}
                   placeholder="NET-ROUTER-50"
@@ -407,8 +414,9 @@ export default function Products() {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Category</label>
+                <label htmlFor="add-prod-category" className="block font-bold text-[#374151] mb-1">Category</label>
                 <select
+                  id="add-prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -417,8 +425,9 @@ export default function Products() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Base Price (₹) *</label>
+                <label htmlFor="add-prod-price" className="block font-bold text-[#374151] mb-1">Base Price (₹) *</label>
                 <input
+                  id="add-prod-price"
                   type="number"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
@@ -426,8 +435,9 @@ export default function Products() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">GST Tax %</label>
+                <label htmlFor="add-prod-tax" className="block font-bold text-[#374151] mb-1">GST Tax %</label>
                 <input
+                  id="add-prod-tax"
                   type="number"
                   value={form.tax_rate}
                   onChange={(e) => setForm({ ...form, tax_rate: Number(e.target.value) })}
@@ -438,8 +448,9 @@ export default function Products() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Stock Qty</label>
+                <label htmlFor="add-prod-stock" className="block font-bold text-[#374151] mb-1">Stock Qty</label>
                 <input
+                  id="add-prod-stock"
                   type="number"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
@@ -447,8 +458,9 @@ export default function Products() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Unit Type</label>
+                <label htmlFor="add-prod-unit" className="block font-bold text-[#374151] mb-1">Unit Type</label>
                 <input
+                  id="add-prod-unit"
                   value={form.unit}
                   onChange={(e) => setForm({ ...form, unit: e.target.value })}
                   placeholder="unit / license / project"
@@ -458,8 +470,9 @@ export default function Products() {
             </div>
 
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Description</label>
+              <label htmlFor="add-prod-description" className="block font-bold text-[#374151] mb-1">Description</label>
               <textarea
+                id="add-prod-description"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={2}
@@ -492,16 +505,18 @@ export default function Products() {
           <div className="space-y-3 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Product Name *</label>
+                <label htmlFor="edit-prod-name" className="block font-bold text-[#374151] mb-1">Product Name *</label>
                 <input
+                  id="edit-prod-name"
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">SKU Code *</label>
+                <label htmlFor="edit-prod-sku" className="block font-bold text-[#374151] mb-1">SKU Code *</label>
                 <input
+                  id="edit-prod-sku"
                   value={editForm.sku}
                   onChange={(e) => setEditForm({ ...editForm, sku: e.target.value.toUpperCase() })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F] font-mono"
@@ -511,8 +526,9 @@ export default function Products() {
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Category</label>
+                <label htmlFor="edit-prod-category" className="block font-bold text-[#374151] mb-1">Category</label>
                 <select
+                  id="edit-prod-category"
                   value={editForm.category}
                   onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -521,8 +537,9 @@ export default function Products() {
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Base Price (₹) *</label>
+                <label htmlFor="edit-prod-price" className="block font-bold text-[#374151] mb-1">Base Price (₹) *</label>
                 <input
+                  id="edit-prod-price"
                   type="number"
                   value={editForm.price}
                   onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
@@ -530,8 +547,9 @@ export default function Products() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">GST Tax %</label>
+                <label htmlFor="edit-prod-tax" className="block font-bold text-[#374151] mb-1">GST Tax %</label>
                 <input
+                  id="edit-prod-tax"
                   type="number"
                   value={editForm.tax_rate}
                   onChange={(e) => setEditForm({ ...editForm, tax_rate: Number(e.target.value) })}
@@ -542,8 +560,9 @@ export default function Products() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Stock Qty</label>
+                <label htmlFor="edit-prod-stock" className="block font-bold text-[#374151] mb-1">Stock Qty</label>
                 <input
+                  id="edit-prod-stock"
                   type="number"
                   value={editForm.stock}
                   onChange={(e) => setEditForm({ ...editForm, stock: Number(e.target.value) })}
@@ -551,8 +570,9 @@ export default function Products() {
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Unit Type</label>
+                <label htmlFor="edit-prod-unit" className="block font-bold text-[#374151] mb-1">Unit Type</label>
                 <input
+                  id="edit-prod-unit"
                   value={editForm.unit}
                   onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
@@ -561,8 +581,9 @@ export default function Products() {
             </div>
 
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Description</label>
+              <label htmlFor="edit-prod-description" className="block font-bold text-[#374151] mb-1">Description</label>
               <textarea
+                id="edit-prod-description"
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 rows={2}

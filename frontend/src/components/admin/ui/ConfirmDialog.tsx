@@ -14,7 +14,7 @@ export default function ConfirmDialog({ open = true, title, message, confirmLabe
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onCancel} />
+      <button type="button" aria-label="Close dialog" className="absolute inset-0 bg-black/40 backdrop-blur-[2px] w-full cursor-default" onClick={onCancel} />
       <div className="relative bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 ${danger ? "bg-red-50" : "bg-amber-50"}`}>
           <AlertTriangle size={20} className={danger ? "text-[#EF4444]" : "text-[#F59E0B]"} />
