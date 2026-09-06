@@ -118,8 +118,15 @@ export default function Header({ activeView, onNavigate, onMenuToggle, onShowToa
               aria-label="Search customers, deals, and products"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && searchQuery.trim()) {
-                  onNavigate("customers");
-                  setSearchOpen(false);
+                  if (activeView === "subscriptions") {
+                    // Local search is implemented in the view itself now.
+                    // We can just close this dropdown so it doesn't redirect.
+                    setSearchOpen(false);
+                    setSearchQuery("");
+                  } else {
+                    onNavigate("customers");
+                    setSearchOpen(false);
+                  }
                 }
               }}
             />
