@@ -13,7 +13,7 @@ export default function SalesWorkspace() {
       {activeTab === 'dashboard' && <SalesDashboard onAction={setActiveTab} />}
       {activeTab === 'quotations' && <MyQuotations onNewQuote={() => setActiveTab('builder')} />}
       {activeTab === 'pipeline' && <SalesPipeline />}
-      {activeTab === 'builder' && <QuotationBuilder />}
+      {activeTab === 'builder' && <QuotationBuilder onNavigateToQuotations={() => setActiveTab('quotations')} />}
     </SalesLayout>
   );
 }

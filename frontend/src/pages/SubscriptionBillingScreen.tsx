@@ -40,7 +40,10 @@ export default function SubscriptionBillingScreen() {
     return (
       <SubscriptionDetail 
         subscriptionId={selectedSubscriptionId} 
-        onBack={() => setSelectedSubscriptionId(null)} 
+        onBack={() => {
+          setSelectedSubscriptionId(null);
+          loadData();
+        }} 
       />
     );
   }

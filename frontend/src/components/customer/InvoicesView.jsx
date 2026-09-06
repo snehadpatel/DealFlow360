@@ -12,20 +12,27 @@ export default function InvoicesView() {
   const [loading, setLoading] = useState(true);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
 
-  useEffect(() => {
+  const fetchInvoices = () => {
+    setLoading(true);
     getInvoices()
       .then((res) => {
         setInvoices(res?.items || (Array.isArray(res) ? res : []));
       })
       .finally(() => setLoading(false));
-  }, []);
+  };
 
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
 
   if (selectedInvoiceId) {
     return (
       <InvoiceDetail
         invoiceId={selectedInvoiceId}
-        onBack={() => setSelectedInvoiceId(null)}
+        onBack={() => {
+          setSelectedInvoiceId(null);
+          fetchInvoices();
+        }}
         // Customers view quotations from the Quotations tab; from an invoice we
         // don't deep-link, so this is a no-op rather than a jarring alert popup.
         onViewQuotation={() => {}}

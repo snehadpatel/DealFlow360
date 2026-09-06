@@ -119,15 +119,18 @@ def run_test():
     # If pending approval, approve it
     if quote_row[1] == "PENDING_APPROVAL":
         print("   Checking pending approvals...", flush=True)
-        res = session.get(f"{BASE_URL}/approvals/pending", headers=headers, timeout=15)
-        assert res.status_code == 200
-        pending_list = res.json()
-        matching_approvals = [a for a in pending_list if str(a.get("quotation_id")) == str(quote_id) or str(a.get("quote_id")) == str(quote_id)]
-        assert len(matching_approvals) > 0, "Approval record not found for quote!"
-        approval_id = matching_approvals[0]["id"]
-        print(f"   Approving quote approval ID {approval_id}...", flush=True)
-        res = session.post(f"{BASE_URL}/approvals/{approval_id}/approve", json={"reason": "Approved via automated E2E test"}, headers=headers, timeout=15)
-        assert res.status_code == 200, f"Approve failed: {res.text}"
+        while True:
+            res = session.get(f"{BASE_URL}/approvals/pending", headers=headers, timeout=15)
+            assert res.status_code == 200
+            pending_list = res.json()
+            matching_approvals = [a for a in pending_list if str(a.get("quotation_id")) == str(quote_id) or str(a.get("quote_id")) == str(quote_id)]
+            if not matching_approvals:
+                break
+            approval_id = matching_approvals[0]["id"]
+            role = matching_approvals[0].get("approver_role")
+            print(f"   Approving quote approval ID {approval_id} ({role})...", flush=True)
+            res = session.post(f"{BASE_URL}/approvals/{approval_id}/approve", json={"reason": "Approved via automated E2E test"}, headers=headers, timeout=15)
+            assert res.status_code == 200, f"Approve failed: {res.text}"
         
         quote_status_row = query_db("SELECT status FROM quotation WHERE id = ? OR id = ?", (quote_id, to_db_id(quote_id)))
         assert quote_status_row[0] == "APPROVED", f"Quote is not APPROVED in DB: {quote_status_row[0]}"

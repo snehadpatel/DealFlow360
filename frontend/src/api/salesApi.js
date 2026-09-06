@@ -32,12 +32,28 @@ export const getSalesPipeline = async () => {
   try {
     const quotes = await apiClient.get('/quotes');
     const list = Array.isArray(quotes) ? quotes : [];
-    return list.map(q => ({
-      id: q.id,
-      stage: q.status || 'DRAFT',
-      customer: q.customer_name || q.customer_id || 'Unknown',
-      value: q.total || 0,
-    }));
+    return list.map(q => {
+      let stage = 'QUOTED';
+      const st = (q.status || '').toUpperCase();
+      if (st === 'PENDING_APPROVAL' || st === 'APPROVED') {
+        stage = 'APPROVAL';
+      } else if (st === 'NEGOTIATION' || st === 'COUNTER_OFFER') {
+        stage = 'NEGOTIATION';
+      } else if (st === 'CONFIRMED' || st === 'COMPLETED') {
+        stage = 'WON';
+      } else if (st === 'DRAFT') {
+        stage = 'QUOTED';
+      }
+
+      return {
+        id: q.id,
+        stage: stage,
+        rawStatus: q.status || 'DRAFT',
+        customer: q.customer_name || q.customer_id || 'Enterprise Customer',
+        value: q.total || 0,
+        margin: q.margin_percent || 0,
+      };
+    });
   } catch (err) {
     console.error('Failed to fetch sales pipeline:', err);
     return [];
@@ -66,7 +82,11 @@ export const getMyQuotations = async (filters = {}) => {
     }));
 
     if (filters.status && filters.status !== 'ALL') {
-      result = result.filter(q => q.status === filters.status);
+      if (filters.status === 'PENDING' || filters.status === 'PENDING_APPROVAL') {
+        result = result.filter(q => q.status === 'PENDING_APPROVAL' || q.status === 'PENDING');
+      } else {
+        result = result.filter(q => q.status === filters.status);
+      }
     }
     if (filters.search) {
       const s = filters.search.toLowerCase();

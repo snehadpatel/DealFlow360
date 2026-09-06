@@ -28,7 +28,7 @@ function previewLine(item) {
   return { gross, discountAmt, net, cost, tax, total: net + tax };
 }
 
-export default function QuotationBuilder() {
+export default function QuotationBuilder({ onNavigateToQuotations }) {
   const queryClient = useQueryClient();
   const [catalog, setCatalog] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -302,16 +302,26 @@ export default function QuotationBuilder() {
 
       {/* Backend result banner — proves the number is server-computed */}
       {saved && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-          <span className="font-bold uppercase tracking-wider text-slate-500">Backend result</span>
-          <span>Status: <strong className="text-[#1F2937]">{backendStatus}</strong></span>
-          <span>Blended risk (overage): <strong className="text-[#1F2937]">{backendRisk ?? 0}</strong> ({backendRiskLevel})</span>
-          <span>Margin: <strong className="text-[#1F2937]">{Number(backendMarginPct).toFixed(1)}%</strong></span>
-          {backendStatus === 'APPROVED' && (
-            <span className="text-emerald-600 font-semibold">✓ Auto-approved (within all ceilings)</span>
-          )}
-          {approvalChain.length > 0 && (
-            <span className="text-amber-600 font-semibold">Routed to: {approvalChain.join(' → ')}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs shadow-xs">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+            <span className="font-bold uppercase tracking-wider text-emerald-800">Quote #{String(saved.id).slice(0, 8)}</span>
+            <span>Status: <strong className="text-emerald-950">{backendStatus}</strong></span>
+            <span>Blended risk: <strong className="text-emerald-950">{backendRisk ?? 0}</strong> ({backendRiskLevel})</span>
+            <span>Margin: <strong className="text-emerald-950">{Number(backendMarginPct).toFixed(1)}%</strong></span>
+            {backendStatus === 'APPROVED' && (
+              <span className="text-emerald-700 font-bold">✓ Auto-approved (within all ceilings)</span>
+            )}
+            {approvalChain.length > 0 && (
+              <span className="text-amber-800 font-bold">Routed to: {approvalChain.join(' → ')}</span>
+            )}
+          </div>
+          {onNavigateToQuotations && (
+            <button
+              onClick={onNavigateToQuotations}
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-xs transition shrink-0 whitespace-nowrap"
+            >
+              View in My Quotations &rarr;
+            </button>
           )}
         </div>
       )}

@@ -2,7 +2,13 @@ import apiClient from './client';
 
 export const getApprovals = async (params = {}) => {
   try {
-    const items = await apiClient.get('/approvals/pending');
+    const queryParams = {};
+    if (params.status && params.status !== 'ALL') {
+      queryParams.status = params.status;
+    }
+    const items = await apiClient.get('/approvals', { params: queryParams }).catch(async () => {
+      return await apiClient.get('/approvals/pending').catch(() => []);
+    });
     let result = Array.isArray(items) ? items : [];
 
     // Map backend fields to frontend expected format
@@ -78,7 +84,11 @@ export const getApprovals = async (params = {}) => {
 
 export const getApprovalSummary = async () => {
   try {
-    const items = await apiClient.get('/approvals/pending');
+    const summary = await apiClient.get('/approvals/summary').catch(() => null);
+    if (summary && typeof summary.pending === 'number') {
+      return summary;
+    }
+    const items = await apiClient.get('/approvals/pending').catch(() => []);
     const list = Array.isArray(items) ? items : [];
     const pending = list.filter(i => i.status === 'PENDING').length;
     const high_risk = list.filter(i => i.risk_level === 'HIGH' && i.status === 'PENDING').length;
@@ -203,7 +213,7 @@ export const getApprovalById = async (id) => {
 };
 
 export const approveApproval = async (id, data = {}) => {
-  return await apiClient.post(`/approvals/${id}/approve`, { reason: data.reason || '' });
+  return await apiClient.post(`/approvals/${id}/approve`, { reason: data.reason || data.comment || '' });
 };
 
 export const rejectApproval = async (id, data) => {

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getMyQuotations } from '../../api/salesApi';
-import { Search, Plus } from 'lucide-react';
+import { acceptQuotation } from '../../api/quotationApi';
+import { Search, Plus, Check } from 'lucide-react';
 import StatusBadge from '../customer/StatusBadge'; // Reuse customer badge as it has same styles
 import QuotationDetail from '../customer/QuotationDetail';
 
@@ -8,11 +10,13 @@ const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', cu
 const formatCurrency = (val) => currencyFormatter.format(val || 0);
 
 export default function MyQuotations({ onNewQuote }) {
+  const queryClient = useQueryClient();
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
 
   const fetchQuotations = async () => {
     setLoading(true);
@@ -29,6 +33,23 @@ export default function MyQuotations({ onNewQuote }) {
   useEffect(() => {
     fetchQuotations();
   }, [searchTerm, activeFilter]);
+
+  const handleQuickConfirm = async (e, quoteId) => {
+    e.stopPropagation();
+    if (!window.confirm(`Confirm and finalize Quotation #${quoteId}? This will generate the order, fulfillment allocation, and invoice.`)) {
+      return;
+    }
+    setConfirmingId(quoteId);
+    try {
+      await acceptQuotation(quoteId);
+      queryClient.invalidateQueries();
+      await fetchQuotations();
+    } catch (err) {
+      alert(err.response?.data?.detail || err.message || 'Failed to confirm quotation.');
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
   // Drill into a single quotation (read-only detail + negotiation view). Back
   // re-runs the list fetch so any status change made in the detail is reflected.
@@ -134,12 +155,25 @@ export default function MyQuotations({ onNewQuote }) {
                       <StatusBadge status={quote.status} />
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <button
-                        onClick={() => setSelectedQuoteId(quote.id)}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg text-xs font-medium transition"
-                      >
-                        View
-                      </button>
+                      <div className="flex items-center justify-end space-x-2">
+                        {quote.status === 'APPROVED' && (
+                          <button
+                            onClick={(e) => handleQuickConfirm(e, quote.id)}
+                            disabled={confirmingId === quote.id}
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-sm transition"
+                            title="Confirm & Convert to Order"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>{confirmingId === quote.id ? 'Confirming...' : 'Confirm'}</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setSelectedQuoteId(quote.id)}
+                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-textPrimary rounded-lg text-xs font-medium transition"
+                        >
+                          View
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

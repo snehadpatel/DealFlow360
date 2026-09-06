@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getQuotationById, acceptQuotation } from '../../api/quotationApi';
 import { submitNegotiation, acceptCounterOffer, continueNegotiation } from '../../api/negotiationApi';
 import StatusBadge from './StatusBadge';
@@ -8,9 +9,10 @@ import NegotiationForm from './NegotiationForm';
 import NegotiationStatus from './NegotiationStatus';
 import NegotiationTimeline from './NegotiationTimeline';
 import CounterOfferCard from './CounterOfferCard';
-import { ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Check } from 'lucide-react';
 
 export default function QuotationDetail({ quotationId, onBack }) {
+  const queryClient = useQueryClient();
   const [quotation, setQuotation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,29 +38,45 @@ export default function QuotationDetail({ quotationId, onBack }) {
       const response = await submitNegotiation({ quotation_id: quotation.id, ...formData });
       setSuccessBanner(response.message || 'Negotiation request submitted successfully.');
       setShowNegotiationForm(false);
+      queryClient.invalidateQueries();
       await fetchQuoteDetail();
-    } catch (err) { alert(err.message || 'Failed to submit negotiation request.'); }
+    } catch (err) { alert(err.response?.data?.detail || err.message || 'Failed to submit negotiation request.'); }
     finally { setActionLoading(false); }
   };
 
   const handleAcceptCounterOffer = async () => {
     setActionLoading(true);
-    try { await acceptCounterOffer(quotation.id); setSuccessBanner('Counter offer accepted! Quotation updated.'); await fetchQuoteDetail(); }
-    catch (err) { alert(err.message || 'Failed to accept counter offer.'); }
+    try {
+      await acceptCounterOffer(quotation.id);
+      setSuccessBanner('Counter offer accepted! Quotation updated.');
+      queryClient.invalidateQueries();
+      await fetchQuoteDetail();
+    }
+    catch (err) { alert(err.response?.data?.detail || err.message || 'Failed to accept counter offer.'); }
     finally { setActionLoading(false); }
   };
 
   const handleContinueNegotiation = async () => {
     setActionLoading(true);
-    try { await continueNegotiation(quotation.id); setShowNegotiationForm(true); await fetchQuoteDetail(); }
-    catch (err) { alert(err.message || 'Failed to continue negotiation.'); }
+    try {
+      await continueNegotiation(quotation.id);
+      setShowNegotiationForm(true);
+      queryClient.invalidateQueries();
+      await fetchQuoteDetail();
+    }
+    catch (err) { alert(err.response?.data?.detail || err.message || 'Failed to continue negotiation.'); }
     finally { setActionLoading(false); }
   };
 
   const handleAcceptQuotation = async () => {
     setActionLoading(true);
-    try { await acceptQuotation(quotation.id); setSuccessBanner('Quotation accepted successfully! Invoice will be generated.'); await fetchQuoteDetail(); }
-    catch (err) { alert(err.message || 'Failed to accept quotation.'); }
+    try {
+      await acceptQuotation(quotation.id);
+      setSuccessBanner('Quotation accepted successfully! Order, fulfillment, and invoices have been generated.');
+      queryClient.invalidateQueries();
+      await fetchQuoteDetail();
+    }
+    catch (err) { alert(err.response?.data?.detail || err.message || 'Failed to accept quotation.'); }
     finally { setActionLoading(false); }
   };
 
@@ -103,9 +121,38 @@ export default function QuotationDetail({ quotationId, onBack }) {
       <QuotationItemsTable items={quotation.items} />
       <QuotationSummary subtotal={quotation.subtotal} totalDiscount={quotation.totalDiscount} taxTotal={quotation.taxTotal} totalAmount={quotation.totalAmount} discountPercent={quotation.discountPercent} />
 
+      {/* Ready to Confirm Card for Approved/Sent Quotations */}
+      {(quotation.status === 'APPROVED' || quotation.status === 'SENT') && (
+        <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-emerald-100 text-emerald-700 rounded-xl shrink-0">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-emerald-950">Quotation Approved & Ready to Finalize</h3>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Confirming this quotation will lock pricing, convert it to an official Order, and automatically generate fulfillment and billing records.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleAcceptQuotation}
+            disabled={actionLoading}
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-md transition whitespace-nowrap flex items-center gap-2"
+          >
+            {actionLoading ? 'Finalizing...' : (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Accept & Confirm Quotation</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {negotiation && negotiation.status === 'COUNTER_OFFER' && <CounterOfferCard counterOffer={negotiation.counterOffer} onAccept={handleAcceptCounterOffer} onContinue={handleContinueNegotiation} loading={actionLoading} />}
       {negotiation && negotiation.status !== 'COUNTER_OFFER' && <NegotiationStatus negotiation={negotiation} status={negotiation.status} onAcceptQuotation={handleAcceptQuotation} onRequestNewNegotiation={() => setShowNegotiationForm(true)} loading={actionLoading} />}
-      {(showNegotiationForm || (!negotiation && quotation.status !== 'CONFIRMED')) && <NegotiationForm currentDiscount={quotation.discountPercent} currentTotal={quotation.totalAmount} onSubmit={handleNegotiationSubmit} loading={actionLoading} />}
+      {(showNegotiationForm || (!negotiation && quotation.status !== 'CONFIRMED' && quotation.status !== 'APPROVED')) && <NegotiationForm currentDiscount={quotation.discountPercent} currentTotal={quotation.totalAmount} onSubmit={handleNegotiationSubmit} loading={actionLoading} />}
       <NegotiationTimeline history={negotiation?.history || []} />
     </div>
   );

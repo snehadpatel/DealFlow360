@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getFulfillmentById, allocateStock, createShipment } from '../api/fulfillmentApi';
 import FulfillmentOrderSummary from '../components/fulfillment/FulfillmentOrderSummary';
 import FulfillmentItemsTable from '../components/fulfillment/FulfillmentItemsTable';
@@ -11,6 +12,7 @@ import CreateShipmentModal from '../components/fulfillment/CreateShipmentModal';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 
 export default function FulfillmentDetail({ fulfillmentId, onBack }) {
+  const queryClient = useQueryClient();
   const [fulfillment, setFulfillment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,12 +40,14 @@ export default function FulfillmentDetail({ fulfillmentId, onBack }) {
   const handleAllocate = async (allocations) => {
     await allocateStock(fulfillmentId, allocations);
     setModalConfig({ isOpen: false, type: null });
+    queryClient.invalidateQueries();
     loadData(true);
   };
 
   const handleCreateShipment = async (shipmentData) => {
     await createShipment(fulfillmentId, shipmentData);
     setModalConfig({ isOpen: false, type: null });
+    queryClient.invalidateQueries();
     loadData(true);
   };
 

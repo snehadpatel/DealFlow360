@@ -51,7 +51,7 @@ def create_order_from_quote(session: Session, quotation: Quotation) -> Order:
     # failure must not roll back an already-committed order.
     try:
         from app.services import invoice_service
-        from app.models.invoice import Invoice
+        from app.models.invoice import Invoice, InvoiceStatus
         existing_invoice = session.exec(select(Invoice).where(Invoice.order_id == order.id)).first()
         if not existing_invoice:
             invoice_service.create_invoice(
@@ -59,9 +59,40 @@ def create_order_from_quote(session: Session, quotation: Quotation) -> Order:
                 customer_id=order.customer_id,
                 amount=order.total_amount,
                 order_id=order.id,
+                status=InvoiceStatus.SENT,
             )
     except Exception as e:
         print(f"Invoice auto-generation notice for order {order.id}: {e}")
+
+    # Generate downstream CustomerSubscriptions if any products in the quote are Subscriptions/SaaS
+    try:
+        from app.services import subscription_service
+        from app.models.product import Product
+        from app.models.subscription import SubscriptionPlan, CustomerSubscription
+        for ql in lines:
+            prod = session.get(Product, ql.product_id)
+            if prod and (prod.category or "").lower() in ("subscription", "saas"):
+                plans = session.exec(select(SubscriptionPlan).where(SubscriptionPlan.is_active == True)).all()
+                plan = next((p for p in plans if p.name.lower() in prod.name.lower() or prod.name.lower() in p.name.lower()), None)
+                if not plan and plans:
+                    plan = plans[0]
+                if plan:
+                    existing_sub = session.exec(
+                        select(CustomerSubscription).where(
+                            CustomerSubscription.order_id == order.id,
+                            CustomerSubscription.plan_id == plan.id,
+                        )
+                    ).first()
+                    if not existing_sub:
+                        subscription_service.subscribe_customer(
+                            session,
+                            customer_id=order.customer_id,
+                            plan_id=plan.id,
+                            quantity=ql.quantity,
+                            order_id=order.id,
+                        )
+    except Exception as e:
+        print(f"Subscription auto-generation notice for order {order.id}: {e}")
 
     return order
 

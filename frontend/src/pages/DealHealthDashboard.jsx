@@ -21,15 +21,14 @@ export default function DealHealthDashboard() {
         const quotes = await apiClient.get('/quotes');
         const list = Array.isArray(quotes) ? quotes : [];
 
-        // Pick top deals with risk data
+        // Pick recent deals with risk data
         const deals = list
-          .filter(q => q.blended_risk > 0 || q.risk_level)
           .slice(0, 10)
           .map(q => ({
             id: q.id,
             customer: q.customer_name || 'Enterprise Client',
             value: `₹${(q.total || 0).toLocaleString('en-IN')}`,
-            risk: q.risk_level || 'LOW',
+            risk: q.risk_level || (q.blended_risk > 20 ? 'HIGH' : q.blended_risk > 10 ? 'MEDIUM' : 'LOW'),
             health: Math.max(0, Math.min(100, Math.round(100 - (q.blended_risk || 0)))),
             status: q.status || 'DRAFT',
           }));

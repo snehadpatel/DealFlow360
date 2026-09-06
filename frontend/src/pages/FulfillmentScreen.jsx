@@ -39,7 +39,10 @@ export default function FulfillmentScreen() {
     return (
       <FulfillmentDetail 
         fulfillmentId={selectedFulfillmentId} 
-        onBack={() => setSelectedFulfillmentId(null)} 
+        onBack={() => {
+          setSelectedFulfillmentId(null);
+          loadData();
+        }} 
       />
     );
   }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import {
   getInvoiceById,
@@ -23,6 +24,7 @@ export default function InvoiceDetail({
   onViewQuotation,
   onViewBilling,
 }) {
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,6 +81,7 @@ export default function InvoiceDetail({
         notes: 'Full settlement recorded via operations platform',
       });
       showToast(`Payment of ₹${amountToPay.toLocaleString('en-IN')} recorded successfully.`);
+      queryClient.invalidateQueries();
       fetchInvoice(true);
     } catch (err) {
       showToast(err.message || 'Failed to record payment', 'error');
@@ -89,6 +92,7 @@ export default function InvoiceDetail({
     try {
       await sendInvoice(invoiceId, payload);
       showToast(`Invoice dispatched successfully to ${payload.email}`);
+      queryClient.invalidateQueries();
       fetchInvoice(true);
     } catch {
       showToast(`Failed to send invoice`, 'error');
@@ -112,7 +116,8 @@ export default function InvoiceDetail({
     try {
       await recordInvoicePayment(invoiceId, { amount, method: payMethod });
       setIsPayModalOpen(false);
-      showToast(`Payment of ${amount} recorded`);
+      showToast(`Payment of ₹${amount.toLocaleString('en-IN')} recorded`);
+      queryClient.invalidateQueries();
       fetchInvoice(true);
     } catch {
       showToast('Failed to record payment', 'error');

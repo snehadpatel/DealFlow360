@@ -393,3 +393,44 @@ def list_for_quote(session: Session, quotation_id: UUID) -> list[dict]:
     return [enrich_approval(session, a) for a in requests]
 
 
+def list_approvals(session: Session, user: User, status: Optional[str] = None) -> list[dict]:
+    """All approvals visible to this approver (ADMIN sees all). Supports status filter."""
+    stmt = select(ApprovalRequest)
+    if status and status.upper() != "ALL":
+        target = status.upper()
+        if target == "CHANGES_REQUESTED":
+            target = "RETURNED"
+        try:
+            stmt = stmt.where(ApprovalRequest.status == ApprovalStatus(target))
+        except Exception:
+            pass
+    if user.role != Role.ADMIN:
+        stmt = stmt.where(ApprovalRequest.approver_role == user.role.value)
+    requests = list(session.exec(stmt.order_by(ApprovalRequest.created_at.desc())))
+    return [enrich_approval(session, a) for a in requests]
+
+
+def get_approval_summary_stats(session: Session, user: User) -> dict:
+    stmt = select(ApprovalRequest)
+    if user.role != Role.ADMIN:
+        stmt = stmt.where(ApprovalRequest.approver_role == user.role.value)
+    all_reqs = list(session.exec(stmt))
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    pending = [r for r in all_reqs if r.status == ApprovalStatus.PENDING]
+    high_risk = [r for r in pending if (enrich_approval(session, r).get("risk_level") == "HIGH")]
+    approved_today = [
+        r for r in all_reqs 
+        if r.status == ApprovalStatus.APPROVED and (r.resolved_at and r.resolved_at >= today_start)
+    ]
+    rejected_today = [
+        r for r in all_reqs 
+        if r.status == ApprovalStatus.REJECTED and (r.resolved_at and r.resolved_at >= today_start)
+    ]
+    return {
+        "pending": len(pending),
+        "high_risk": len(high_risk),
+        "approved_today": len(approved_today),
+        "rejected_today": len(rejected_today),
+    }
+
+

@@ -20,7 +20,8 @@ def _next_credit_note_number(session: Session) -> str:
 
 def create_invoice(session: Session, customer_id: UUID, amount: float,
                    order_id: Optional[UUID] = None, currency: str = "INR",
-                   due_date: Optional[date] = None, notes: Optional[str] = None) -> Invoice:
+                   due_date: Optional[date] = None, notes: Optional[str] = None,
+                   status: Optional[InvoiceStatus] = None) -> Invoice:
     invoice = Invoice(
         invoice_number=_next_invoice_number(session),
         customer_id=customer_id,
@@ -30,6 +31,7 @@ def create_invoice(session: Session, customer_id: UUID, amount: float,
         currency=currency,
         due_date=due_date or (date.today() + timedelta(days=30)),
         notes=notes,
+        status=status or InvoiceStatus.DRAFT,
     )
     session.add(invoice)
     session.commit()
