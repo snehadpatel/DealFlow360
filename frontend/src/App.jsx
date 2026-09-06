@@ -113,13 +113,38 @@ export default function App() {
 
 function AppShell() {
   const { user, logout, isAuthenticated } = useAuth();
-  const [authView, setAuthView] = useState("login"); // "login" | "signup"
-  const [activeTab, setActiveTab] = useState("quotation");
+  
+  const [authView, setAuthView] = useState(() => {
+    return window.location.pathname === "/signup" ? "signup" : "login";
+  });
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    const path = window.location.pathname.replace('/', '');
+    if (path && path !== 'login' && path !== 'signup') {
+      return path;
+    }
+    return "quotation";
+  });
+  
   const [selectedBillingId, setSelectedBillingId] = useState("BIL-2045");
 
   React.useEffect(() => {
-    setActiveTab(getDefaultTabForRole(user?.role));
+    if (user) {
+      const currentPath = window.location.pathname.replace('/', '');
+      if (!currentPath || currentPath === 'login' || currentPath === 'signup') {
+        setActiveTab(getDefaultTabForRole(user.role));
+      }
+    }
   }, [user]);
+
+  // Sync URL with activeTab/authView
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      window.history.replaceState(null, '', `/${authView}`);
+    } else {
+      window.history.replaceState(null, '', `/${activeTab}`);
+    }
+  }, [activeTab, isAuthenticated, authView]);
 
   // Google OAuth client ID (fallback mock client id if not configured in env)
   const googleClientId =
