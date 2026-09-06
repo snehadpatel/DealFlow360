@@ -52,7 +52,7 @@ export default function SubscriptionPlans() {
   const [addOpen, setAddOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(200);
+  const [perPage, setPerPage] = useState(1000);
   const [selectedPlanId, setSelectedPlanId] = useState<number | string | null>(null);
 
   useEffect(() => {
@@ -308,7 +308,7 @@ export default function SubscriptionPlans() {
             <option value={25}>25 per page</option>
             <option value={50}>50 per page</option>
             <option value={100}>100 per page</option>
-            <option value={200}>All 200 per page</option>
+            <option value={1000}>All per page</option>
           </select>
         </div>
         <div className="flex items-center gap-1">
