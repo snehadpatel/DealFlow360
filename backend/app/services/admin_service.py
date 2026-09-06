@@ -329,6 +329,15 @@ def update_warehouse(session: Session, warehouse_id: UUID, **kwargs) -> Warehous
     session.refresh(w)
     return w
 
+def delete_warehouse(session: Session, warehouse_id: UUID) -> None:
+    """Soft-delete a warehouse (deactivate). Warehouses are referenced by stock,
+    shipments and order lines, so we never hard-delete — flipping is_active off
+    also removes it from allocation (the engine only considers active sites)."""
+    w = get_warehouse_or_404(session, warehouse_id)
+    w.is_active = False
+    session.add(w)
+    session.commit()
+
 def list_stock(session: Session, warehouse_id: Optional[UUID] = None, product_id: Optional[UUID] = None) -> List[StockInventory]:
     stmt = select(StockInventory)
     if warehouse_id:

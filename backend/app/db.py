@@ -28,7 +28,7 @@ def init_db():
     import app.models.approval
     import app.models.order
     import app.models.invoice
-    import app.models.subscription
+    import app.models.subscription  # noqa: F401 (registers SubscriptionPlan, CustomerSubscription, BillingSchedule)
     import app.models.discount_rule
     import app.models.price_list
     import app.models.negotiation

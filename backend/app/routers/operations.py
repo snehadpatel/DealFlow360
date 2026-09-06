@@ -55,6 +55,16 @@ def recommend_split(
 ):
     return order_service.recommend_warehouse_split(session, product_id, required_qty)
 
+@orders_router.post("/{order_id}/allocate")
+def allocate_order(
+    order_id: UUID,
+    session: Session = Depends(get_session),
+    _: User = Depends(require_roles([Role.OPERATIONS, Role.ADMIN]))
+):
+    """Really allocate the order across warehouses: reserve stock, split where
+    needed, raise backorders for shortfalls, and move the order to PROCESSING."""
+    return order_service.allocate_order(session, order_id)
+
 
 # ─── Shipments ────────────────────────────────────────────────────────────────
 shipments_router = APIRouter(prefix="/shipments", tags=["shipments"])

@@ -40,15 +40,24 @@ class CustomerSubscriptionCreate(BaseModel):
     next_billing_date: Optional[date] = None
 
 class CustomerSubscriptionUpdate(BaseModel):
+    plan_id: Optional[UUID] = None
     quantity: Optional[int] = None
     status: Optional[str] = None
     next_billing_date: Optional[date] = None
+
+class BillingScheduleEntry(BaseModel):
+    period_index: int
+    period_start: str
+    period_end: str
+    amount: float
+    status: str
 
 class CustomerSubscriptionResponse(BaseModel):
     id: UUID
     customer_id: UUID
     customer_name: Optional[str] = None
     plan_id: UUID
+    order_id: Optional[UUID] = None
     plan_name: Optional[str] = None
     plan_billing_cycle: Optional[str] = None
     plan_price: Optional[float] = None
@@ -59,4 +68,9 @@ class CustomerSubscriptionResponse(BaseModel):
     next_billing_date: Optional[date]
     cancelled_at: Optional[datetime]
     created_at: datetime
+    # Real recurring calendar + proration/credit artifacts from the billing engine.
+    schedule: Optional[list] = None
+    proration: Optional[dict] = None
+    incremental_invoice: Optional[dict] = None
+    credit_note: Optional[dict] = None
     class Config: from_attributes = True
