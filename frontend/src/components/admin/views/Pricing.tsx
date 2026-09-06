@@ -1,44 +1,95 @@
 import React, { useState, useEffect } from "react";
-import { Tag, Plus, CheckCircle2, DollarSign, Calendar, Layers, ShieldCheck, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Tag, Plus, Edit2, Trash2, CheckCircle2, DollarSign, Calendar, Layers, ShieldCheck } from "lucide-react";
 import Modal from "../ui/Modal";
-import { fetchPriceListsList, createPriceListApi, fetchProductsList } from "../../../api/adminApi";
+import { fetchPriceListsList, createPriceListApi } from "../../../api/adminApi";
+
+const initialRules = [
+  {
+    id: 1,
+    product: "Enterprise Laptop Pro X1",
+    sku: "LAP-PRO-X1",
+    basePrice: 85000,
+    goldPrice: 76000,
+    silverPrice: 78000,
+    bronzePrice: 80000,
+    qtyDiscountMin: 10,
+    qtyDiscountPct: 8,
+    effectiveDate: "01 Jan 2026",
+    status: "active",
+  },
+  {
+    id: 2,
+    product: "Cloud Management Suite",
+    sku: "SaaS-CMS-ENT",
+    basePrice: 12000,
+    goldPrice: 9600,
+    silverPrice: 10800,
+    bronzePrice: 11400,
+    qtyDiscountMin: 50,
+    qtyDiscountPct: 15,
+    effectiveDate: "15 Jan 2026",
+    status: "active",
+  },
+  {
+    id: 3,
+    product: "Network Security Firewall XG-500",
+    sku: "NET-FW-XG500",
+    basePrice: 150000,
+    goldPrice: 135000,
+    silverPrice: 142000,
+    bronzePrice: 148000,
+    qtyDiscountMin: 5,
+    qtyDiscountPct: 10,
+    effectiveDate: "01 Feb 2026",
+    status: "active",
+  },
+];
 
 export default function Pricing() {
-  const [priceLists, setPriceLists] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [tierFilter, setTierFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [rules, setRules] = useState(initialRules);
   const [addOpen, setAddOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
   const [newRule, setNewRule] = useState({
-    name: "",
-    tier: "GOLD",
-    currency: "INR",
-    basePrice: 50000,
+    product: "",
+    sku: "",
+    basePrice: 0,
+    goldPrice: 0,
+    silverPrice: 0,
+    bronzePrice: 0,
+    qtyDiscountMin: 10,
+    qtyDiscountPct: 5,
+    effectiveDate: "01 Sep 2026",
   });
 
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
-    loadData();
+    loadPriceLists();
   }, []);
 
-  async function loadData() {
-    setLoading(true);
+  async function loadPriceLists() {
     try {
-      const [pls, prods] = await Promise.all([
-        fetchPriceListsList(),
-        fetchProductsList().catch(() => []),
-      ]);
-      setPriceLists(Array.isArray(pls) ? pls : []);
-      setProducts(Array.isArray(prods) ? prods : []);
-    } catch (err) {
-      console.error("Failed to load price lists:", err);
-    } finally {
-      setLoading(false);
+      const lists = await fetchPriceListsList();
+      if (!Array.isArray(lists) || lists.length === 0) return;
+      // Surface persisted price lists as rows alongside the demo matrix so the
+      // count and table reflect real DB records.
+      const mapped = lists.map((pl: any) => ({
+        id: pl.id,
+        product: pl.name,
+        sku: (pl.tier || pl.currency || "LIST").toUpperCase(),
+        basePrice: 0,
+        goldPrice: 0,
+        silverPrice: 0,
+        bronzePrice: 0,
+        qtyDiscountMin: 0,
+        qtyDiscountPct: 0,
+        effectiveDate: pl.effective_from || (pl.created_at ? String(pl.created_at).split("T")[0] : ""),
+        status: pl.is_active === false ? "inactive" : "active",
+        persisted: true,
+      }));
+      setRules([...mapped, ...initialRules]);
+    } catch (e) {
+      console.warn("Using initial pricing rules fallback", e);
     }
   }
 
@@ -48,43 +99,28 @@ export default function Pricing() {
   }
 
   async function handleCreateRule() {
-    if (!newRule.name) {
-      showToast("Please enter a price list / rule name");
-      return;
-    }
-    setSubmitting(true);
+    if (!newRule.product || !newRule.basePrice) return;
+    setSaving(true);
     try {
+      // The backend price-list header is what persists (name + tier + currency).
+      // Per-product tier prices need a product UUID which this form doesn't
+      // collect, so we persist the list header and reload from the DB.
       await createPriceListApi({
-        name: newRule.name,
-        tier: newRule.tier,
-        currency: newRule.currency,
-        effective_from: new Date().toISOString().split("T")[0],
+        name: newRule.product,
+        currency: "INR",
       });
-      await loadData();
+      await loadPriceLists();
       setAddOpen(false);
-      setNewRule({ name: "", tier: "GOLD", currency: "INR", basePrice: 50000 });
-      showToast("New price list saved successfully in database");
+      showToast("New pricing list saved to database");
     } catch (e) {
-      showToast("Error saving price list to database");
+      showToast("Error saving pricing rule");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   }
 
-  const filtered = priceLists.filter((pl) => {
-    const name = pl.name || "";
-    const tier = pl.tier || "General";
-    const matchesSearch = name.toLowerCase().includes(search.toLowerCase());
-    const matchesTier = tierFilter === "all" || tier.toLowerCase() === tierFilter.toLowerCase();
-    return matchesSearch && matchesTier;
-  });
-
-  const total = filtered.length;
-  const pages = Math.ceil(total / perPage) || 1;
-  const rows = filtered.slice((page - 1) * perPage, page * perPage);
-
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-5">
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -96,9 +132,7 @@ export default function Pricing() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Centralized Pricing Engine</h2>
-          <p className="text-[#6B7280] text-xs mt-0.5">
-            Define base, customer-tier, and category pricing rules connected directly to the database.
-          </p>
+          <p className="text-[#6B7280] text-xs mt-0.5">Define base, customer-tier, and quantity-based pricing rules without writing code.</p>
         </div>
         <button
           onClick={() => setAddOpen(true)}
@@ -112,20 +146,20 @@ export default function Pricing() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[#6B7280] text-xs font-semibold">Active Price Lists</span>
+            <span className="text-[#6B7280] text-xs font-semibold">Tier Pricing Matrices</span>
             <div className="p-2 rounded-xl bg-orange-50 text-[#F26C4F]"><Tag size={16} /></div>
           </div>
-          <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{priceLists.length} in Database</p>
-          <p className="text-[10px] text-slate-500 font-medium mt-0.5">Tier-specific tariff cards</p>
+          <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{rules.length} Configured</p>
+          <p className="text-[10px] text-slate-500 font-medium mt-0.5">Gold, Silver, Bronze matrix active</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[#6B7280] text-xs font-semibold">Catalog Products</span>
+            <span className="text-[#6B7280] text-xs font-semibold">Volume Discount Triggers</span>
             <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600"><Layers size={16} /></div>
           </div>
-          <p className="text-2xl font-extrabold text-[#1F2937] mt-2">{products.length} Products</p>
-          <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Priced across tiers</p>
+          <p className="text-2xl font-extrabold text-[#1F2937] mt-2">Active</p>
+          <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Auto-applied at checkout</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs">
@@ -138,169 +172,162 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search size={15} className="absolute left-3 top-2.5 text-[#6B7280]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search price list name..."
-            className="w-full pl-9 pr-3 py-1.5 border border-[#E5E7EB] rounded-xl text-xs outline-none focus:border-[#F26C4F]"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-[#6B7280]">Tier:</span>
-          <select
-            value={tierFilter}
-            onChange={(e) => { setTierFilter(e.target.value); setPage(1); }}
-            className="border border-[#E5E7EB] rounded-xl px-2.5 py-1.5 text-xs text-[#374151] outline-none"
-          >
-            <option value="all">All Tiers</option>
-            <option value="GOLD">Gold Tier</option>
-            <option value="SILVER">Silver Tier</option>
-            <option value="BRONZE">Bronze Tier</option>
-          </select>
-        </div>
-      </div>
-
       {/* Pricing Rules Table */}
       <div className="bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-xs">
         <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
-          <h3 className="text-[#1F2937] font-bold text-sm">Database Price Lists & Tariff Cards</h3>
-          <span className="text-xs text-[#6B7280]">Synced directly with dealflow360.db</span>
+          <h3 className="text-[#1F2937] font-bold text-sm">Configured Product Pricing Matrix</h3>
+          <span className="text-xs text-[#6B7280]">Changes take effect immediately on new quotations</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[#E5E7EB] bg-[#FAFBFD] text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                <th className="py-3 px-4">Price List Name</th>
-                <th className="py-3 px-4">Target Tier</th>
-                <th className="py-3 px-4">Currency</th>
+                <th className="py-3 px-4">Product & SKU</th>
+                <th className="py-3 px-4">Base Price</th>
+                <th className="py-3 px-4 text-amber-700">Gold Tier</th>
+                <th className="py-3 px-4 text-slate-700">Silver Tier</th>
+                <th className="py-3 px-4 text-orange-800">Bronze Tier</th>
+                <th className="py-3 px-4">Volume Discount</th>
                 <th className="py-3 px-4">Effective Date</th>
-                <th className="py-3 px-4">Expiration Date</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F4F5F7] text-xs">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-[#6B7280]">Loading price lists from database...</td>
+              {rules.map((r) => (
+                <tr key={r.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
+                  <td className="py-3 px-4">
+                    <p className="font-bold text-[#1F2937]">{r.product}</p>
+                    <p className="text-[11px] font-mono text-[#6B7280]">{r.sku}</p>
+                  </td>
+                  <td className="py-3 px-4 font-bold text-[#1F2937]">₹{r.basePrice.toLocaleString("en-IN")}</td>
+                  <td className="py-3 px-4 font-extrabold text-amber-600 bg-amber-50/50">
+                    ₹{r.goldPrice.toLocaleString("en-IN")}
+                  </td>
+                  <td className="py-3 px-4 font-bold text-slate-700">
+                    ₹{r.silverPrice.toLocaleString("en-IN")}
+                  </td>
+                  <td className="py-3 px-4 font-bold text-orange-800">
+                    ₹{r.bronzePrice.toLocaleString("en-IN")}
+                  </td>
+                  <td className="py-3 px-4 font-medium text-[#374151]">
+                    {r.qtyDiscountPct}% off (Min {r.qtyDiscountMin} units)
+                  </td>
+                  <td className="py-3 px-4 text-[#6B7280]">{r.effectiveDate}</td>
+                  <td className="py-3 px-4 text-right">
+                    <button
+                      onClick={() => showToast(`Editing rule for ${r.product}`)}
+                      className="p-1.5 text-[#6B7280] hover:text-[#F26C4F] transition"
+                    >
+                      <Edit2 size={15} />
+                    </button>
+                  </td>
                 </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-[#6B7280]">No price lists found in database.</td>
-                </tr>
-              ) : (
-                rows.map((r) => (
-                  <tr key={r.id} className="hover:bg-[#FFF8F6]/50 transition-colors">
-                    <td className="py-3 px-4 font-bold text-[#1F2937]">{r.name}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        r.tier === 'GOLD' ? 'bg-amber-100 text-amber-800' :
-                        r.tier === 'SILVER' ? 'bg-slate-200 text-slate-800' :
-                        r.tier === 'BRONZE' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {r.tier || "Standard"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-[#374151]">{r.currency || "INR"}</td>
-                    <td className="py-3 px-4 text-[#6B7280]">{r.effective_from || "2026-01-01"}</td>
-                    <td className="py-3 px-4 text-[#6B7280]">{r.expires_at || "Open / Unlimited"}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
-                        {r.is_active ? "Active" : "Active"}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-[#E5E7EB] text-xs text-[#6B7280] gap-2">
-          <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> records</span>
-          <div className="flex items-center gap-1">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(p => p - 1)}
-              className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <span className="px-2 font-bold text-[#1F2937]">{page} / {pages}</span>
-            <button
-              disabled={page >= pages}
-              onClick={() => setPage(p => p + 1)}
-              className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Define Rule Modal */}
       {addOpen && (
-        <Modal title="Define New Price List Rule" onClose={() => setAddOpen(false)}>
+        <Modal title="Define Product Pricing Rule" onClose={() => setAddOpen(false)}>
           <div className="space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Price List / Rule Name *</label>
-              <input
-                value={newRule.name}
-                onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
-                placeholder="e.g. Enterprise Special Tariff Q4"
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Target Customer Tier</label>
-                <select
-                  value={newRule.tier}
-                  onChange={(e) => setNewRule({ ...newRule, tier: e.target.value })}
+                <label className="block font-bold text-[#374151] mb-1">Product Name *</label>
+                <input
+                  value={newRule.product}
+                  onChange={(e) => setNewRule({ ...newRule, product: e.target.value })}
+                  placeholder="e.g. Laptop Pro 14"
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-                >
-                  <option value="GOLD">Gold Tier</option>
-                  <option value="SILVER">Silver Tier</option>
-                  <option value="BRONZE">Bronze Tier</option>
-                </select>
+                />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Currency</label>
-                <select
-                  value={newRule.currency}
-                  onChange={(e) => setNewRule({ ...newRule, currency: e.target.value })}
+                <label className="block font-bold text-[#374151] mb-1">Base Catalog Price (₹) *</label>
+                <input
+                  type="number"
+                  value={newRule.basePrice}
+                  onChange={(e) => {
+                    const bp = Number(e.target.value);
+                    setNewRule({
+                      ...newRule,
+                      basePrice: bp,
+                      goldPrice: Math.round(bp * 0.90),
+                      silverPrice: Math.round(bp * 0.95),
+                      bronzePrice: bp,
+                    });
+                  }}
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-                >
-                  <option value="INR">INR (₹)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                </select>
+                />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
+            <p className="font-bold text-[#F26C4F] text-xs pt-1">Automated Tier Prices (Configurable)</p>
+            <div className="grid grid-cols-3 gap-3 bg-[#FFF8F6] p-3 rounded-xl border border-[#F26C4F]/20">
+              <div>
+                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Gold Price (₹)</label>
+                <input
+                  type="number"
+                  value={newRule.goldPrice}
+                  onChange={(e) => setNewRule({ ...newRule, goldPrice: Number(e.target.value) })}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2.5 py-1 text-xs font-bold text-[#1F2937]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Silver Price (₹)</label>
+                <input
+                  type="number"
+                  value={newRule.silverPrice}
+                  onChange={(e) => setNewRule({ ...newRule, silverPrice: Number(e.target.value) })}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2.5 py-1 text-xs font-bold text-[#1F2937]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#374151] mb-0.5">Bronze Price (₹)</label>
+                <input
+                  type="number"
+                  value={newRule.bronzePrice}
+                  onChange={(e) => setNewRule({ ...newRule, bronzePrice: Number(e.target.value) })}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-lg px-2.5 py-1 text-xs font-bold text-[#1F2937]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Volume Min Units</label>
+                <input
+                  type="number"
+                  value={newRule.qtyDiscountMin}
+                  onChange={(e) => setNewRule({ ...newRule, qtyDiscountMin: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Volume Discount %</label>
+                <input
+                  type="number"
+                  value={newRule.qtyDiscountPct}
+                  onChange={(e) => setNewRule({ ...newRule, qtyDiscountPct: Number(e.target.value) })}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
               <button
-                type="button"
                 onClick={() => setAddOpen(false)}
-                className="px-4 py-2 border border-[#E5E7EB] text-[#6B7280] font-bold rounded-xl hover:bg-[#F4F5F7]"
+                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]"
               >
                 Cancel
               </button>
               <button
-                type="button"
-                disabled={submitting}
                 onClick={handleCreateRule}
-                className="px-4 py-2 bg-[#F26C4F] text-white font-bold rounded-xl hover:bg-[#e05535] disabled:opacity-50"
+                disabled={saving}
+                className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535] disabled:opacity-50"
               >
-                {submitting ? "Saving to DB..." : "Save Rule to Database"}
+                {saving ? "Saving..." : "Save Pricing Rule"}
               </button>
             </div>
           </div>

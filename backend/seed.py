@@ -60,25 +60,41 @@ from app.models.audit import AuditLog
 
 
 def seed(force: bool = False):
-    """Seed every table in the database with 200+ realistic enterprise records."""
+    """Seed every table with 200+ realistic enterprise records.
+
+    When force is False (the default, used by the app's startup lifespan), this
+    is idempotent: if the database already has users it returns without touching
+    anything, so real CRUD data survives server restarts. Only force=True (the
+    explicit CLI reseed) drops and rebuilds every table.
+    """
     init_db()
 
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        conn.execute(text("PRAGMA foreign_keys = OFF;"))
-        for tbl in [
-            "creditnote", "payment", "invoice", "backorder", "shipment", "orderline",
-            "order", "negotiationmessage", "portalnegotiation", "negotiation",
-            "auditlog", "approvalrequest", "quotationversion", "quotationline",
-            "quotation", "notification", "customersubscription", "subscriptionplan",
-            "stockinventory", "pricelistitem", "pricelist", "upsellrule", "discountrule",
-            "warehouse", "product", "customer", "user"
-        ]:
-            conn.execute(text(f'DROP TABLE IF EXISTS "{tbl}";'))
-        conn.commit()
+    if not force:
+        with Session(engine) as session:
+            existing = session.exec(select(User)).first()
+            if existing:
+                print(" Seed skipped: database already populated (use --force to reset).")
+                return
 
-    User.__table__.create(engine, checkfirst=True)
-    Customer.__table__.create(engine, checkfirst=True)
+    if force:
+        print(" Resetting database tables for 200+ records in EVERY table...")
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("PRAGMA foreign_keys = OFF;"))
+            for tbl in [
+                "creditnote", "payment", "invoice", "backorder", "shipment", "orderline",
+                "order", "negotiationmessage", "portalnegotiation", "negotiation",
+                "auditlog", "approvalrequest", "quotationversion", "quotationline",
+                "quotation", "notification", "customersubscription", "subscriptionplan",
+                "stockinventory", "pricelistitem", "pricelist", "upsellrule", "discountrule",
+                "warehouse", "product", "customer", "user"
+            ]:
+                conn.execute(text(f'DROP TABLE IF EXISTS "{tbl}";'))
+            conn.commit()
+
+        User.__table__.create(engine, checkfirst=True)
+        Customer.__table__.create(engine, checkfirst=True)
+        
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:

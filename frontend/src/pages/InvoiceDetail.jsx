@@ -30,6 +30,10 @@ export default function InvoiceDetail({
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [payAmount, setPayAmount] = useState('');
+  const [payMethod, setPayMethod] = useState('BANK_TRANSFER');
+  const [paySaving, setPaySaving] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -88,6 +92,32 @@ export default function InvoiceDetail({
       fetchInvoice(true);
     } catch {
       showToast(`Failed to send invoice`, 'error');
+    }
+  };
+
+  const openPayModal = () => {
+    // Default the amount to the outstanding balance for a one-click full payment.
+    setPayAmount(invoice?.totals?.outstanding ? String(invoice.totals.outstanding) : '');
+    setPayMethod('BANK_TRANSFER');
+    setIsPayModalOpen(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    const amount = Number(payAmount);
+    if (!amount || amount <= 0) {
+      showToast('Enter a valid payment amount', 'error');
+      return;
+    }
+    setPaySaving(true);
+    try {
+      await recordInvoicePayment(invoiceId, { amount, method: payMethod });
+      setIsPayModalOpen(false);
+      showToast(`Payment of ${amount} recorded`);
+      fetchInvoice(true);
+    } catch {
+      showToast('Failed to record payment', 'error');
+    } finally {
+      setPaySaving(false);
     }
   };
 
@@ -157,6 +187,7 @@ export default function InvoiceDetail({
         onViewBilling={onViewBilling}
         onViewQuotation={onViewQuotation}
         onRefresh={() => fetchInvoice(true)}
+        onRecordPayment={openPayModal}
         refreshing={refreshing}
         userRole={user?.role}
       />
@@ -194,6 +225,63 @@ export default function InvoiceDetail({
         onClose={() => setIsSendModalOpen(false)}
         onConfirm={handleConfirmSend}
       />
+
+      {/* Record Payment Modal */}
+      {isPayModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setIsPayModalOpen(false)} />
+          <div className="relative bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-[#1F2937] font-semibold text-base">Record Payment</h2>
+                <p className="text-[#6B7280] text-xs mt-0.5">
+                  Invoice #{invoice.invoiceNumber || invoice.id} • Outstanding {invoice.currency || 'INR'} {Number(invoice.totals?.outstanding || 0).toLocaleString()}
+                </p>
+              </div>
+              <button onClick={() => setIsPayModalOpen(false)} aria-label="Close dialog" className="text-[#6B7280] hover:text-[#1F2937] ml-4 flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Amount *</label>
+                <input
+                  type="number"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#374151] mb-1">Payment Method</label>
+                <select
+                  value={payMethod}
+                  onChange={(e) => setPayMethod(e.target.value)}
+                  className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+                >
+                  <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
+                  <option value="CREDIT_CARD">Credit Card</option>
+                  <option value="UPI">UPI</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="CASH">Cash</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button onClick={() => setIsPayModalOpen(false)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmPayment}
+                  disabled={paySaving}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {paySaving ? 'Recording...' : 'Record Payment'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

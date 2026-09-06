@@ -66,6 +66,43 @@ def update_invoice_status(session: Session, invoice_id: UUID, new_status: str) -
     return inv
 
 
+def mark_invoice_sent(session: Session, invoice_id: UUID) -> Invoice:
+    """Mark an invoice as SENT. No-op (returns as-is) if it's already been
+    paid or partially paid, so 'Send' can't downgrade a settled invoice.
+    The commit fires the audit UPDATE listener with the request's actor/IP."""
+    inv = get_invoice_or_404(session, invoice_id)
+    if inv.status in (InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID):
+        return inv
+    inv.status = InvoiceStatus.SENT
+    session.add(inv)
+    session.commit()
+    session.refresh(inv)
+    return inv
+
+
+def _with_customer_name(session: Session, invoices):
+    """Build InvoiceResponse objects carrying the real customer name.
+
+    We can't set `customer_name` directly on the SQLModel `Invoice` ORM
+    instance (Pydantic v2 rejects attributes that aren't declared fields),
+    so we construct the response schema from each invoice plus the looked-up
+    name. Accepts a single invoice or a list and mirrors the input shape."""
+    from app.models.customer import Customer
+    from app.schemas.invoice_schemas import InvoiceResponse
+    single = not isinstance(invoices, (list, tuple))
+    items = [invoices] if single else list(invoices)
+    ids = {inv.customer_id for inv in items if inv.customer_id}
+    names = {}
+    if ids:
+        rows = session.exec(select(Customer).where(Customer.id.in_(ids))).all()
+        names = {c.id: c.name for c in rows}
+    responses = [
+        InvoiceResponse(**inv.model_dump(), customer_name=names.get(inv.customer_id))
+        for inv in items
+    ]
+    return responses[0] if single else responses
+
+
 def record_payment(session: Session, invoice_id: UUID, amount: float,
                    method: str = "BANK_TRANSFER", transaction_id: Optional[str] = None,
                    notes: Optional[str] = None) -> Payment:

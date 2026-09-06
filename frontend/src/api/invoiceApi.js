@@ -147,14 +147,26 @@ export const downloadInvoicePdf = async (invoiceId) => {
 };
 
 /**
- * Send Invoice to Customer email
+ * Send Invoice to Customer email. Errors propagate so the caller can surface a
+ * real failure instead of a fake success toast.
  */
 export const sendInvoice = async (invoiceId, payload = {}) => {
-  try {
-    return await apiClient.post(`/invoices/${invoiceId}/send`, payload);
-  } catch {
-    return { success: true, message: `Invoice ${invoiceId} dispatched.` };
-  }
+  return await apiClient.post(`/invoices/${invoiceId}/send`, payload);
+};
+
+/**
+ * Record a payment against an invoice. Backend flips status to PAID /
+ * PARTIALLY_PAID and the audit listener logs it with the acting user.
+ */
+export const recordInvoicePayment = async (invoiceId, payload = {}) => {
+  return await apiClient.post(`/invoices/${invoiceId}/pay`, payload);
+};
+
+/**
+ * Update an invoice's status directly (SENT, CANCELLED, etc.).
+ */
+export const updateInvoiceStatus = async (invoiceId, status) => {
+  return await apiClient.put(`/invoices/${invoiceId}/status`, null, { params: { status } });
 };
 
 /**

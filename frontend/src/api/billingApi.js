@@ -292,10 +292,11 @@ export const recordPayment = async (billingId, paymentData) => {
 };
 
 /**
- * Send invoice for billing
+ * Send invoice for billing. Hits the real backend so the invoice moves to SENT
+ * and the audit listener records who dispatched it. Errors propagate.
  */
 export const sendBillingInvoice = async (billingId) => {
-  return { success: true, message: 'Invoice dispatched successfully' };
+  return await apiClient.post(`/invoices/${billingId}/send`, {});
 };
 
 export const sendInvoice = sendBillingInvoice;

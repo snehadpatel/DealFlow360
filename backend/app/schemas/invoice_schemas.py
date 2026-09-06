@@ -23,6 +23,7 @@ class InvoiceResponse(BaseModel):
     invoice_number: str
     order_id: Optional[UUID]
     customer_id: UUID
+    customer_name: Optional[str] = None
     status: str
     amount: float
     amount_paid: float
@@ -34,6 +35,10 @@ class InvoiceResponse(BaseModel):
     created_at: datetime
     customer_name: Optional[str] = None
     class Config: from_attributes = True
+
+class InvoiceSendRequest(BaseModel):
+    email: Optional[str] = None
+    message: Optional[str] = None
 
 class PaymentCreate(BaseModel):
     invoice_id: Optional[UUID] = None

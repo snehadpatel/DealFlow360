@@ -59,6 +59,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 #middleware
+# Capture actor + client IP for the audit listener. Added before CORS so CORS
+# stays the outermost middleware (preflight/error responses keep CORS headers).
+from app.core.audit_middleware import AuditContextMiddleware
+app.add_middleware(AuditContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

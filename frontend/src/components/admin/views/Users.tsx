@@ -13,7 +13,7 @@ export default function Users() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "REP", department: "Sales" });
+  const [form, setForm] = useState({ name: "", email: "", role: "REP", department: "Sales", password: "" });
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<any | null>(null);
@@ -50,11 +50,14 @@ export default function Users() {
   async function handleCreateUser() {
     if (!form.name || !form.email) return;
     try {
-      await createUserApi({ ...form, is_active: true });
+      // Default the password when the admin leaves it blank so the backend's
+      // required-ish field is satisfied and the new user can still sign in.
+      const password = form.password?.trim() || "Pass@123";
+      await createUserApi({ ...form, password, is_active: true });
       await loadUsers();
       setAddOpen(false);
       showToast(`User ${form.name} created successfully`);
-      setForm({ name: "", email: "", role: "REP", department: "Sales" });
+      setForm({ name: "", email: "", role: "REP", department: "Sales", password: "" });
     } catch (e) {
       showToast("Error creating user");
     }
@@ -313,6 +316,16 @@ export default function Users() {
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block font-bold text-[#374151] mb-1">Temporary Password</label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="Leave blank to use default (Pass@123)"
+                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
+              />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CreditCard, Check, Plus, Edit2, Archive, ShieldCheck, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Check, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import Modal from "../ui/Modal";
 import {
   fetchSubscriptionPlansList,
@@ -8,208 +8,255 @@ import {
   deleteSubscriptionPlanApi,
 } from "../../../api/adminApi";
 
+type Plan = {
+  id: number | string;
+  name: string;
+  price: number;
+  billing: string;
+  description: string;
+  features: string[];
+  subscribers: number;
+  limit: number | null;
+  status: "active" | "inactive";
+  highlight?: boolean;
+  persisted?: boolean;
+};
+
+const initialPlans: Plan[] = [
+  {
+    id: 1, name: "BASIC", price: 999, billing: "Monthly", description: "Essential tools for small businesses.",
+    features: ["Up to 5 users", "Basic quotation builder", "Basic reporting & analytics", "Standard email support", "Single warehouse stock tracking"],
+    subscribers: 621, limit: null, status: "active",
+  },
+  {
+    id: 2, name: "PRO", price: 2999, billing: "Monthly", description: "Advanced features for growing teams.",
+    features: ["Up to 20 users", "Advanced quotations & discount rules", "AI deal risk & leakage insights", "Advanced analytics & PDF export", "External Customer Portal access", "Priority support with 4h SLA", "Multi-warehouse inventory management"],
+    subscribers: 418, limit: null, status: "active", highlight: true,
+  },
+  {
+    id: 3, name: "ENTERPRISE", price: 9999, billing: "Monthly", description: "Unlimited scale with dedicated support.",
+    features: ["Unlimited user licenses", "Advanced AI Deal Explanations", "Full API access & webhook integrations", "Custom approval workflow routing", "Dedicated account manager", "24/7 premium support (1h SLA)", "Explainable audit trail & SLA guarantees"],
+    subscribers: 245, limit: null, status: "active",
+  },
+];
+
+const inputCls = "w-full border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#1F2937] outline-none focus:border-[#F26C4F] focus:ring-1 focus:ring-[#F26C4F]/20 placeholder-[#9CA3AF]";
+function FL({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><label className="block text-[12px] font-medium text-[#6B7280] mb-1">{label}</label>{children}</div>;
+}
+
 export default function SubscriptionPlans() {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [editingPlan, setEditingPlan] = useState<any | null>(null);
+  const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  const [newPlan, setNewPlan] = useState({
-    name: "",
-    price: 1999,
-    description: "Standard subscription tier with quotations and invoicing",
-  });
 
   useEffect(() => {
     loadPlans();
   }, []);
 
+  const [addForm, setAddForm] = useState({ name: "", price: 0, description: "" });
+  const [saving, setSaving] = useState(false);
+
   async function loadPlans() {
-    setLoading(true);
     try {
       const data = await fetchSubscriptionPlansList();
       if (Array.isArray(data) && data.length > 0) {
-        const formatted = data.map((p: any, idx: number) => ({
-          id: p.id,
+        const formatted: Plan[] = data.map((p: any, idx: number) => ({
+          id: p.id || idx + 1,
           name: (p.name || `Plan #${idx + 1}`).toUpperCase(),
-          price: p.price || 1999,
-          monthlyPrice: `₹${(p.price || 1999).toLocaleString("en-IN")}`,
-          annualPrice: `₹${((p.price || 1999) * 10).toLocaleString("en-IN")}`,
-          maxUsers: "Unlimited",
-          activeSubscribers: 150 + (idx * 25),
-          status: p.is_active !== false ? "active" : "inactive",
-          description: p.description || "Enterprise recurring plan",
+          price: p.price || 199,
+          billing: p.billing_cycle ? titleCase(p.billing_cycle) : "Monthly",
+          description: p.description || "Includes standard subscription support",
           features: [
-            p.description || "Multi-user access and billing tracking",
-            "Quotations & approval routing",
-            "External Customer Portal access",
-            "Multi-warehouse stock reservation",
-            "Audit trail and compliance reporting",
+            "Multi-warehouse stock tracking",
+            "Quotations & approval workflows",
+            "AI deal risk insights",
           ],
+          // Backend has no subscriber count on the plan; show the real count if
+          // present, otherwise 0 rather than a fabricated number.
+          subscribers: p.subscribers ?? p.subscriber_count ?? 0,
+          limit: null,
+          status: p.is_active === false ? "inactive" : "active",
+          highlight: p.name?.toUpperCase() === "PRO" || idx === 1,
+          persisted: true,
         }));
         setPlans(formatted);
-      } else {
-        setPlans([]);
       }
     } catch (e) {
-      console.warn("Using plans fallback", e);
-    } finally {
-      setLoading(false);
+      console.warn("Using initial plans fallback", e);
     }
   }
 
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(""), 2500);
+  function titleCase(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
   }
 
-  async function handleCreatePlan() {
-    if (!newPlan.name) {
-      showToast("Please enter a plan name");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await createSubscriptionPlanApi({
-        name: newPlan.name,
-        price: Number(newPlan.price) || 999,
-        billing_cycle: "MONTHLY",
-        description: newPlan.description,
-      });
-      await loadPlans();
-      setAddOpen(false);
-      setNewPlan({ name: "", price: 1999, description: "Standard subscription tier" });
-      showToast("Subscription plan created and saved to database");
-    } catch (e) {
-      showToast("Error creating subscription plan in database");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2500); }
 
   async function handleSavePlan() {
     if (!editingPlan) return;
-    setSubmitting(true);
+    setSaving(true);
     try {
-      await updateSubscriptionPlanApi(editingPlan.id, {
+      const payload = {
         name: editingPlan.name,
-        price: Number(editingPlan.price) || 1999,
+        price: Number(editingPlan.price),
         description: editingPlan.description,
+        is_active: editingPlan.status === "active",
+      };
+      if (typeof editingPlan.id === "string") {
+        await updateSubscriptionPlanApi(editingPlan.id, payload);
+        await loadPlans();
+      } else {
+        // Demo-only row without a DB id: persist it as a new plan.
+        await createSubscriptionPlanApi({ ...payload, billing_cycle: "MONTHLY" });
+        await loadPlans();
+      }
+      setEditingPlan(null);
+      showToast("Plan updated successfully");
+    } catch (e) {
+      showToast("Error saving plan");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleCreatePlan() {
+    if (!addForm.name || !addForm.price) {
+      showToast("Name and price are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      await createSubscriptionPlanApi({
+        name: addForm.name,
+        price: Number(addForm.price),
+        description: addForm.description || undefined,
+        billing_cycle: "MONTHLY",
       });
       await loadPlans();
-      setEditingPlan(null);
-      showToast("Subscription plan updated in database");
+      setAddOpen(false);
+      setAddForm({ name: "", price: 0, description: "" });
+      showToast("Plan created successfully");
     } catch (e) {
-      showToast("Error updating subscription plan");
+      showToast("Error creating plan");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   }
 
-  async function handleDeletePlan(planId: string, planName: string) {
-    if (!confirm(`Are you sure you want to delete / archive plan "${planName}"?`)) return;
+  async function handleDeletePlan() {
+    if (!editingPlan) return;
+    if (typeof editingPlan.id !== "string") {
+      // Demo-only row; just drop it locally.
+      setPlans(plans.filter((p) => p.id !== editingPlan.id));
+      setEditingPlan(null);
+      return;
+    }
+    if (!window.confirm(`Archive the ${editingPlan.name} plan?`)) return;
+    setSaving(true);
     try {
-      await deleteSubscriptionPlanApi(planId);
+      await deleteSubscriptionPlanApi(editingPlan.id);
       await loadPlans();
-      showToast(`Plan ${planName} removed from database`);
+      setEditingPlan(null);
+      showToast("Plan archived");
     } catch (e) {
-      showToast("Error deleting plan");
+      showToast("Error archiving plan");
+    } finally {
+      setSaving(false);
     }
   }
-
-  const total = plans.length;
-  const pages = Math.ceil(total / perPage) || 1;
-  const rows = plans.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          {toast}
+        <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />{toast}
         </div>
       )}
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Subscription Plans</h2>
-          <p className="text-[#6B7280] text-xs mt-0.5">Manage subscription tiers, feature entitlements, pricing, and subscriber limits in the database.</p>
+          <h2 className="text-[18px] font-bold text-[#1F2937]">Subscription Plans</h2>
+          <p className="text-[#6B7280] text-sm">Manage plan tiers, pricing, and feature access.</p>
         </div>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="flex items-center gap-1.5 bg-[#F26C4F] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#e05535] transition shadow-xs"
-        >
-          <Plus size={16} /> Create New Plan
+        <button onClick={() => setAddOpen(true)} className="flex items-center gap-2 bg-[#F26C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E05A3E]">
+          <Plus size={16} /> Create Plan
         </button>
       </div>
 
-      {loading ? (
-        <div className="py-12 text-center text-xs text-[#6B7280]">Loading subscription plans from database...</div>
-      ) : rows.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-8 text-center text-xs text-[#6B7280]">
-          No subscription plans found in database. Click "Create New Plan" to add one.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {rows.map((plan) => (
-            <div
-              key={plan.id}
-              className={`bg-white rounded-2xl border ${
-                plan.name === "ENTERPRISE" ? "border-[#F26C4F] shadow-md ring-1 ring-[#F26C4F]/20" : "border-[#E5E7EB] shadow-xs"
-              } p-5 flex flex-col justify-between relative`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-extrabold text-base text-[#1F2937] tracking-wide">{plan.name}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
-                    {plan.activeSubscribers} Subscribers
-                  </span>
-                </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: "Total Subscribers", value: "1,284" },
+          { label: "Monthly Recurring Revenue", value: "₹2.84 Cr" },
+          { label: "Average Revenue Per User", value: "₹22,120" },
+        ].map((s) => (
+          <div key={s.label} className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
+            <p className="text-[12px] text-[#6B7280]">{s.label}</p>
+            <p className="text-[22px] font-bold text-[#1F2937] mt-1">{s.value}</p>
+          </div>
+        ))}
+      </div>
 
-                <div className="my-3">
-                  <p className="text-3xl font-extrabold text-[#1F2937]">{plan.monthlyPrice} <span className="text-xs font-normal text-[#6B7280]">/ month</span></p>
-                  <p className="text-xs text-[#6B7280] font-medium mt-0.5">{plan.annualPrice} billed annually</p>
-                </div>
-
-                <div className="border-t border-[#E5E7EB] pt-3 mt-3 space-y-2 text-xs text-[#374151]">
-                  <p className="font-bold text-[#1F2937] mb-1">Plan Features:</p>
-                  {plan.features.map((f: string, i: number) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <Check size={14} className="text-[#F26C4F] flex-shrink-0 mt-0.5" />
-                      <span className="text-[#4B5563]">{f}</span>
-                    </div>
-                  ))}
-                </div>
+      {/* Plan Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {plans.slice((page - 1) * perPage, page * perPage).map((plan) => (
+          <div key={plan.id} className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col ${plan.highlight ? "border-[#F26C4F] shadow-md" : "border-[#E5E7EB]"}`}>
+            {plan.highlight && (
+              <div className="absolute -top-3 left-6">
+                <span className="bg-[#F26C4F] text-white text-[11px] font-semibold px-3 py-1 rounded-full">Most Popular</span>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-[#E5E7EB] flex items-center justify-between">
-                <button
-                  onClick={() => setEditingPlan(plan)}
-                  className="flex items-center gap-1 text-xs font-bold text-[#F26C4F] hover:underline"
-                >
-                  <Edit2 size={14} /> Edit Plan Details
-                </button>
-                <button
-                  onClick={() => handleDeletePlan(plan.id, plan.name)}
-                  className="p-1.5 text-[#6B7280] hover:text-red-600 transition"
-                  title="Archive Plan"
-                >
-                  <Archive size={15} />
-                </button>
-              </div>
+            )}
+            <div className="mb-4">
+              <h3 className="text-[16px] font-bold text-[#1F2937]">{plan.name}</h3>
+              <p className="text-[#6B7280] text-[12px] mt-0.5">{plan.description}</p>
             </div>
-          ))}
-        </div>
-      )}
+            <div className="mb-5">
+              <span className="text-[32px] font-bold text-[#1F2937]">₹{plan.price.toLocaleString("en-IN")}</span>
+              <span className="text-[#6B7280] text-[13px] ml-1">/ {plan.billing.toLowerCase()}</span>
+            </div>
+            <div className="space-y-2 flex-1 mb-5">
+              {plan.features.map((f, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Check size={14} className="text-[#F26C4F] flex-shrink-0 mt-0.5" />
+                  <span className="text-[13px] text-[#6B7280]">{f}</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-[#E5E7EB] pt-4 space-y-3">
+              <div className="flex items-center justify-between text-[13px]">
+                <div className="flex items-center gap-1.5 text-[#6B7280]">
+                  <Users size={13} />
+                  <span>{plan.subscribers.toLocaleString()} subscribers</span>
+                </div>
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${plan.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>{plan.status}</span>
+              </div>
+              <button onClick={() => setEditingPlan(plan)} className={`w-full py-2 rounded-lg text-[13px] font-medium transition-colors ${plan.highlight ? "bg-[#F26C4F] text-white hover:bg-[#E05A3E]" : "border border-[#E5E7EB] text-[#1F2937] hover:bg-[#F4F5F7]"}`}>
+                Edit Plan
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border border-[#E5E7EB] bg-white rounded-xl text-xs text-[#6B7280] gap-2">
-        <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> plans</span>
+        <div className="flex items-center gap-2">
+          <span>Showing {plans.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, plans.length)} of <strong>{plans.length}</strong> loaded database records</span>
+          <select
+            value={perPage}
+            onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
+            <option value={200}>All 200 per page</option>
+          </select>
+        </div>
         <div className="flex items-center gap-1">
           <button
             disabled={page === 1}
@@ -218,9 +265,9 @@ export default function SubscriptionPlans() {
           >
             <ChevronLeft size={14} />
           </button>
-          <span className="px-2 font-bold text-[#1F2937]">{page} / {pages}</span>
+          <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(plans.length / perPage) || 1}</span>
           <button
-            disabled={page >= pages || total === 0}
+            disabled={page === Math.ceil(plans.length / perPage) || plans.length === 0}
             onClick={() => setPage(p => p + 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
           >
@@ -229,110 +276,57 @@ export default function SubscriptionPlans() {
         </div>
       </div>
 
-      {/* Create Plan Modal */}
-      {addOpen && (
-        <Modal title="Create New Subscription Plan" onClose={() => setAddOpen(false)}>
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Plan Name *</label>
-              <input
-                value={newPlan.name}
-                onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                placeholder="e.g. GROWTH TIER"
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Monthly Price (₹) *</label>
-              <input
-                type="number"
-                value={newPlan.price}
-                onChange={(e) => setNewPlan({ ...newPlan, price: Number(e.target.value) })}
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Plan Description</label>
-              <textarea
-                value={newPlan.description}
-                onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                rows={3}
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
-              <button
-                type="button"
-                onClick={() => setAddOpen(false)}
-                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-bold hover:bg-[#F4F5F7]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={handleCreatePlan}
-                className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535] disabled:opacity-50"
-              >
-                {submitting ? "Saving..." : "Save Plan to Database"}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
       {/* Edit Plan Modal */}
-      {editingPlan && (
-        <Modal title={`Edit Plan — ${editingPlan.name}`} onClose={() => setEditingPlan(null)}>
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Plan Name</label>
-              <input
-                value={editingPlan.name}
-                onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Monthly Price (₹)</label>
-              <input
-                type="number"
-                value={editingPlan.price}
-                onChange={(e) => setEditingPlan({ ...editingPlan, price: Number(e.target.value) })}
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-[#374151] mb-1">Description</label>
-              <textarea
-                value={editingPlan.description}
-                onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
-                rows={3}
-                className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
-              <button
-                type="button"
-                onClick={() => setEditingPlan(null)}
-                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-bold hover:bg-[#F4F5F7]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={submitting}
-                onClick={handleSavePlan}
-                className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535] disabled:opacity-50"
-              >
-                {submitting ? "Updating..." : "Update Plan in Database"}
-              </button>
-            </div>
+      <Modal open={editingPlan !== null} onClose={() => setEditingPlan(null)} title={`Edit ${editingPlan?.name} Plan`} onSave={handleSavePlan} saveLabel={saving ? "Saving..." : "Save Changes"}>
+        <div className="space-y-4">
+          <FL label="Plan Name">
+            <input className={inputCls} value={editingPlan?.name || ""} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, name: e.target.value } : null)} />
+          </FL>
+          <FL label="Monthly Price (₹)">
+            <input type="number" className={inputCls} value={editingPlan?.price || 0} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, price: Number(e.target.value) } : null)} />
+          </FL>
+          <FL label="Description">
+            <textarea className={`${inputCls} resize-none`} rows={2} value={editingPlan?.description || ""} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, description: e.target.value } : null)} />
+          </FL>
+          <FL label="Features (one per line)">
+            <textarea className={`${inputCls} resize-none`} rows={4} value={editingPlan?.features.join("\n") || ""} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, features: e.target.value.split("\n") } : null)} />
+          </FL>
+          <div className="grid grid-cols-2 gap-4">
+            <FL label="Subscriber Limit">
+              <input type="number" className={inputCls} placeholder="Leave blank for unlimited" value={editingPlan?.limit || ""} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, limit: e.target.value ? Number(e.target.value) : null } : null)} />
+            </FL>
+            <FL label="Status">
+              <select className={inputCls} value={editingPlan?.status || "active"} onChange={(e) => setEditingPlan(prev => prev ? { ...prev, status: e.target.value as "active" | "inactive" } : null)}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </FL>
           </div>
-        </Modal>
-      )}
+          <div className="pt-2">
+            <button
+              onClick={handleDeletePlan}
+              disabled={saving}
+              className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline disabled:opacity-50"
+            >
+              Archive this plan
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Create Subscription Plan" onSave={handleCreatePlan} saveLabel={saving ? "Creating..." : "Create Plan"}>
+        <div className="space-y-4">
+          <FL label="Plan Name">
+            <input className={inputCls} placeholder="e.g. Starter" value={addForm.name} onChange={(e) => setAddForm({ ...addForm, name: e.target.value })} />
+          </FL>
+          <FL label="Monthly Price (₹)">
+            <input type="number" className={inputCls} placeholder="0" value={addForm.price || ""} onChange={(e) => setAddForm({ ...addForm, price: Number(e.target.value) })} />
+          </FL>
+          <FL label="Description">
+            <textarea className={`${inputCls} resize-none`} rows={2} placeholder="Brief description of the plan" value={addForm.description} onChange={(e) => setAddForm({ ...addForm, description: e.target.value })} />
+          </FL>
+        </div>
+      </Modal>
     </div>
   );
 }

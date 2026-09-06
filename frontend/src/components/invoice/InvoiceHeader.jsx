@@ -11,6 +11,7 @@ export default function InvoiceHeader({
   onViewBilling,
   onViewQuotation,
   onRefresh,
+  onRecordPayment,
   refreshing,
   userRole,
 }) {
@@ -75,6 +76,17 @@ export default function InvoiceHeader({
             >
               <Send className="w-3.5 h-3.5" />
               <span>Send Invoice</span>
+            </button>
+          )}
+
+          {/* Record Payment — Finance/Admin only, hidden once fully paid. */}
+          {(userRole === 'FINANCE' || userRole === 'ADMIN') && invoice.status !== 'PAID' && (
+            <button
+              onClick={onRecordPayment}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Record Payment</span>
             </button>
           )}
 

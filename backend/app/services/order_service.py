@@ -46,22 +46,22 @@ def create_order_from_quote(session: Session, quotation: Quotation) -> Order:
     session.commit()
     session.refresh(order)
 
-    # Automatically generate an Invoice for this confirmed Order
+    # Generate the downstream Invoice so the full Quote -> Order -> Invoice chain
+    # shows up in the Invoices screen and Customer Portal. Best-effort: an invoice
+    # failure must not roll back an already-committed order.
     try:
-        from app.models.invoice import Invoice
         from app.services import invoice_service
-        existing_inv = session.exec(select(Invoice).where(Invoice.order_id == order.id)).first()
-        if not existing_inv:
+        from app.models.invoice import Invoice
+        existing_invoice = session.exec(select(Invoice).where(Invoice.order_id == order.id)).first()
+        if not existing_invoice:
             invoice_service.create_invoice(
                 session,
-                customer_id=quotation.customer_id,
-                amount=quotation.total,
+                customer_id=order.customer_id,
+                amount=order.total_amount,
                 order_id=order.id,
-                currency=quotation.currency or "INR",
-                notes=f"Generated from confirmed Quotation {quotation.id}",
             )
-    except Exception as inv_err:
-        print(f"Notice: Invoice auto-creation for order {order.id}: {inv_err}")
+    except Exception as e:
+        print(f"Invoice auto-generation notice for order {order.id}: {e}")
 
     return order
 

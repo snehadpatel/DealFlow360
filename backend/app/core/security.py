@@ -94,12 +94,11 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
-        
-    from app.core.context import current_user_id, client_ip
-    current_user_id.set(user.id)
-    if request.client:
-        client_ip.set(request.client.host)
-        
+
+    # Actor + client IP for auditing are captured by AuditContextMiddleware
+    # (pure ASGI), which runs in the same context as the ORM flush. Setting the
+    # ContextVars here would be discarded by the threadpool copy_context used for
+    # sync endpoints, so we intentionally do not set them in this dependency.
     return user
 
 def require_roles(allowed_roles: List[Role]):

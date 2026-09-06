@@ -79,7 +79,9 @@ def delete_user(session: Session, user_id: UUID) -> None:
 def list_customers(session: Session, rep_id: Optional[UUID] = None) -> List[Customer]:
     stmt = select(Customer).order_by(Customer.created_at.desc())
     if rep_id:
-        stmt = stmt.where((Customer.rep_id == rep_id) | (Customer.rep_id == None))
+        # Reps see their own customers plus unassigned/admin-created ones
+        # (rep_id IS NULL), so admin-created accounts appear in the Quotation Builder.
+        stmt = stmt.where((Customer.rep_id == rep_id) | (Customer.rep_id == None))  # noqa: E711
     return session.exec(stmt).all()
 
 def get_customer_or_404(session: Session, customer_id: UUID) -> Customer:

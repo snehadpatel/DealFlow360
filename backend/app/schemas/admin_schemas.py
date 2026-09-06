@@ -10,6 +10,8 @@ from pydantic import BaseModel, EmailStr
 class UserCreate(BaseModel):
     name: str
     email: str
+    # Optional so an admin can create a user without dictating a password; a
+    # default is applied server-side and the user resets it later.
     password: Optional[str] = "Pass@123"
     role: str = "REP"
 

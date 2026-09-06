@@ -20,7 +20,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 5000, // 5 seconds to ensure fresh data across tab switches
+      // Short staleTime so freshly-persisted CRUD changes surface quickly when
+      // navigating between the pages/workflow stages that depend on them.
+      staleTime: 5000, // 5 seconds
     },
   },
 });
@@ -98,6 +100,18 @@ function AppRouter({ activeTab, setActiveTab, selectedBillingId }) {
 }
 
 export default function App() {
+  // Wrap the entire app so every branch (including the early-return Admin
+  // Console and the unauthenticated login/signup views) lives inside the
+  // React Query provider. Previously AdminDashboard rendered outside it, which
+  // would crash the moment any admin view adopted useQuery.
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppShell />
+    </QueryClientProvider>
+  );
+}
+
+function AppShell() {
   const { user, logout, isAuthenticated } = useAuth();
   const [authView, setAuthView] = useState("login"); // "login" | "signup"
   const [activeTab, setActiveTab] = useState("quotation");
@@ -126,10 +140,10 @@ export default function App() {
 
   if (activeTab === "admin") {
     return (
-      <QueryClientProvider client={queryClient}>
+      <>
         <AdminDashboard />
         <ChatWidget activeTab="admin" />
-      </QueryClientProvider>
+      </>
     );
   }
 
@@ -197,14 +211,12 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
-        <QueryClientProvider client={queryClient}>
-          {/* AppRouter is a separate component to keep App()'s complexity low */}
-          <AppRouter
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            selectedBillingId={selectedBillingId}
-          />
-        </QueryClientProvider>
+        {/* AppRouter is a separate component to keep AppShell's complexity low */}
+        <AppRouter
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedBillingId={selectedBillingId}
+        />
       </main>
 
       {/* Floating AI Sales Assistant Chatbot */}

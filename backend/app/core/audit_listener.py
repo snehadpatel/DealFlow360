@@ -74,7 +74,17 @@ def _get_changes(state):
                 new[attr.key] = hist.added[0]
     return old, new
 
+_LISTENERS_REGISTERED = False
+
 def setup_audit_listeners(Base):
+    # init_db() runs more than once at startup (lifespan + seed()), and each
+    # registration would add another listener -> duplicate audit rows per write.
+    # Guard so the listeners are attached exactly once per process.
+    global _LISTENERS_REGISTERED
+    if _LISTENERS_REGISTERED:
+        return
+    _LISTENERS_REGISTERED = True
+
     @event.listens_for(Base, 'after_insert', propagate=True)
     def receive_after_insert(mapper, connection, target):
         state = inspect(target)

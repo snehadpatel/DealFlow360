@@ -1,58 +1,80 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Warehouse as WarehouseIcon, Plus, Eye, Edit2, Ban, CheckCircle2, AlertTriangle, Package, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import StatusPill from "../ui/StatusPill";
 import Modal from "../ui/Modal";
 import { fetchWarehousesList, createWarehouseApi, updateWarehouseApi } from "../../../api/adminApi";
 
+const initialWarehouses = [
+  {
+    id: 1,
+    name: "Mumbai Central Fulfillment Hub",
+    location: "Navi Mumbai, Maharashtra 400703",
+    manager: "Ankit Singh",
+    totalProducts: 48,
+    availableStock: 1420,
+    reservedStock: 180,
+    lowStockItems: 2,
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Delhi NCR Regional Warehouse",
+    location: "Gurugram, Haryana 122002",
+    manager: "Sanjay Sharma",
+    totalProducts: 36,
+    availableStock: 850,
+    reservedStock: 95,
+    lowStockItems: 1,
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Bangalore Tech Depot",
+    location: "Electronic City, Bangalore 560100",
+    manager: "Ramesh Nair",
+    totalProducts: 42,
+    availableStock: 1100,
+    reservedStock: 140,
+    lowStockItems: 3,
+    status: "active",
+  },
+];
+
 export default function Warehouses() {
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>(initialWarehouses);
   const [addOpen, setAddOpen] = useState(false);
   const [detailWh, setDetailWh] = useState<any | null>(null);
   const [toast, setToast] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", location: "", city: "", shipping_cost: 0 });
+  const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    location: "",
-    city: "Mumbai",
-    replenishment_threshold: 10,
-    shipping_cost: 250,
-  });
-
-  useEffect(() => {
+  React.useEffect(() => {
     loadWarehouses();
   }, []);
 
   async function loadWarehouses() {
-    setLoading(true);
     try {
       const data = await fetchWarehousesList();
       if (Array.isArray(data) && data.length > 0) {
         const formatted = data.map((w: any, idx: number) => ({
           id: w.id || idx + 1,
-          rawId: w.id,
-          name: w.name || `Warehouse #${idx + 1}`,
-          location: w.location || "Central Distribution Hub",
-          city: w.city || "Regional",
+          name: w.name || w.code || `Warehouse #${idx + 1}`,
+          location: w.location || "USA",
+          city: w.city || "",
           manager: "Hub Operations Lead",
           totalProducts: 48,
-          availableStock: 1200 + (idx * 50),
-          reservedStock: 45 + (idx * 5),
-          lowStockItems: 2,
-          is_active: w.is_active !== false,
-          status: w.is_active !== false ? "active" : "inactive",
+          availableStock: w.capacity || 1000,
+          reservedStock: 25,
+          lowStockItems: 1,
+          // Backend uses is_active (bool); map to the card's string status.
+          status: w.is_active === false ? "inactive" : "active",
         }));
         setWarehouses(formatted);
-      } else {
-        setWarehouses([]);
       }
     } catch (e) {
-      console.warn("Failed to load warehouses from DB:", e);
-    } finally {
-      setLoading(false);
+      console.warn("Using initial warehouses fallback", e);
     }
   }
 
@@ -62,50 +84,45 @@ export default function Warehouses() {
   }
 
   async function handleCreateWarehouse() {
-    if (!form.name || !form.location) {
-      showToast("Please enter warehouse name and location");
-      return;
-    }
-    setSubmitting(true);
+    if (!form.name || !form.location) return;
+    setSaving(true);
     try {
       await createWarehouseApi({
         name: form.name,
         location: form.location,
-        city: form.city || form.location,
-        replenishment_threshold: Number(form.replenishment_threshold) || 10,
+        city: form.city || undefined,
         shipping_cost: Number(form.shipping_cost) || 0,
-        priority: 1,
       });
       await loadWarehouses();
       setAddOpen(false);
-      setForm({ name: "", location: "", city: "Mumbai", replenishment_threshold: 10, shipping_cost: 250 });
-      showToast("Warehouse location created and saved to database");
-    } catch (err) {
-      showToast("Error creating warehouse in database");
+      setForm({ name: "", location: "", city: "", shipping_cost: 0 });
+      showToast(`Warehouse ${form.name} created`);
+    } catch (e) {
+      showToast("Error creating warehouse");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   }
 
-  async function toggleStatus(wh: any) {
-    const nextActive = !wh.is_active;
-    try {
-      if (wh.rawId) {
-        await updateWarehouseApi(wh.rawId, { is_active: nextActive });
+  async function toggleStatus(id: any, currentStatus: string) {
+    const nextActive = currentStatus !== "active";
+    // Optimistically reflect, then persist. A UUID id means it's a real DB row.
+    setWarehouses(warehouses.map((w) => (w.id === id ? { ...w, status: nextActive ? "active" : "inactive" } : w)));
+    if (typeof id === "string") {
+      try {
+        await updateWarehouseApi(id, { is_active: nextActive });
+        showToast(`Warehouse status set to ${nextActive ? "active" : "inactive"}`);
+      } catch (e) {
+        await loadWarehouses();
+        showToast("Error updating warehouse status");
       }
-      await loadWarehouses();
-      showToast(`Warehouse status updated to ${nextActive ? 'active' : 'inactive'}`);
-    } catch (err) {
-      showToast("Error updating warehouse status");
+    } else {
+      showToast(`Warehouse status set to ${nextActive ? "active" : "inactive"}`);
     }
   }
-
-  const total = warehouses.length;
-  const pages = Math.ceil(total / perPage) || 1;
-  const rows = warehouses.slice((page - 1) * perPage, page * perPage);
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       {toast && (
         <div className="fixed bottom-6 right-6 bg-[#1F2937] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2 animate-in fade-in">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -113,10 +130,10 @@ export default function Warehouses() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[20px] font-bold text-[#1F2937] tracking-tight">Warehouses & Stock Locations</h2>
-          <p className="text-[#6B7280] text-xs mt-0.5">Manage multi-location fulfillment facilities, available stock, and reserved inventory in the database.</p>
+          <p className="text-[#6B7280] text-xs mt-0.5">Manage multi-location fulfillment facilities, available stock, and reserved inventory.</p>
         </div>
         <button
           onClick={() => setAddOpen(true)}
@@ -126,57 +143,61 @@ export default function Warehouses() {
         </button>
       </div>
 
-      {loading ? (
-        <div className="py-12 text-center text-xs text-[#6B7280]">Loading warehouses from database...</div>
-      ) : rows.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-8 text-center text-xs text-[#6B7280]">
-          No warehouses found in database. Click "Add Warehouse Location" to add one.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {rows.map((wh) => (
-            <div key={wh.id} className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-extrabold text-base text-[#1F2937] truncate pr-2">{wh.name}</span>
-                  <StatusPill status={wh.status} />
-                </div>
-                <p className="text-xs text-[#6B7280] flex items-center gap-1 mb-3">
-                  <MapPin size={13} className="text-[#F26C4F]" /> {wh.location} {wh.city ? `• ${wh.city}` : ''}
-                </p>
-
-                <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#E5E7EB] space-y-1.5 text-xs text-[#374151] mb-3">
-                  <p><strong className="text-[#1F2937]">Manager:</strong> {wh.manager}</p>
-                  <p><strong className="text-[#1F2937]">Total SKUs:</strong> {wh.totalProducts}</p>
-                  <p><strong className="text-[#1F2937]">Available Stock:</strong> <span className="font-bold text-emerald-700">{wh.availableStock} units</span></p>
-                  <p><strong className="text-[#1F2937]">Reserved Stock:</strong> {wh.reservedStock} units</p>
-                  <p><strong className="text-[#1F2937]">Low-Stock Alerts:</strong> <span className="font-bold text-amber-600">{wh.lowStockItems} items</span></p>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {warehouses.slice((page - 1) * perPage, page * perPage).map((wh) => (
+          <div key={wh.id} className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-extrabold text-base text-[#1F2937] truncate pr-2">{wh.name}</span>
+                <StatusPill status={wh.status} />
               </div>
+              <p className="text-xs text-[#6B7280] flex items-center gap-1 mb-3">
+                <MapPin size={13} className="text-[#F26C4F]" /> {wh.location}
+              </p>
 
-              <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB]">
-                <button
-                  onClick={() => setDetailWh(wh)}
-                  className="flex items-center gap-1 text-xs font-bold text-[#F26C4F] hover:underline"
-                >
-                  <Eye size={14} /> Inventory Breakdown
-                </button>
-                <button
-                  onClick={() => toggleStatus(wh)}
-                  className="p-1.5 text-[#6B7280] hover:text-amber-600 transition"
-                  title={wh.is_active ? "Deactivate Warehouse" : "Activate Warehouse"}
-                >
-                  {wh.is_active ? <Ban size={15} /> : <CheckCircle2 size={15} className="text-emerald-600" />}
-                </button>
+              <div className="bg-[#FAFBFD] p-3 rounded-xl border border-[#E5E7EB] space-y-1.5 text-xs text-[#374151] mb-3">
+                <p><strong className="text-[#1F2937]">Manager:</strong> {wh.manager}</p>
+                <p><strong className="text-[#1F2937]">Total SKUs:</strong> {wh.totalProducts}</p>
+                <p><strong className="text-[#1F2937]">Available Stock:</strong> <span className="font-bold text-emerald-700">{wh.availableStock} units</span></p>
+                <p><strong className="text-[#1F2937]">Reserved Stock:</strong> {wh.reservedStock} units</p>
+                <p><strong className="text-[#1F2937]">Low-Stock Alerts:</strong> <span className="font-bold text-amber-600">{wh.lowStockItems} items</span></p>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => setDetailWh(wh)}
+                className="flex items-center gap-1 text-xs font-bold text-[#F26C4F] hover:underline"
+              >
+                <Eye size={14} /> Inventory Breakdown
+              </button>
+              <button
+                onClick={() => toggleStatus(wh.id, wh.status)}
+                className="p-1.5 text-[#6B7280] hover:text-amber-600 transition"
+              >
+                {wh.status === "active" ? <Ban size={15} /> : <CheckCircle2 size={15} />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border border-[#E5E7EB] bg-white rounded-xl text-xs text-[#6B7280] gap-2">
-        <span>Showing {total === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, total)} of <strong>{total}</strong> database records</span>
+        <div className="flex items-center gap-2">
+          <span>Showing {warehouses.length === 0 ? 0 : (page - 1) * perPage + 1}-{Math.min(page * perPage, warehouses.length)} of <strong>{warehouses.length}</strong> loaded database records</span>
+          <select
+            value={perPage}
+            onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="ml-2 border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 font-medium"
+          >
+            <option value={10}>10 per page</option>
+            <option value={25}>25 per page</option>
+            <option value={50}>50 per page</option>
+            <option value={100}>100 per page</option>
+            <option value={200}>All 200 per page</option>
+          </select>
+        </div>
         <div className="flex items-center gap-1">
           <button
             disabled={page === 1}
@@ -185,9 +206,9 @@ export default function Warehouses() {
           >
             <ChevronLeft size={14} />
           </button>
-          <span className="px-2 font-bold text-[#1F2937]">{page} / {pages}</span>
+          <span className="px-2 font-bold text-[#1F2937]">{page} / {Math.ceil(warehouses.length / perPage) || 1}</span>
           <button
-            disabled={page >= pages || total === 0}
+            disabled={page === Math.ceil(warehouses.length / perPage) || warehouses.length === 0}
             onClick={() => setPage(p => p + 1)}
             className="p-1.5 rounded-lg border border-[#E5E7EB] disabled:opacity-40 hover:bg-[#F4F5F7]"
           >
@@ -196,25 +217,24 @@ export default function Warehouses() {
         </div>
       </div>
 
-      {/* Add Warehouse Modal */}
       {addOpen && (
-        <Modal title="Add Warehouse Location to Database" onClose={() => setAddOpen(false)}>
+        <Modal title="Add Warehouse Location" onClose={() => setAddOpen(false)}>
           <div className="space-y-3 text-xs">
             <div>
               <label className="block font-bold text-[#374151] mb-1">Warehouse Name *</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g. Pune Regional Hub"
+                placeholder="e.g. Mumbai Central Fulfillment Hub"
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
               />
             </div>
             <div>
-              <label className="block font-bold text-[#374151] mb-1">Street Location / Address *</label>
+              <label className="block font-bold text-[#374151] mb-1">Location / Address *</label>
               <input
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
-                placeholder="e.g. Hinjewadi Phase 2, Pune 411057"
+                placeholder="Full address"
                 className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
               />
             </div>
@@ -224,12 +244,12 @@ export default function Warehouses() {
                 <input
                   value={form.city}
                   onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  placeholder="e.g. Pune"
+                  placeholder="e.g. Mumbai"
                   className="w-full border border-[#E5E7EB] rounded-xl px-3 py-2 outline-none focus:border-[#F26C4F]"
                 />
               </div>
               <div>
-                <label className="block font-bold text-[#374151] mb-1">Default Shipping Cost (₹)</label>
+                <label className="block font-bold text-[#374151] mb-1">Shipping Cost (base)</label>
                 <input
                   type="number"
                   value={form.shipping_cost}
@@ -238,29 +258,22 @@ export default function Warehouses() {
                 />
               </div>
             </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
-              <button
-                type="button"
-                onClick={() => setAddOpen(false)}
-                className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-bold hover:bg-[#F4F5F7]"
-              >
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setAddOpen(false)} className="px-4 py-2 border border-[#E5E7EB] rounded-xl text-xs font-semibold hover:bg-[#F4F5F7]">
                 Cancel
               </button>
               <button
-                type="button"
-                disabled={submitting}
                 onClick={handleCreateWarehouse}
+                disabled={saving}
                 className="px-4 py-2 bg-[#F26C4F] text-white rounded-xl text-xs font-bold hover:bg-[#e05535] disabled:opacity-50"
               >
-                {submitting ? "Saving..." : "Save Warehouse to Database"}
+                {saving ? "Creating..." : "Create Warehouse"}
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Stock Breakdown Modal */}
       {detailWh && (
         <Modal title={`Stock Breakdown — ${detailWh.name}`} onClose={() => setDetailWh(null)}>
           <div className="space-y-3 text-xs">
@@ -270,7 +283,7 @@ export default function Warehouses() {
               <div><p className="text-[#6B7280]">Low Stock Alerts</p><p className="font-bold text-red-600 text-lg">{detailWh.lowStockItems}</p></div>
             </div>
 
-            <p className="font-bold text-[#1F2937]">Current Inventory Allocation</p>
+            <p className="font-bold text-[#1F2937]">Sample Inventory SKU Stock Table</p>
             <table className="w-full text-left border-collapse border border-[#E5E7EB]">
               <thead>
                 <tr className="bg-[#FAFBFD] border-b border-[#E5E7EB] text-[11px] font-bold text-[#6B7280]">

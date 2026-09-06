@@ -2,14 +2,14 @@
 from typing import List, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException, Body
 from sqlmodel import Session
 
 from app.db import get_session
 from app.core.security import get_current_user, require_roles
 from app.models.user import Role, User
 from app.schemas.invoice_schemas import (
-    InvoiceCreate, InvoiceUpdate, InvoiceResponse,
+    InvoiceCreate, InvoiceUpdate, InvoiceResponse, InvoiceSendRequest,
     PaymentCreate, PaymentResponse,
     CreditNoteCreate, CreditNoteResponse
 )
@@ -30,14 +30,7 @@ def list_invoices(
     filter_customer = user.customer_id if user.role == Role.CUSTOMER else customer_id
     filter_rep = user.id if user.role == Role.REP else None
     invoices = invoice_service.list_invoices(session, customer_id=filter_customer, status=status, rep_id=filter_rep)
-    cust_ids = {inv.customer_id for inv in invoices}
-    customers = {c.id: c.name for c in session.exec(select(Customer).where(Customer.id.in_(cust_ids))).all()} if cust_ids else {}
-    results = []
-    for inv in invoices:
-        resp = InvoiceResponse.model_validate(inv)
-        resp.customer_name = customers.get(inv.customer_id, "Customer")
-        results.append(resp)
-    return results
+    return invoice_service._with_customer_name(session, invoices)
 
 @invoices_router.get("/summary")
 def invoice_summary(session: Session = Depends(get_session), _: User = Depends(get_current_user)):
@@ -53,13 +46,8 @@ def invoice_summary(session: Session = Depends(get_session), _: User = Depends(g
 
 @invoices_router.get("/{invoice_id}", response_model=InvoiceResponse)
 def get_invoice(invoice_id: UUID, session: Session = Depends(get_session), _: User = Depends(get_current_user)):
-    from app.models.customer import Customer
     inv = invoice_service.get_invoice_or_404(session, invoice_id)
-    resp = InvoiceResponse.model_validate(inv)
-    cust = session.get(Customer, inv.customer_id)
-    if cust:
-        resp.customer_name = cust.name
-    return resp
+    return invoice_service._with_customer_name(session, inv)
 
 @invoices_router.post("", response_model=InvoiceResponse, status_code=201)
 def create_invoice(
@@ -84,7 +72,7 @@ def pay_invoice_endpoint(
     invoice_id: UUID,
     payload: Optional[PaymentCreate] = None,
     session: Session = Depends(get_session),
-    user: User = Depends(get_current_user)
+    _: User = Depends(require_roles([Role.FINANCE, Role.ADMIN]))
 ):
     inv = invoice_service.get_invoice_or_404(session, invoice_id)
     pay_amount = payload.amount if (payload and payload.amount) else inv.outstanding_amount
@@ -99,7 +87,19 @@ def pay_invoice_endpoint(
         transaction_id=transaction_id,
         notes=notes
     )
-    return invoice_service.get_invoice_or_404(session, invoice_id)
+    inv = invoice_service.get_invoice_or_404(session, invoice_id)
+    return invoice_service._with_customer_name(session, inv)
+
+
+@invoices_router.post("/{invoice_id}/send", response_model=InvoiceResponse)
+def send_invoice_endpoint(
+    invoice_id: UUID,
+    payload: InvoiceSendRequest = Body(default=InvoiceSendRequest()),
+    session: Session = Depends(get_session),
+    _: User = Depends(require_roles([Role.FINANCE, Role.ADMIN]))
+):
+    inv = invoice_service.mark_invoice_sent(session, invoice_id)
+    return invoice_service._with_customer_name(session, inv)
 
 
 @invoices_router.get("/{invoice_id}/pdf")

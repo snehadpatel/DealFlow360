@@ -114,47 +114,24 @@ export const getFulfillmentById = async (id) => {
   return item;
 };
 
-export const allocateStock = async (id, allocations = {}) => {
+export const allocateStock = async (id) => {
+  // Persist to the backend: move the order to PROCESSING. `id` may be the
+  // display id (FUL-XXXX) so resolve the raw order UUID first. Errors propagate
+  // so the UI surfaces a real failure instead of a fake local mutation.
   const f = await getFulfillmentById(id);
-  const orderId = f.rawId || id;
-  try {
-    await apiClient.put(`/orders/${orderId}/status`, {
-      status: 'PROCESSING',
-      notes: 'Stock allocated across fulfillment centers',
-    });
-  } catch (err) {
-    console.warn('Backend order allocation note:', err);
-  }
-  f.status = 'ALLOCATED';
-  f.permissions.can_allocate = false;
-  f.permissions.can_create_shipment = true;
-  return f;
+  await apiClient.put(`/orders/${f.rawId}/status`, { status: 'PROCESSING' });
+  return { ...f, status: 'ALLOCATED', permissions: { can_allocate: false, can_create_shipment: true } };
 };
 
 export const createShipment = async (id, shipmentData = {}) => {
+  // Resolve the raw order UUID, create the shipment, and advance the order to
+  // SHIPPED. No fake-success fallback — a failure must surface to the caller.
   const f = await getFulfillmentById(id);
-  const orderId = f.rawId || id;
-  try {
-    const whRes = await apiClient.get('/warehouses').catch(() => []);
-    const whId = Array.isArray(whRes) && whRes.length > 0 ? whRes[0].id : undefined;
-
-    const res = await apiClient.post('/shipments', {
-      order_id: orderId,
-      warehouse_id: shipmentData.warehouse_id || whId,
-      courier: shipmentData.carrier || shipmentData.courier || 'Blue Dart Express',
-      tracking_number: shipmentData.trackingNumber || shipmentData.tracking_number || `TRK-${Math.floor(100000 + Math.random() * 900000)}`,
-      shipping_cost: Number(shipmentData.shipping_cost) || 0,
-    });
-
-    await apiClient.put(`/orders/${orderId}/status`, {
-      status: 'DELIVERED',
-      notes: 'Shipment dispatched to customer',
-    }).catch(() => {});
-
-    return res;
-  } catch (err) {
-    console.warn('Backend shipment creation error:', err);
-    f.status = 'FULFILLED';
-    return f;
-  }
+  const res = await apiClient.post('/shipments', {
+    order_id: f.rawId,
+    courier: shipmentData.carrier || 'Blue Dart Express',
+    ...shipmentData,
+  });
+  await apiClient.put(`/orders/${f.rawId}/status`, { status: 'SHIPPED' });
+  return res;
 };

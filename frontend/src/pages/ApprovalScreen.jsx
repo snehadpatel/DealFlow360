@@ -31,7 +31,17 @@ export default function ApprovalScreen() {
   const handleClearFilters = () => setFilters({ search: '', status: 'ALL', riskLevel: 'ALL', approvalType: 'ALL', dateRange: 'ALL', sortBy: 'HIGHEST_RISK', page: 1, pageSize: 10 });
   const handlePageChange = (newPage) => setFilters((prev) => ({ ...prev, page: newPage }));
 
-  if (selectedApprovalId) return <ApprovalDetail approvalId={selectedApprovalId} onBack={() => { setSelectedApprovalId(null); fetchData(true); }} />;
+  if (selectedApprovalId) return (
+    <ApprovalDetail
+      approvalId={selectedApprovalId}
+      onBack={() => {
+        // Re-fetch the pending list so a just-decided item drops off without a
+        // manual refresh when returning from the detail view.
+        setSelectedApprovalId(null);
+        fetchData(true);
+      }}
+    />
+  );
 
   const totalPages = Math.ceil(approvalsResponse.total / filters.pageSize) || 1;
   const startCount = (filters.page - 1) * filters.pageSize + 1;
